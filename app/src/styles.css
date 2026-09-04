@@ -125,7 +125,8 @@
   --color-muted: #606a78;
   --color-line: #d9dce1;
   --color-line-dark: #2b323c;
-  --color-signal: #d2273f;
+  --color-signal: #3b3a8f;
+  --color-teal: #57c3d4;
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
 }
