@@ -111,3 +111,45 @@
     border-color: var(--hf-color-border-default);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Affordable Home Electronics brand layer. Standalone website: none of the
+ * q-* tokens above are used by any page. Palette and type are locked in
+ * app/design-brief.md (the monitor wall).
+ * ------------------------------------------------------------------------ */
+@theme {
+  --color-ground: #f2f3f5;
+  --color-surface: #ffffff;
+  --color-ink: #13171d;
+  --color-ink-soft: #232a33;
+  --color-muted: #606a78;
+  --color-line: #d9dce1;
+  --color-line-dark: #2b323c;
+  --color-signal: #d2273f;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html.ahe, html.ahe body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+html.ahe { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html.ahe { scroll-behavior: auto; }
+  html.ahe *, html.ahe *::before, html.ahe *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+html.ahe ::selection { background: var(--color-signal); color: #fff; }
+html.ahe :focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+.ahe-rule { background-image: linear-gradient(to right, var(--color-line) 0 100%); }
+@keyframes ahe-rise { from { transform: translateY(14px); } to { transform: none; } }
+.ahe-rise { animation: ahe-rise 620ms cubic-bezier(.16,.84,.44,1) both; }
