@@ -54,10 +54,18 @@ function Skeleton() {
 }
 
 function CartPage() {
+  return (
+    <SiteShell>
+      <CartBody />
+    </SiteShell>
+  );
+}
+
+function CartBody() {
   const { lines, subtotal, ready, setQty } = useCart();
 
   return (
-    <SiteShell>
+    <>
       <Shell className="py-12">
         <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Your cart</h1>
 
@@ -146,6 +154,6 @@ function CartPage() {
           </aside>
         </div>
       </Shell>
-    </SiteShell>
+    </>
   );
 }

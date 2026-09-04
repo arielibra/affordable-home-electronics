@@ -19,6 +19,14 @@ export const Route = createFileRoute("/checkout")({
 type Done = { reference: string; subtotal: number } | null;
 
 function CheckoutPage() {
+  return (
+    <SiteShell>
+      <CheckoutBody />
+    </SiteShell>
+  );
+}
+
+function CheckoutBody() {
   const { lines, subtotal, cartId, ready, refresh } = useCart();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -60,7 +68,7 @@ function CheckoutPage() {
 
   if (done) {
     return (
-      <SiteShell>
+      <>
         <Shell className="py-16">
           <div className="max-w-[620px]">
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-signal">Order received</p>
@@ -98,12 +106,12 @@ function CheckoutPage() {
             </div>
           </div>
         </Shell>
-      </SiteShell>
+      </>
     );
   }
 
   return (
-    <SiteShell>
+    <>
       <Shell className="py-12">
         <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Place your order</h1>
         <p className="mt-4 max-w-[62ch] text-base leading-relaxed text-muted">
@@ -204,6 +212,6 @@ function CheckoutPage() {
           </aside>
         </div>
       </Shell>
-    </SiteShell>
+    </>
   );
 }
