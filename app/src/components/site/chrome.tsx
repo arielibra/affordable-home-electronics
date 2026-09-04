@@ -1,0 +1,216 @@
+import { Link } from "@tanstack/react-router";
+import { useState, type ReactNode } from "react";
+
+import { NAV, SITE } from "../../lib/site";
+import { CartProvider, useCart } from "./cart-context";
+import { IconCart, IconMail, IconPhone, IconPin, IconSearch } from "./icons";
+import { Mark } from "./mark";
+
+function CartLink() {
+  const { count, ready } = useCart();
+  return (
+    <Link
+      to="/cart"
+      className="relative inline-flex h-10 items-center gap-2 border border-line bg-surface px-3 text-sm font-medium text-ink transition-colors hover:border-ink"
+    >
+      <IconCart className="h-4 w-4" />
+      <span className="hidden sm:inline">Cart</span>
+      <span className="min-w-[1.5rem] bg-ink px-1 text-center font-mono text-[11px] leading-5 text-surface">
+        {ready ? count : "0"}
+      </span>
+    </Link>
+  );
+}
+
+function Header() {
+  const [open, setOpen] = useState(false);
+  return (
+    <header className="sticky top-0 z-40 border-b border-line bg-ground/95 backdrop-blur">
+      <div className="border-b border-line bg-ink text-surface">
+        <div className="mx-auto flex h-9 max-w-[1240px] items-center justify-between gap-4 px-5 font-mono text-[11px] tracking-tight">
+          <span className="truncate">Authorized dealer. Full USA warranty on every item.</span>
+          <a href={SITE.phoneHref} className="shrink-0 hover:text-signal">
+            {SITE.phone}
+          </a>
+        </div>
+      </div>
+
+      <div className="mx-auto flex h-[70px] max-w-[1240px] items-center justify-between gap-6 px-5">
+        <Link to="/" className="flex shrink-0 items-baseline gap-2.5 text-ink" aria-label={`${SITE.name} home`}>
+          <Mark className="h-[22px] w-[22px] translate-y-[3px]" />
+          <span className="hidden text-[15px] font-semibold leading-none tracking-tight sm:inline">
+            Affordable Home Electronics
+          </span>
+          <span className="text-[15px] font-semibold leading-none tracking-tight sm:hidden">AHE</span>
+        </Link>
+
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="text-sm text-muted transition-colors hover:text-ink [&.active]:text-ink"
+              activeProps={{ className: "text-ink" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Link
+            to="/search"
+            className="inline-flex h-10 w-10 items-center justify-center border border-line bg-surface text-ink transition-colors hover:border-ink"
+            aria-label="Search the catalog"
+          >
+            <IconSearch className="h-4 w-4" />
+          </Link>
+          <CartLink />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label="Toggle menu"
+            className="inline-flex h-10 w-10 items-center justify-center border border-line bg-surface text-ink lg:hidden"
+          >
+            <span className="flex flex-col gap-[5px]">
+              <span className="block h-[2px] w-4 bg-ink" />
+              <span className="block h-[2px] w-4 bg-ink" />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {open ? (
+        <nav className="border-t border-line bg-surface lg:hidden" aria-label="Mobile">
+          <ul className="mx-auto max-w-[1240px] divide-y divide-line px-5">
+            {NAV.map((item) => (
+              <li key={item.to}>
+                <Link to={item.to} onClick={() => setOpen(false)} className="block py-3.5 text-sm text-ink">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
+    </header>
+  );
+}
+
+function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">{title}</h3>
+      <ul className="mt-4 space-y-2.5 text-sm text-white/75">{children}</ul>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="mt-24 bg-ink text-surface">
+      <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <div className="flex items-baseline gap-2.5">
+            <Mark className="h-5 w-5 translate-y-[2px] text-surface" />
+            <span className="text-sm font-semibold leading-none tracking-tight">Affordable Home Electronics</span>
+          </div>
+          <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-white/60">
+            Security cameras, recorders and access control, sold and installed out of Rego Park since {SITE.since}.
+          </p>
+        </div>
+
+        <FooterColumn title="Shop">
+          <li>
+            <Link to="/shop" className="hover:text-signal">
+              Full catalog
+            </Link>
+          </li>
+          <li>
+            <Link to="/security-cameras" className="hover:text-signal">
+              Security cameras
+            </Link>
+          </li>
+          <li>
+            <Link to="/brands" className="hover:text-signal">
+              Brands we carry
+            </Link>
+          </li>
+          <li>
+            <Link to="/search" className="hover:text-signal">
+              Search by part number
+            </Link>
+          </li>
+        </FooterColumn>
+
+        <FooterColumn title="Company">
+          <li>
+            <Link to="/about" className="hover:text-signal">
+              About the shop
+            </Link>
+          </li>
+          <li>
+            <Link to="/installation" className="hover:text-signal">
+              Installation in NYC
+            </Link>
+          </li>
+          <li>
+            <Link to="/contact" className="hover:text-signal">
+              Contact
+            </Link>
+          </li>
+          <li>
+            <a href={`${SITE.legacyStore}/index.asp?PageAction=Custom&ID=4`} className="hover:text-signal">
+              Store policies
+            </a>
+          </li>
+        </FooterColumn>
+
+        <FooterColumn title="Reach us">
+          <li className="flex items-start gap-2.5">
+            <IconPhone className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
+            <a href={SITE.phoneHref} className="font-mono text-[13px] hover:text-signal">
+              {SITE.phone}
+            </a>
+          </li>
+          <li className="flex items-start gap-2.5">
+            <IconMail className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
+            <a href={SITE.emailHref} className="break-all hover:text-signal">
+              {SITE.email}
+            </a>
+          </li>
+          <li className="flex items-start gap-2.5">
+            <IconPin className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
+            <span>
+              {SITE.street}
+              <br />
+              {SITE.cityLine}
+            </span>
+          </li>
+        </FooterColumn>
+      </div>
+
+      <div className="border-t border-line-dark">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-2 px-5 py-6 font-mono text-[11px] text-white/40 sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            Copyright {SITE.since} to {new Date().getFullYear()} Affordable Home Electronics
+          </span>
+          <span>Retail, wholesale and government orders welcome</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export function SiteShell({ children }: { children: ReactNode }) {
+  return (
+    <CartProvider>
+      <div className="flex min-h-dvh flex-col bg-ground">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </div>
+    </CartProvider>
+  );
+}
