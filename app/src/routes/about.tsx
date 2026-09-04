@@ -69,6 +69,29 @@ function About() {
           </figure>
         </div>
 
+        <section className="mt-14 grid gap-8 border-t border-line pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">
+          <figure className="flex items-center justify-center border border-line bg-surface p-8">
+            <img
+              src="/assets/logo-3d.png"
+              alt="The Affordable Home Electronics cart mark with the name stacked on three lines"
+              width={1000}
+              height={670}
+              loading="lazy"
+              className="h-auto w-full max-w-[420px]"
+            />
+          </figure>
+          <div>
+            <h2 className="max-w-[20ch] text-2xl font-semibold leading-[1.06] tracking-tighter text-ink md:text-3xl">
+              The same cart, redrawn.
+            </h2>
+            <p className="mt-4 max-w-[56ch] text-base leading-relaxed text-muted">
+              The mark has been on the vans, the invoices and the shopfront since the beginning, so it was rebuilt rather
+              than replaced. The basket keeps its grid, which now reads as a wall of camera feeds, and the teal to indigo
+              is the same pair of colors people already know us by.
+            </p>
+          </div>
+        </section>
+
         <div className="mt-14 grid gap-10 border-t border-line pt-10 sm:grid-cols-3">
           <Stat value={`${years}yr`} label={`Trading from the same address since ${SITE.since}`} />
           <Stat value="22k" label="Line items across the full catalog" />
