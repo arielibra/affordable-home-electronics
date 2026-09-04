@@ -84,17 +84,20 @@ export function CatalogBody({
           </p>
           <div className="flex flex-wrap items-center gap-1">
             {SORTS.map((s) => {
-              const on = s.value === sort;
-              const target = active === "all" ? "/shop" : "/shop/$category";
-              return (
+              const cls = `px-3 py-1.5 text-xs transition-colors ${
+                s.value === sort ? "bg-ink text-surface" : "text-muted hover:text-ink"
+              }`;
+              return active === "all" ? (
+                <Link key={s.value} to="/shop" search={{ sort: s.value }} className={cls}>
+                  {s.label}
+                </Link>
+              ) : (
                 <Link
                   key={s.value}
-                  to={target}
-                  params={active === "all" ? {} : { category: active }}
+                  to="/shop/$category"
+                  params={{ category: active }}
                   search={{ sort: s.value }}
-                  className={`px-3 py-1.5 text-xs transition-colors ${
-                    on ? "bg-ink text-surface" : "text-muted hover:text-ink"
-                  }`}
+                  className={cls}
                 >
                   {s.label}
                 </Link>

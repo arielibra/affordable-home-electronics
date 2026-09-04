@@ -4,7 +4,13 @@ import type { ReactNode } from "react";
 import { IconArrow } from "./icons";
 
 /** Hero primary: ink slab with a signal rule that draws across on hover. */
-export function ShopCta({ to = "/shop", children = "Shop cameras" }: { to?: string; children?: ReactNode }) {
+export function ShopCta({
+  to = "/shop",
+  children = "Shop cameras",
+}: {
+  to?: "/shop" | "/shop/cameras";
+  children?: ReactNode;
+}) {
   return (
     <Link
       to={to}
