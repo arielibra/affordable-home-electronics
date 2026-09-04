@@ -9,8 +9,8 @@ import { searchCatalog } from "../lib/api/store.functions";
 import { ORIGIN } from "../lib/site";
 
 export const Route = createFileRoute("/search")({
-  validateSearch: (s: Record<string, unknown>): { q: string } => ({ q: String(s.q ?? "").slice(0, 80) }),
-  loaderDeps: ({ search }) => ({ q: search.q }),
+  validateSearch: (s: Record<string, unknown>): { q?: string } => ({ q: String(s.q ?? "").slice(0, 80) }),
+  loaderDeps: ({ search }) => ({ q: search.q ?? "" }),
   loader: ({ deps }) => searchCatalog({ data: { q: deps.q } }),
   head: () => ({
     meta: [{ title: "Search the catalog | Affordable Home Electronics" }],

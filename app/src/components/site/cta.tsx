@@ -4,20 +4,22 @@ import type { ReactNode } from "react";
 import { IconArrow } from "./icons";
 
 /** Hero primary: ink slab with a signal rule that draws across on hover. */
-export function ShopCta({
-  to = "/shop",
-  children = "Shop cameras",
-}: {
-  to?: "/shop" | "/shop/cameras";
-  children?: ReactNode;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group relative inline-flex h-12 items-center overflow-hidden bg-ink px-7 text-sm font-medium text-surface transition-transform duration-150 active:scale-[0.98]"
-    >
+export function ShopCta({ category, children = "Shop cameras" }: { category?: string; children?: ReactNode }) {
+  const cls =
+    "group relative inline-flex h-12 items-center overflow-hidden bg-ink px-7 text-sm font-medium text-surface transition-transform duration-150 active:scale-[0.98]";
+  const inner = (
+    <>
       <span className="relative z-10">{children}</span>
       <span className="absolute bottom-0 left-0 h-[3px] w-0 bg-signal transition-[width] duration-300 ease-out group-hover:w-full" />
+    </>
+  );
+  return category ? (
+    <Link to="/shop/$category" params={{ category }} className={cls}>
+      {inner}
+    </Link>
+  ) : (
+    <Link to="/shop" className={cls}>
+      {inner}
     </Link>
   );
 }

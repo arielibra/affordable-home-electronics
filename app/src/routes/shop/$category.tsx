@@ -9,11 +9,11 @@ type Sort = "featured" | "price-asc" | "price-desc" | "name";
 const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "name"];
 
 export const Route = createFileRoute("/shop/$category")({
-  validateSearch: (s: Record<string, unknown>): { sort: Sort } => {
+  validateSearch: (s: Record<string, unknown>): { sort?: Sort } => {
     const raw = String(s.sort ?? "featured");
     return { sort: (SORTS as string[]).includes(raw) ? (raw as Sort) : "featured" };
   },
-  loaderDeps: ({ search }) => ({ sort: search.sort }),
+  loaderDeps: ({ search }) => ({ sort: search.sort ?? ("featured" as Sort) }),
   loader: async ({ params, deps }) => {
     const data = await getCategoryPage({ data: { slug: params.category, sort: deps.sort } });
     if (!data.category) throw notFound();
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/shop/$category")({
 
 function CategoryPage() {
   const { categories, category, products } = Route.useLoaderData();
-  const { sort } = Route.useSearch();
+  const sort = Route.useSearch().sort ?? "featured";
   if (!category) return null;
   return (
     <SiteShell>

@@ -9,11 +9,11 @@ type Sort = "featured" | "price-asc" | "price-desc" | "name";
 const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "name"];
 
 export const Route = createFileRoute("/shop/")({
-  validateSearch: (s: Record<string, unknown>): { sort: Sort } => {
+  validateSearch: (s: Record<string, unknown>): { sort?: Sort } => {
     const raw = String(s.sort ?? "featured");
     return { sort: (SORTS as string[]).includes(raw) ? (raw as Sort) : "featured" };
   },
-  loaderDeps: ({ search }) => ({ sort: search.sort }),
+  loaderDeps: ({ search }) => ({ sort: search.sort ?? ("featured" as Sort) }),
   loader: ({ deps }) => getShop({ data: { sort: deps.sort } }),
   head: () => ({
     meta: [
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/shop/")({
 
 function ShopIndex() {
   const { categories, counts, products } = Route.useLoaderData();
-  const { sort } = Route.useSearch();
+  const sort = Route.useSearch().sort ?? "featured";
   return (
     <SiteShell>
       <CatalogHeader

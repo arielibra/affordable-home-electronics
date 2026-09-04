@@ -63,7 +63,7 @@ function SecurityCameras() {
               who needs it simple. Tell us the property and we will tell you what it takes.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <ShopCta to="/shop/cameras">Shop cameras</ShopCta>
+              <ShopCta category="cameras">Shop cameras</ShopCta>
               <CallCta phone={SITE.phone} href={SITE.phoneHref} />
             </div>
           </div>
@@ -102,7 +102,11 @@ function SecurityCameras() {
             title="Cameras on the shelf"
             lead="A slice of what is in stock right now. The recorders, complete systems and access control sit one click away."
             aside={
-              <Link to="/shop/cameras" className="border-b border-signal pb-0.5 text-sm text-ink hover:text-signal">
+              <Link
+                to="/shop/$category"
+                params={{ category: "cameras" }}
+                className="border-b border-signal pb-0.5 text-sm text-ink hover:text-signal"
+              >
                 All cameras
               </Link>
             }
