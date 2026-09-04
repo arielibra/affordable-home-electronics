@@ -48,6 +48,13 @@ export async function productsIn(category: string, sort = "featured"): Promise<P
   return r.results ?? [];
 }
 
+export async function allProducts(sort = "featured"): Promise<Product[]> {
+  const order =
+    sort === "price-asc" ? "price_cents ASC" : sort === "price-desc" ? "price_cents DESC" : sort === "name" ? "name ASC" : "featured DESC, category, price_cents ASC";
+  const r = await db().prepare(`SELECT * FROM products ORDER BY ${order}`).all<Product>();
+  return r.results ?? [];
+}
+
 export async function searchProducts(q: string, limit = 60): Promise<Product[]> {
   const like = `%${q.trim().toLowerCase()}%`;
   const r = await db()

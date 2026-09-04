@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   addToCart,
+  allProducts,
   cartLines,
   categoryCounts,
   clearCart,
@@ -24,6 +25,13 @@ export const getStorefront = createServerFn({ method: "GET" }).handler(async () 
   const [categories, counts, featured] = await Promise.all([listCategories(), categoryCounts(), featuredProducts(8)]);
   return { categories, counts, featured };
 });
+
+export const getShop = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
+  .handler(async ({ data }) => {
+    const [categories, counts, products] = await Promise.all([listCategories(), categoryCounts(), allProducts(data.sort)]);
+    return { categories, counts, products };
+  });
 
 export const getCategoryPage = createServerFn({ method: "GET" })
   .inputValidator(z.object({ slug, sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
