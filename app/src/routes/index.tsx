@@ -1,28 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { BrandsWall } from "../components/home/brands-wall";
+import { CategoriesRail } from "../components/home/categories-rail";
+import { ContactPanel } from "../components/home/contact-panel";
+import { Featured } from "../components/home/featured";
+import { Hero } from "../components/home/hero";
+import { InstallBand } from "../components/home/install-band";
+import { Testimonials } from "../components/home/testimonials";
+import { WhatWeDo } from "../components/home/what-we-do";
+import { WhyBuy } from "../components/home/why-buy";
+import { SiteShell } from "../components/site/chrome";
+import { LocalBusinessData } from "../components/site/local-business";
+import { getStorefront } from "../lib/api/store.functions";
+import { ORIGIN } from "../lib/site";
+
 export const Route = createFileRoute("/")({
-  // No title/description here on purpose: the home page inherits the app's
-  // editable page metadata from the root route (set via the marketplace meta
-  // API — title/favicon/og), so a shared link to "/" shows the owner's values.
-  // Add a `head` here only to give a SPECIFIC page its own title/description
-  // (a deeper route's head overrides the root's for that page).
+  head: () => ({ links: [{ rel: "canonical", href: `${ORIGIN}/` }] }),
+  loader: () => getStorefront(),
   component: Index,
 });
 
-// Replace this placeholder. Routes are server-rendered — keep render SSR-safe
-// (no window/document at module top level or during render). See ./README.md.
 function Index() {
+  const { categories, counts, featured } = Route.useLoaderData();
   return (
-    <div
-      data-higgsfield-blank-page-placeholder="REMOVE_THIS"
-      className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center"
-    >
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Your website will live here.
-      </h1>
-      <p className="text-base text-gray-500">
-        Ask Higgsfield Supercomputer to build it.
-      </p>
-    </div>
+    <SiteShell>
+      <LocalBusinessData />
+      <Hero />
+      <CategoriesRail categories={categories} counts={counts} />
+      <WhatWeDo />
+      <InstallBand />
+      <Featured products={featured} />
+      <WhyBuy />
+      <BrandsWall />
+      <Testimonials />
+      <ContactPanel />
+    </SiteShell>
   );
 }

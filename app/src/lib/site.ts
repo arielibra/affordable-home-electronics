@@ -1,3 +1,5 @@
+export const ORIGIN = "https://affordable-home-electronics.higgsfield.app";
+
 export const SITE = {
   name: "Affordable Home Electronics",
   short: "AHE",

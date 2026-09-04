@@ -75,7 +75,7 @@ function buildHead(meta: AppMeta) {
 function Centered({ eyebrow, title, body, children }: { eyebrow: string; title: string; body: string; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ground px-6 text-center">
-      <Mark className="h-8 w-8 text-ink" />
+      <Mark className="h-9 w-[42px] text-ink" />
       <p className="mt-8 font-mono text-xs uppercase tracking-[0.18em] text-signal">{eyebrow}</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tighter text-ink md:text-5xl">{title}</h1>
       <p className="mt-3 max-w-[46ch] text-base leading-relaxed text-muted">{body}</p>
