@@ -129,12 +129,12 @@ function CartBody() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted">Shipping</dt>
-                <dd className="text-ink">Quoted on the order</dd>
+                <dd className="text-ink">Calculated at checkout</dd>
               </div>
             </dl>
             <p className="mt-5 text-sm leading-relaxed text-muted">
-              Place the order here and the shop confirms stock, shipping and the total by phone before anything is charged.
-              Nothing is billed on this page.
+              Flat rate shipping, free over $199, or pick up free in Rego Park. Sales tax and the final total are shown
+              before you pay.
             </p>
             <div className="mt-6">
               <CheckoutCta disabled={lines.length === 0} />

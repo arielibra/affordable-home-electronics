@@ -17,6 +17,7 @@ import {
   setCartQty,
 } from "../store.server";
 import { bindings } from "../bindings.server";
+import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
 
 const id = z.string().min(8).max(64);
 const slug = z.string().min(1).max(120);
@@ -140,4 +141,34 @@ export const submitQuote = createServerFn({ method: "POST" })
       .bind(crypto.randomUUID(), data.name, data.phone, data.email, data.borough, data.property_type, data.cameras, data.message)
       .run();
     return { ok: true as const };
+  });
+
+export const getCheckoutConfig = createServerFn({ method: "GET" }).handler(async () => ({
+  payments: paymentsEnabled(),
+  shippingFlatCents: SHIPPING_FLAT_CENTS,
+  freeShippingOverCents: FREE_SHIPPING_THRESHOLD_CENTS,
+}));
+
+/** Looked up by the Stripe session id, which only the buyer's redirect carries.
+ *  Deliberately returns totals and a reference, never the shipping address. */
+export const getPaidOrder = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ sessionId: z.string().min(10).max(120) }))
+  .handler(async ({ data }) => {
+    const DB = bindings().DB;
+    if (!DB) return { found: false as const };
+    const row = await DB.prepare(
+      "SELECT reference, status, amount_total_cents, shipping_cents, tax_cents, subtotal_cents, email FROM orders WHERE stripe_session_id = ?1",
+    )
+      .bind(data.sessionId)
+      .first<{
+        reference: string;
+        status: string;
+        amount_total_cents: number | null;
+        shipping_cents: number | null;
+        tax_cents: number | null;
+        subtotal_cents: number | null;
+        email: string;
+      }>();
+    if (!row) return { found: false as const };
+    return { found: true as const, ...row };
   });

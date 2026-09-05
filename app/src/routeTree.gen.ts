@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityCamerasRouteImport } from './routes/security-cameras'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -23,6 +24,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopCategoryRouteImport } from './routes/shop/$category'
 import { Route as PSlugRouteImport } from './routes/p/$slug'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
+import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -42,6 +45,11 @@ const SearchRoute = SearchRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrderConfirmedRoute = OrderConfirmedRouteImport.update({
+  id: '/order-confirmed',
+  path: '/order-confirmed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstallationRoute = InstallationRouteImport.update({
@@ -94,6 +102,16 @@ const PSlugRoute = PSlugRouteImport.update({
   path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe-webhook',
+  path: '/api/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
+  id: '/api/checkout',
+  path: '/api/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,10 +121,13 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/checkout': typeof ApiCheckoutRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
@@ -119,10 +140,13 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/checkout': typeof ApiCheckoutRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop': typeof ShopIndexRoute
@@ -136,10 +160,13 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/checkout': typeof ApiCheckoutRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
@@ -154,10 +181,13 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/order-confirmed'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
     | '/sitemap.xml'
+    | '/api/checkout'
+    | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
     | '/shop/'
@@ -170,10 +200,13 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/order-confirmed'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
     | '/sitemap.xml'
+    | '/api/checkout'
+    | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
     | '/shop'
@@ -186,10 +219,13 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/order-confirmed'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
     | '/sitemap.xml'
+    | '/api/checkout'
+    | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
     | '/shop/'
@@ -203,10 +239,13 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   InstallationRoute: typeof InstallationRoute
+  OrderConfirmedRoute: typeof OrderConfirmedRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SecurityCamerasRoute: typeof SecurityCamerasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiCheckoutRoute: typeof ApiCheckoutRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   PSlugRoute: typeof PSlugRoute
   ShopCategoryRoute: typeof ShopCategoryRoute
   ShopIndexRoute: typeof ShopIndexRoute
@@ -240,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/order-confirmed': {
+      id: '/order-confirmed'
+      path: '/order-confirmed'
+      fullPath: '/order-confirmed'
+      preLoaderRoute: typeof OrderConfirmedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/installation': {
@@ -312,6 +358,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stripe-webhook': {
+      id: '/api/stripe-webhook'
+      path: '/api/stripe-webhook'
+      fullPath: '/api/stripe-webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checkout': {
+      id: '/api/checkout'
+      path: '/api/checkout'
+      fullPath: '/api/checkout'
+      preLoaderRoute: typeof ApiCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -323,10 +383,13 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   InstallationRoute: InstallationRoute,
+  OrderConfirmedRoute: OrderConfirmedRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SecurityCamerasRoute: SecurityCamerasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiCheckoutRoute: ApiCheckoutRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   PSlugRoute: PSlugRoute,
   ShopCategoryRoute: ShopCategoryRoute,
   ShopIndexRoute: ShopIndexRoute,
