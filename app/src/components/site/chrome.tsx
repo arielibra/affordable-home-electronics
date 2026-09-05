@@ -29,7 +29,7 @@ function Header() {
       <div className="border-b border-line bg-band text-surface">
         <div className="mx-auto flex h-9 max-w-[1240px] items-center justify-between gap-4 px-5 font-mono text-[11px] tracking-tight">
           <span className="truncate">Authorized dealer. Full USA warranty on every item.</span>
-          <a href={SITE.phoneHref} className="shrink-0 hover:text-signal">
+          <a href={SITE.phoneHref} className="ahe-onblue shrink-0">
             {SITE.phone}
           </a>
         </div>
@@ -125,22 +125,22 @@ function Footer() {
 
         <FooterColumn title="Shop">
           <li>
-            <Link to="/shop" className="hover:text-signal">
+            <Link to="/shop" className="ahe-onblue">
               Full catalog
             </Link>
           </li>
           <li>
-            <Link to="/security-cameras" className="hover:text-signal">
+            <Link to="/security-cameras" className="ahe-onblue">
               Security cameras
             </Link>
           </li>
           <li>
-            <Link to="/brands" className="hover:text-signal">
+            <Link to="/brands" className="ahe-onblue">
               Brands we carry
             </Link>
           </li>
           <li>
-            <Link to="/search" className="hover:text-signal">
+            <Link to="/search" className="ahe-onblue">
               Search by part number
             </Link>
           </li>
@@ -148,22 +148,22 @@ function Footer() {
 
         <FooterColumn title="Company">
           <li>
-            <Link to="/about" className="hover:text-signal">
+            <Link to="/about" className="ahe-onblue">
               About the shop
             </Link>
           </li>
           <li>
-            <Link to="/installation" className="hover:text-signal">
+            <Link to="/installation" className="ahe-onblue">
               Installation in NYC
             </Link>
           </li>
           <li>
-            <Link to="/contact" className="hover:text-signal">
+            <Link to="/contact" className="ahe-onblue">
               Contact
             </Link>
           </li>
           <li>
-            <a href={`${SITE.legacyStore}/index.asp?PageAction=Custom&ID=4`} className="hover:text-signal">
+            <a href={`${SITE.legacyStore}/index.asp?PageAction=Custom&ID=4`} className="ahe-onblue">
               Store policies
             </a>
           </li>
@@ -172,13 +172,13 @@ function Footer() {
         <FooterColumn title="Reach us">
           <li className="flex items-start gap-2.5">
             <IconPhone className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
-            <a href={SITE.phoneHref} className="font-mono text-[13px] hover:text-signal">
+            <a href={SITE.phoneHref} className="ahe-onblue font-mono text-[13px]">
               {SITE.phone}
             </a>
           </li>
           <li className="flex items-start gap-2.5">
             <IconMail className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
-            <a href={SITE.emailHref} className="break-all hover:text-signal">
+            <a href={SITE.emailHref} className="ahe-onblue break-all">
               {SITE.email}
             </a>
           </li>
