@@ -29,7 +29,7 @@ function About() {
         <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
           A counter in Rego Park, and a warehouse behind it.
         </h1>
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
           <div className="max-w-[62ch] space-y-5 text-base leading-relaxed text-muted">
             <p>
               Affordable Home Electronics started in {SITE.since} as a one stop shop for home and business electronics. Over
@@ -64,7 +64,7 @@ function About() {
               className="block w-full object-cover"
             />
             <figcaption className="px-1 pb-0.5 pt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-              {SITE.street}, {SITE.cityLine}
+              Rego Park, New York 11374
             </figcaption>
           </figure>
         </div>
