@@ -76,7 +76,7 @@ function CartBody() {
               <Skeleton />
             ) : lines.length === 0 ? (
               <div className="border border-line bg-surface p-10 text-center">
-                <Mark empty className="mx-auto h-24 w-[110px] text-ink" />
+                <Mark empty className="mx-auto h-20 w-[114px] text-ink" />
                 <p className="mt-7 text-base text-ink">Nothing in the cart yet.</p>
                 <p className="mt-2 text-sm text-muted">Start with the cameras, or tell us the building and we will spec it.</p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">

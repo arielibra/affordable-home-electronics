@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { SiteShell } from "../components/site/chrome";
 import { QuoteCta } from "../components/site/cta";
-import { Lockup } from "../components/site/mark";
 import { Eyebrow, Shell, Stat } from "../components/site/section";
 import { ORIGIN, SITE } from "../lib/site";
 
@@ -72,7 +71,13 @@ function About() {
 
         <section className="mt-14 grid gap-8 border-t border-line pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">
           <figure className="flex items-center justify-center border border-line bg-surface p-8">
-            <Lockup size="lg" className="text-ink" />
+            <img
+              src="/assets/logo-stacked.png"
+              alt="Affordable Home Electronics"
+              width={1200}
+              height={805}
+              className="h-auto w-full max-w-[440px]"
+            />
           </figure>
           <div>
             <h2 className="max-w-[20ch] text-2xl font-semibold leading-[1.06] tracking-tighter text-ink md:text-3xl">

@@ -37,7 +37,7 @@ function Header() {
 
       <div className="mx-auto flex h-[70px] max-w-[1240px] items-center justify-between gap-6 px-5">
         <Link to="/" className="flex shrink-0 items-center gap-2.5 text-ink" aria-label={`${SITE.name} home`}>
-          <Mark className="h-[26px] w-[30px]" />
+          <Mark className="h-[26px] w-[37px]" />
           <span className="hidden text-[15px] font-semibold leading-none tracking-tight sm:inline">
             Affordable Home Electronics
           </span>
@@ -112,10 +112,14 @@ function Footer() {
     <footer className="mt-24 bg-band text-surface">
       <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <Mark className="h-[26px] w-[30px] text-surface" />
-            <span className="text-sm font-semibold leading-none tracking-tight">Affordable Home Electronics</span>
-          </div>
+          <img
+            src="/assets/logo-reversed.png"
+            alt="Affordable Home Electronics"
+            width={1200}
+            height={805}
+            loading="lazy"
+            className="h-auto w-[220px]"
+          />
           <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-white/60">
             Security cameras, recorders and access control, sold and installed out of Rego Park since {SITE.since}.
           </p>

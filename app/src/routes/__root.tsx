@@ -67,6 +67,7 @@ function buildHead(meta: AppMeta) {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
       },
+      { rel: "apple-touch-icon", href: "/app-icon.png" },
       ...(favicon ? [{ rel: "icon", href: favicon }] : []),
     ],
   };
@@ -75,7 +76,7 @@ function buildHead(meta: AppMeta) {
 function Centered({ eyebrow, title, body, children }: { eyebrow: string; title: string; body: string; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ground px-6 text-center">
-      <Mark className="h-12 w-[55px] text-ink" />
+      <Mark detail="full" className="h-12 w-[68px] text-ink" />
       <p className="mt-8 font-mono text-xs uppercase tracking-[0.18em] text-signal">{eyebrow}</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tighter text-ink md:text-5xl">{title}</h1>
       <p className="mt-3 max-w-[46ch] text-base leading-relaxed text-muted">{body}</p>
