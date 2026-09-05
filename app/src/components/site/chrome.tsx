@@ -116,7 +116,7 @@ function Footer() {
             src="/assets/logo-reversed.png"
             alt="Affordable Home Electronics"
             loading="lazy"
-            className="h-auto w-[230px]"
+            className="h-auto w-[250px]"
           />
           <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-white/60">
             Security cameras, recorders and access control, sold and installed out of Rego Park since {SITE.since}.
