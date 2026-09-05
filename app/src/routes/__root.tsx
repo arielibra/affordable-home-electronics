@@ -50,7 +50,7 @@ function buildHead(meta: AppMeta) {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title },
       { name: "description", content: description },
-      { name: "theme-color", content: "#f2f3f5" },
+      { name: "theme-color", content: "#0e1b33" },
       { property: "og:site_name", content: DEFAULT_TITLE },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -75,7 +75,7 @@ function buildHead(meta: AppMeta) {
 function Centered({ eyebrow, title, body, children }: { eyebrow: string; title: string; body: string; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ground px-6 text-center">
-      <Mark className="h-9 w-[42px] text-ink" />
+      <Mark className="h-12 w-[55px] text-ink" />
       <p className="mt-8 font-mono text-xs uppercase tracking-[0.18em] text-signal">{eyebrow}</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tighter text-ink md:text-5xl">{title}</h1>
       <p className="mt-3 max-w-[46ch] text-base leading-relaxed text-muted">{body}</p>

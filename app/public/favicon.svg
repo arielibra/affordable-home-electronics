@@ -1,16 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#57c3d4"/><stop offset="1" stop-color="#3b3a8f"/></linearGradient></defs>
-  <rect width="32" height="32" fill="#13171d"/>
-  <g transform="translate(2.5,4.5)">
-    <rect x="8" y="6" width="17" height="9" fill="url(#g)"/>
-    <g stroke="#ffffff" stroke-width="2" stroke-linecap="square" fill="none">
-      <path d="M1 2.5h3.6L8 15"/>
-      <rect x="8" y="6" width="17" height="9"/>
-      <path d="M13.67 6v9M19.33 6v9M8 10.5h17"/>
-      <path d="M11 15v3M21 15v3"/>
+    <stop offset="0" stop-color="#35a8c6"/><stop offset="1" stop-color="#3f8fe0"/></linearGradient></defs>
+  <rect width="32" height="32" fill="#0e1b33"/>
+  <g transform="translate(1,2)">
+    <path d="M9 7h21l-2.5 10h-15z" fill="url(#g)"/>
+    <g stroke="#0e1b33" stroke-width="1.5"><path d="M16 7l1.5 10M23 7l-.5 10M10.75 12h18"/></g>
+    <g stroke="#ffffff" stroke-width="2.4" stroke-linecap="square" fill="none">
+      <path d="M2 3.2h4.2L9 7"/><path d="M15.6 17.4l.6 3.6M25 17.4l-.5 3.6"/>
     </g>
-    <circle cx="11" cy="20.5" r="2" fill="#ffffff"/>
-    <circle cx="21" cy="20.5" r="2" fill="#ffffff"/>
+    <circle cx="16.4" cy="23.6" r="2.4" fill="#ffffff"/>
+    <circle cx="24.4" cy="23.6" r="2.4" fill="#ffffff"/>
   </g>
 </svg>

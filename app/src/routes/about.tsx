@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { SiteShell } from "../components/site/chrome";
 import { QuoteCta } from "../components/site/cta";
+import { Lockup } from "../components/site/mark";
 import { Eyebrow, Shell, Stat } from "../components/site/section";
 import { ORIGIN, SITE } from "../lib/site";
 
@@ -71,14 +72,7 @@ function About() {
 
         <section className="mt-14 grid gap-8 border-t border-line pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">
           <figure className="flex items-center justify-center border border-line bg-surface p-8">
-            <img
-              src="/assets/logo-3d.png"
-              alt="The Affordable Home Electronics cart mark with the name stacked on three lines"
-              width={1000}
-              height={670}
-              loading="lazy"
-              className="h-auto w-full max-w-[420px]"
-            />
+            <Lockup size="lg" className="text-ink" />
           </figure>
           <div>
             <h2 className="max-w-[20ch] text-2xl font-semibold leading-[1.06] tracking-tighter text-ink md:text-3xl">
@@ -86,8 +80,8 @@ function About() {
             </h2>
             <p className="mt-4 max-w-[56ch] text-base leading-relaxed text-muted">
               The mark has been on the vans, the invoices and the shopfront since the beginning, so it was rebuilt rather
-              than replaced. The basket keeps its grid, which now reads as a wall of camera feeds, and the teal to indigo
-              is the same pair of colors people already know us by.
+              than replaced. Same cart, same three stacked words, same blues. The basket keeps its grid, which now doubles
+              as a wall of camera feeds.
             </p>
           </div>
         </section>
