@@ -69,11 +69,15 @@ export function CheckoutCta({ disabled = false }: { disabled?: boolean }) {
       aria-disabled={disabled}
       tabIndex={disabled ? -1 : undefined}
       className={`group inline-flex h-12 w-full items-center justify-center gap-3 px-7 text-sm font-medium transition-transform duration-150 sm:w-auto ${
-        disabled ? "pointer-events-none bg-line text-muted" : "bg-ink text-surface active:scale-[0.98]"
+        disabled
+          ? "pointer-events-none border border-line bg-transparent text-muted"
+          : "bg-ink text-surface active:scale-[0.98]"
       }`}
     >
-      <span className="h-2 w-2 bg-muted transition-colors duration-200 group-hover:bg-signal" />
-      <span>Place the order</span>
+      {disabled ? null : (
+        <span className="h-2 w-2 bg-white/40 transition-colors duration-200 group-hover:bg-teal" />
+      )}
+      <span>{disabled ? "Add something first" : "Place the order"}</span>
     </Link>
   );
 }

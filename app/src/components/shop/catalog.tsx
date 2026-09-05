@@ -108,14 +108,10 @@ export function CatalogBody({
 
         {products.length === 0 ? (
           <div className="border border-line bg-surface p-10 text-center">
-            <img
-              src="/assets/empty-box.png"
-              alt=""
-              width={1168}
-              height={880}
-              className="mx-auto h-40 w-auto object-contain"
-            />
-            <p className="mt-6 text-base text-ink">{emptyNote ?? "Nothing in this category yet."}</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Out of stock</p>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-ink">
+              {emptyNote ?? "Nothing in this category yet."}
+            </p>
             <p className="mt-2 text-sm text-muted">Call the shop and we will tell you what we can order in.</p>
           </div>
         ) : (

@@ -3,6 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCart } from "../components/site/cart-context";
 import { SiteShell } from "../components/site/chrome";
 import { CheckoutCta } from "../components/site/cta";
+import { Mark } from "../components/site/mark";
 import { Shell } from "../components/site/section";
 import { ORIGIN, SITE, money } from "../lib/site";
 
@@ -75,14 +76,8 @@ function CartBody() {
               <Skeleton />
             ) : lines.length === 0 ? (
               <div className="border border-line bg-surface p-10 text-center">
-                <img
-                  src="/assets/empty-box.png"
-                  alt=""
-                  width={1168}
-                  height={880}
-                  className="mx-auto h-44 w-auto object-contain"
-                />
-                <p className="mt-6 text-base text-ink">Nothing in the cart yet.</p>
+                <Mark empty className="mx-auto h-24 w-[110px] text-ink" />
+                <p className="mt-7 text-base text-ink">Nothing in the cart yet.</p>
                 <p className="mt-2 text-sm text-muted">Start with the cameras, or tell us the building and we will spec it.</p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
                   <Link to="/shop" className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]">

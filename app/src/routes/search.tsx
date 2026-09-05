@@ -65,8 +65,8 @@ function SearchPage() {
           <p className="text-sm text-muted">Type at least two characters to search the catalog.</p>
         ) : products.length === 0 ? (
           <div className="border border-line bg-surface p-10 text-center">
-            <img src="/assets/empty-box.png" alt="" width={1168} height={880} className="mx-auto h-40 w-auto object-contain" />
-            <p className="mt-6 text-base text-ink">Nothing matched &ldquo;{q}&rdquo;.</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">No match</p>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-ink">Nothing matched &ldquo;{q}&rdquo;.</p>
             <p className="mt-2 text-sm text-muted">
               Try a shorter term, or{" "}
               <Link to="/shop" className="text-ink underline underline-offset-4 hover:text-signal">
