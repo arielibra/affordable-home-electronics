@@ -40,7 +40,7 @@ export function CallCta({ phone, href }: { phone: string; href: string }) {
 /** Installation band: signal field, white label, arrow steps right. */
 export function QuoteCta({ children = "Get a quote", href }: { children?: ReactNode; href?: string }) {
   const cls =
-    "group inline-flex h-12 items-center gap-3 bg-signal px-7 text-sm font-medium text-white transition-transform duration-150 active:scale-[0.98]";
+    "group inline-flex h-12 items-center gap-3 bg-teal px-7 text-sm font-semibold text-[#0d2338] transition-transform duration-150 active:scale-[0.98]";
   const inner = (
     <>
       <span>{children}</span>

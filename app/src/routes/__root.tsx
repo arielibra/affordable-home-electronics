@@ -50,7 +50,7 @@ function buildHead(meta: AppMeta) {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title },
       { name: "description", content: description },
-      { name: "theme-color", content: "#0e1b33" },
+      { name: "theme-color", content: "#1f66b8" },
       { property: "og:site_name", content: DEFAULT_TITLE },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

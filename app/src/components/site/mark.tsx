@@ -9,8 +9,8 @@ export function Mark({ className = "h-7 w-8" }: { className?: string }) {
     <svg viewBox="0 0 32 28" className={className} aria-hidden="true" fill="none">
       <defs>
         <linearGradient id="aheBasket" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#35a8c6" />
-          <stop offset="1" stopColor="#1552b0" />
+          <stop offset="0" stopColor="#3fb0d8" />
+          <stop offset="1" stopColor="#1f66b8" />
         </linearGradient>
       </defs>
 

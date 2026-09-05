@@ -41,7 +41,7 @@ export function InstallBand() {
   }
 
   return (
-    <section id="quote" className="bg-ink py-16 text-surface lg:py-20">
+    <section id="quote" className="bg-band py-16 text-surface lg:py-20">
       <Shell className="grid gap-12 lg:grid-cols-[1fr_460px] lg:gap-16">
         <div>
           <h2 className="max-w-[17ch] text-3xl font-semibold leading-[1.02] tracking-tighter md:text-4xl">

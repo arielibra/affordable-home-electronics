@@ -118,15 +118,16 @@
  * app/design-brief.md (the monitor wall).
  * ------------------------------------------------------------------------ */
 @theme {
-  --color-ground: #f2f5fa;
+  --color-ground: #f3f8fd;
   --color-surface: #ffffff;
-  --color-ink: #0e1b33;
-  --color-ink-soft: #1b2b48;
-  --color-muted: #5b6b85;
-  --color-line: #d5dde9;
-  --color-line-dark: #22344f;
-  --color-signal: #1552b0;
-  --color-teal: #35a8c6;
+  --color-ink: #1b3a5c;
+  --color-ink-soft: #2b527c;
+  --color-muted: #4f6b8a;
+  --color-line: #cfdfef;
+  --color-line-dark: #4a86c9;
+  --color-band: #1f66b8;
+  --color-signal: #1f66b8;
+  --color-teal: #3fb0d8;
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
 }

@@ -22,7 +22,7 @@ export function WhyBuy() {
             />
           </figure>
 
-          <div className="bg-ink p-7 text-surface lg:col-span-2">
+          <div className="bg-band p-7 text-surface lg:col-span-2">
             <h3 className="text-xl font-semibold tracking-tight">Authorized dealer for everything we list</h3>
             <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-white/65">
               Genuine USA retail product with the full manufacturer warranty. Not grey market, not open box, not

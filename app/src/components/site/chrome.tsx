@@ -26,7 +26,7 @@ function Header() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ground/95 backdrop-blur">
-      <div className="border-b border-line bg-ink text-surface">
+      <div className="border-b border-line bg-band text-surface">
         <div className="mx-auto flex h-9 max-w-[1240px] items-center justify-between gap-4 px-5 font-mono text-[11px] tracking-tight">
           <span className="truncate">Authorized dealer. Full USA warranty on every item.</span>
           <a href={SITE.phoneHref} className="shrink-0 hover:text-signal">
@@ -109,7 +109,7 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
 
 function Footer() {
   return (
-    <footer className="mt-24 bg-ink text-surface">
+    <footer className="mt-24 bg-band text-surface">
       <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
