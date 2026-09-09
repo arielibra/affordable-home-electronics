@@ -11,10 +11,24 @@ export type CardProduct = {
   price_cents: number;
   msrp_cents: number | null;
   image: string;
+  stock?: number;
+  stock_tracked?: number;
 };
 
+export function isAvailable(p: { stock?: number; stock_tracked?: number }): boolean {
+  return !p.stock_tracked || (p.stock ?? 0) > 0;
+}
+
 /** Bespoke chrome: a hairline box whose label swaps to a mono confirmation. */
-export function AddToCartButton({ slug, block = true }: { slug: string; block?: boolean }) {
+export function AddToCartButton({
+  slug,
+  block = true,
+  soldOut = false,
+}: {
+  slug: string;
+  block?: boolean;
+  soldOut?: boolean;
+}) {
   const { add } = useCart();
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
 
@@ -27,6 +41,18 @@ export function AddToCartButton({ slug, block = true }: { slug: string; block?: 
     } catch {
       setState("idle");
     }
+  }
+
+  if (soldOut) {
+    return (
+      <span
+        className={`inline-flex h-11 items-center justify-center border border-line bg-transparent text-sm font-medium text-muted ${
+          block ? "w-full" : "px-8"
+        }`}
+      >
+        Out of stock
+      </span>
+    );
   }
 
   return (
@@ -49,10 +75,15 @@ export function AddToCartButton({ slug, block = true }: { slug: string; block?: 
 
 export function ProductCard({ p }: { p: CardProduct }) {
   const save = savings(p.price_cents, p.msrp_cents);
+  const available = isAvailable(p);
   return (
-    <article className="group flex flex-col border border-line bg-surface">
+    <article className={`group flex flex-col border border-line bg-surface ${available ? "" : "opacity-75"}`}>
       <Link to="/p/$slug" params={{ slug: p.slug }} className="relative block bg-white p-6">
-        {save ? (
+        {!available ? (
+          <span className="absolute left-0 top-0 bg-ink px-2 py-1 font-mono text-[11px] leading-none text-white">
+            Out of stock
+          </span>
+        ) : save ? (
           <span className="absolute left-0 top-0 bg-signal px-2 py-1 font-mono text-[11px] leading-none text-white">
             Save {save}%
           </span>
@@ -80,7 +111,7 @@ export function ProductCard({ p }: { p: CardProduct }) {
           ) : null}
         </div>
         <div className="mt-4">
-          <AddToCartButton slug={p.slug} />
+          <AddToCartButton slug={p.slug} soldOut={!available} />
         </div>
       </div>
     </article>

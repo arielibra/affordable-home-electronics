@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../../lib/bindings.server";
-import { cartLines } from "../../lib/store.server";
+import { cartLines, unavailableInCart } from "../../lib/store.server";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, stripePost } from "../../lib/stripe.server";
 
 type Session = { id: string; url: string };
@@ -29,6 +29,20 @@ export const Route = createFileRoute("/api/checkout")({
         const lines = await cartLines(cartId);
         if (lines.length === 0) {
           return Response.json({ ok: false, error: "Your cart is empty." }, { status: 400 });
+        }
+
+        const gone = await unavailableInCart(cartId);
+        if (gone.length > 0) {
+          return Response.json(
+            {
+              ok: false,
+              error:
+                gone.length === 1
+                  ? `${gone[0]} sold out while it was in your cart. Remove it and try again, or call the shop.`
+                  : `${gone.length} items in your cart are no longer available. Please review the cart.`,
+            },
+            { status: 409 },
+          );
         }
 
         const origin = new URL(request.url).origin;

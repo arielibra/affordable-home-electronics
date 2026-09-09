@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../../lib/bindings.server";
-import { cartLines, clearCart } from "../../lib/store.server";
+import { cartLines, clearCart, decrementStock } from "../../lib/store.server";
 import { verifyStripeSignature, webhookSecret } from "../../lib/stripe.server";
 
 type SessionEvent = {
@@ -101,6 +101,7 @@ export const Route = createFileRoute("/api/stripe-webhook")({
               "INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)",
             );
             await DB.batch(lines.map((l) => stmt.bind(orderId, l.slug, l.name, l.qty, l.price_cents)));
+            await decrementStock(lines.map((l) => ({ slug: l.slug, qty: l.qty })));
           }
           await clearCart(cartId);
         }

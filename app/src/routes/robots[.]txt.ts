@@ -8,6 +8,11 @@ export const Route = createFileRoute('/robots.txt')({
         const body = [
           'User-agent: *',
           'Allow: /',
+          'Disallow: /admin',
+          'Disallow: /api/',
+          'Disallow: /cart',
+          'Disallow: /checkout',
+          'Disallow: /order-confirmed',
           '',
           `Sitemap: ${origin}/sitemap.xml`,
         ].join('\n')

@@ -2,7 +2,7 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 
 import { SiteShell } from "../../components/site/chrome";
 import { IconShield, IconTruck } from "../../components/site/icons";
-import { AddToCartButton, ProductCard } from "../../components/site/product-card";
+import { AddToCartButton, ProductCard, isAvailable } from "../../components/site/product-card";
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
@@ -30,6 +30,7 @@ function ProductPage() {
   const { product, related, categoryName } = Route.useLoaderData();
   if (!product) return null;
   const save = savings(product.price_cents, product.msrp_cents);
+  const available = isAvailable(product);
 
   return (
     <SiteShell>
@@ -72,7 +73,17 @@ function ProductPage() {
           </div>
 
           <div className="mt-6 max-w-[380px]">
-            <AddToCartButton slug={product.slug} />
+            <AddToCartButton slug={product.slug} soldOut={!available} />
+            {available && product.stock_tracked === 1 && product.stock <= 3 ? (
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-signal">
+                Only {product.stock} left
+              </p>
+            ) : null}
+            {!available ? (
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                Call the shop and we will tell you when the next shipment lands, or find you an equivalent.
+              </p>
+            ) : null}
           </div>
 
           <dl className="mt-10 border-t border-line">
