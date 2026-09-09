@@ -144,6 +144,11 @@ function Footer() {
               Search by part number
             </Link>
           </li>
+          <li>
+            <Link to="/orders" className="ahe-onblue">
+              Track an order
+            </Link>
+          </li>
         </FooterColumn>
 
         <FooterColumn title="Company">

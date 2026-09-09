@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityCamerasRouteImport } from './routes/security-cameras'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -26,6 +27,7 @@ import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopCategoryRouteImport } from './routes/shop/$category'
 import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
+import { Route as ApiOrderLookupRouteImport } from './routes/api/order-lookup'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
@@ -52,6 +54,11 @@ const SearchRoute = SearchRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrderConfirmedRoute = OrderConfirmedRouteImport.update({
@@ -119,6 +126,11 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   path: '/api/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOrderLookupRoute = ApiOrderLookupRouteImport.update({
+  id: '/api/order-lookup',
+  path: '/api/order-lookup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   id: '/api/checkout',
   path: '/api/checkout',
@@ -165,11 +177,13 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
   '/order-confirmed': typeof OrderConfirmedRoute
+  '/orders': typeof OrdersRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
@@ -191,11 +205,13 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
   '/order-confirmed': typeof OrderConfirmedRoute
+  '/orders': typeof OrdersRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
@@ -218,11 +234,13 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
   '/order-confirmed': typeof OrderConfirmedRoute
+  '/orders': typeof OrdersRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
@@ -246,11 +264,13 @@ export interface FileRouteTypes {
     | '/contact'
     | '/installation'
     | '/order-confirmed'
+    | '/orders'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
     | '/sitemap.xml'
     | '/api/checkout'
+    | '/api/order-lookup'
     | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
@@ -272,11 +292,13 @@ export interface FileRouteTypes {
     | '/contact'
     | '/installation'
     | '/order-confirmed'
+    | '/orders'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
     | '/sitemap.xml'
     | '/api/checkout'
+    | '/api/order-lookup'
     | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
@@ -298,11 +320,13 @@ export interface FileRouteTypes {
     | '/contact'
     | '/installation'
     | '/order-confirmed'
+    | '/orders'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
     | '/sitemap.xml'
     | '/api/checkout'
+    | '/api/order-lookup'
     | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
@@ -325,11 +349,13 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   InstallationRoute: typeof InstallationRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
+  OrdersRoute: typeof OrdersRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SecurityCamerasRoute: typeof SecurityCamerasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
+  ApiOrderLookupRoute: typeof ApiOrderLookupRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   PSlugRoute: typeof PSlugRoute
   ShopCategoryRoute: typeof ShopCategoryRoute
@@ -370,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/order-confirmed': {
@@ -463,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/order-lookup': {
+      id: '/api/order-lookup'
+      path: '/api/order-lookup'
+      fullPath: '/api/order-lookup'
+      preLoaderRoute: typeof ApiOrderLookupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout': {
       id: '/api/checkout'
       path: '/api/checkout'
@@ -525,11 +565,13 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   InstallationRoute: InstallationRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
+  OrdersRoute: OrdersRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SecurityCamerasRoute: SecurityCamerasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
+  ApiOrderLookupRoute: ApiOrderLookupRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   PSlugRoute: PSlugRoute,
   ShopCategoryRoute: ShopCategoryRoute,

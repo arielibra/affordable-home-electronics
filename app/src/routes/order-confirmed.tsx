@@ -121,6 +121,14 @@ function Confirmed() {
           className="mt-10 h-44 w-auto object-contain"
         />
 
+        <p className="mt-8 max-w-[58ch] text-sm leading-relaxed text-muted">
+          You can check this order any time at{" "}
+          <Link to="/orders" className="text-ink underline underline-offset-4 hover:text-signal">
+            the order tracker
+          </Link>
+          , using the reference above and your email. No account needed.
+        </p>
+
         <div className="mt-8 flex flex-wrap gap-3">
           <Link to="/shop" className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]">
             Keep browsing
