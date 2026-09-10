@@ -2,15 +2,17 @@
  * What the shop accepts, shown wherever a customer is deciding whether to
  * trust the checkout.
  *
- * The marks are set as type rather than drawn. Every card network publishes
- * its own acceptance mark and requires merchants to use that artwork
- * unmodified — a redrawn Visa or Mastercard is a brand violation, not a
- * shortcut. Once the official files are downloaded into app/public/pay/
- * (see brand/payment-marks/README.md), flip OFFICIAL_MARKS and the same
- * component renders the real artwork in the same slots.
+ * The artwork lives in app/public/pay/ and is never drawn here — see
+ * app/public/pay/SOURCES.md for where each file came from and what its licence
+ * is. Card networks require merchants to use their supplied acceptance mark
+ * unmodified, so replacing one of these later means dropping in a new file
+ * under the same name and changing nothing else.
+ *
+ * Setting OFFICIAL_MARKS back to false falls through to type-only tiles, which
+ * is the right behaviour if a file ever goes missing.
  */
 
-export const OFFICIAL_MARKS = false;
+export const OFFICIAL_MARKS = true;
 
 type Mark = { key: string; label: string; short?: string };
 
@@ -33,9 +35,9 @@ function Tile({ mark }: { mark: Mark }) {
       <img
         src={`/pay/${mark.key}.svg`}
         alt={mark.label}
-        height={26}
+        height={28}
         loading="lazy"
-        className="h-[26px] w-auto rounded-[3px] bg-white"
+        className="h-[28px] w-auto rounded-[4px]"
       />
     );
   }

@@ -430,8 +430,8 @@ function CheckoutBody() {
           </p>
           <div className="mt-6 border-t border-line pt-5">
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Accepted here</p>
-            <div className="mt-3 [&_span.font-mono]:hidden">
-              <PayMarks label={null} className="[&_li_span]:border [&_li_span]:border-line" />
+            <div className="mt-3">
+              <PayMarks label={null} />
             </div>
           </div>
         </aside>
