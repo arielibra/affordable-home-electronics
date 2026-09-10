@@ -17,6 +17,7 @@ import {
   setCartQty,
 } from "../store.server";
 import { bindings } from "../bindings.server";
+import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
 
 const id = z.string().min(8).max(64);
@@ -143,8 +144,14 @@ export const submitQuote = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/** Which ways of paying are actually switched on right now. The checkout page
+ *  offers exactly what this reports and nothing more, so a missing secret shows
+ *  up as one fewer button rather than a broken one. */
 export const getCheckoutConfig = createServerFn({ method: "GET" }).handler(async () => ({
   payments: paymentsEnabled(),
+  paypal: paypalEnabled(),
+  paypalClientId: paypalClientId(),
+  paypalLive: paypalLive(),
   shippingFlatCents: SHIPPING_FLAT_CENTS,
   freeShippingOverCents: FREE_SHIPPING_THRESHOLD_CENTS,
 }));
