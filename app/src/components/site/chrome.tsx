@@ -5,6 +5,7 @@ import { NAV, SITE } from "../../lib/site";
 import { CartProvider, useCart } from "./cart-context";
 import { IconCart, IconMail, IconPhone, IconPin, IconSearch } from "./icons";
 import { Mark } from "./mark";
+import { PayMarks } from "./pay-marks";
 
 function CartLink() {
   const { count, ready } = useCart();
