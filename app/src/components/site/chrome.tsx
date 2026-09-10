@@ -199,6 +199,12 @@ function Footer() {
       </div>
 
       <div className="border-t border-line-dark">
+        <div className="mx-auto max-w-[1240px] px-5 py-6">
+          <PayMarks />
+        </div>
+      </div>
+
+      <div className="border-t border-line-dark">
         <div className="mx-auto flex max-w-[1240px] flex-col gap-2 px-5 py-6 font-mono text-[11px] text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <span>
             Copyright {SITE.since} to {new Date().getFullYear()} Affordable Home Electronics

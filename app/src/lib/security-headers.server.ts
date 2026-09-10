@@ -15,12 +15,16 @@ export function applySecurityHeaders(response: Response): Response {
   headers.set(
     'Content-Security-Policy',
     "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline'; " +
+      // PayPal's button is an iframe served from paypal.com and loaded by a
+    // script from paypalobjects.com. Without these three the button renders
+    // as an empty box with nothing in the console to explain why.
+    "script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.paypalobjects.com https://www.sandbox.paypal.com; " +
+      "frame-src https://www.paypal.com https://www.sandbox.paypal.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
       "img-src 'self' data: https:; media-src 'self' https:; " +
       "connect-src 'self' https:; " +
-      "base-uri 'self'; form-action 'self'",
+      "base-uri 'self'; form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com",
   );
   headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   headers.set('X-Content-Type-Options', 'nosniff');
