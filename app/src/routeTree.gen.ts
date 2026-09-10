@@ -27,8 +27,11 @@ import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopCategoryRouteImport } from './routes/shop/$category'
 import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
+import { Route as ApiPaypalWebhookRouteImport } from './routes/api/paypal-webhook'
 import { Route as ApiOrderLookupRouteImport } from './routes/api/order-lookup'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
+import { Route as ApiPaypalCreateRouteImport } from './routes/api/paypal/create'
+import { Route as ApiPaypalCaptureRouteImport } from './routes/api/paypal/capture'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
@@ -126,6 +129,11 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   path: '/api/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPaypalWebhookRoute = ApiPaypalWebhookRouteImport.update({
+  id: '/api/paypal-webhook',
+  path: '/api/paypal-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOrderLookupRoute = ApiOrderLookupRouteImport.update({
   id: '/api/order-lookup',
   path: '/api/order-lookup',
@@ -134,6 +142,16 @@ const ApiOrderLookupRoute = ApiOrderLookupRouteImport.update({
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   id: '/api/checkout',
   path: '/api/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaypalCreateRoute = ApiPaypalCreateRouteImport.update({
+  id: '/api/paypal/create',
+  path: '/api/paypal/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaypalCaptureRoute = ApiPaypalCaptureRouteImport.update({
+  id: '/api/paypal/capture',
+  path: '/api/paypal/capture',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminSessionRoute = ApiAdminSessionRouteImport.update({
@@ -184,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
+  '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
@@ -194,6 +213,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/paypal/capture': typeof ApiPaypalCaptureRoute
+  '/api/paypal/create': typeof ApiPaypalCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -212,6 +233,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
+  '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
@@ -222,6 +244,8 @@ export interface FileRoutesByTo {
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/paypal/capture': typeof ApiPaypalCaptureRoute
+  '/api/paypal/create': typeof ApiPaypalCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,6 +265,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
+  '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/p/$slug': typeof PSlugRoute
   '/shop/$category': typeof ShopCategoryRoute
@@ -251,6 +276,8 @@ export interface FileRoutesById {
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/paypal/capture': typeof ApiPaypalCaptureRoute
+  '/api/paypal/create': typeof ApiPaypalCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,6 +298,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/checkout'
     | '/api/order-lookup'
+    | '/api/paypal-webhook'
     | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
@@ -281,6 +309,8 @@ export interface FileRouteTypes {
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/session'
+    | '/api/paypal/capture'
+    | '/api/paypal/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -299,6 +329,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/checkout'
     | '/api/order-lookup'
+    | '/api/paypal-webhook'
     | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
@@ -309,6 +340,8 @@ export interface FileRouteTypes {
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/session'
+    | '/api/paypal/capture'
+    | '/api/paypal/create'
   id:
     | '__root__'
     | '/'
@@ -327,6 +360,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/checkout'
     | '/api/order-lookup'
+    | '/api/paypal-webhook'
     | '/api/stripe-webhook'
     | '/p/$slug'
     | '/shop/$category'
@@ -337,6 +371,8 @@ export interface FileRouteTypes {
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/session'
+    | '/api/paypal/capture'
+    | '/api/paypal/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -356,6 +392,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   ApiOrderLookupRoute: typeof ApiOrderLookupRoute
+  ApiPaypalWebhookRoute: typeof ApiPaypalWebhookRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   PSlugRoute: typeof PSlugRoute
   ShopCategoryRoute: typeof ShopCategoryRoute
@@ -366,6 +403,8 @@ export interface RootRouteChildren {
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
+  ApiPaypalCaptureRoute: typeof ApiPaypalCaptureRoute
+  ApiPaypalCreateRoute: typeof ApiPaypalCreateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -496,6 +535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/paypal-webhook': {
+      id: '/api/paypal-webhook'
+      path: '/api/paypal-webhook'
+      fullPath: '/api/paypal-webhook'
+      preLoaderRoute: typeof ApiPaypalWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/order-lookup': {
       id: '/api/order-lookup'
       path: '/api/order-lookup'
@@ -508,6 +554,20 @@ declare module '@tanstack/react-router' {
       path: '/api/checkout'
       fullPath: '/api/checkout'
       preLoaderRoute: typeof ApiCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/paypal/create': {
+      id: '/api/paypal/create'
+      path: '/api/paypal/create'
+      fullPath: '/api/paypal/create'
+      preLoaderRoute: typeof ApiPaypalCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/paypal/capture': {
+      id: '/api/paypal/capture'
+      path: '/api/paypal/capture'
+      fullPath: '/api/paypal/capture'
+      preLoaderRoute: typeof ApiPaypalCaptureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/session': {
@@ -572,6 +632,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   ApiOrderLookupRoute: ApiOrderLookupRoute,
+  ApiPaypalWebhookRoute: ApiPaypalWebhookRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   PSlugRoute: PSlugRoute,
   ShopCategoryRoute: ShopCategoryRoute,
@@ -582,6 +643,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
+  ApiPaypalCaptureRoute: ApiPaypalCaptureRoute,
+  ApiPaypalCreateRoute: ApiPaypalCreateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
