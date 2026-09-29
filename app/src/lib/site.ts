@@ -1,4 +1,19 @@
-export const ORIGIN = "https://affordable-home-electronics.higgsfield.app";
+/**
+ * The site's public address. Canonical links, social images, the sitemap and
+ * the structured data all hang off this, so it has to be the address customers
+ * and Google actually see — not whichever host happened to build it.
+ *
+ * Set VITE_SITE_URL at build time to override. The fallback is the real
+ * domain, so a forgotten variable points somewhere correct rather than at a
+ * temporary preview host.
+ */
+const CONFIGURED_ORIGIN = import.meta.env.VITE_SITE_URL as string | undefined;
+
+export const ORIGIN = (
+  CONFIGURED_ORIGIN && CONFIGURED_ORIGIN.trim()
+    ? CONFIGURED_ORIGIN.trim()
+    : "https://affordablehomeelectronics.com"
+).replace(/\/+$/, "");
 
 export const SITE = {
   name: "Affordable Home Electronics",
@@ -14,7 +29,6 @@ export const SITE = {
   street: "62-65 Saunders Street",
   cityLine: "Rego Park, NY 11374",
   areas: ["Rego Park", "Forest Hills", "Elmhurst", "Jackson Heights", "Astoria", "The Bronx", "Manhattan", "Brooklyn"],
-  legacyStore: "https://affordablehomeelectronics.com",
 } as const;
 
 export function money(cents: number): string {

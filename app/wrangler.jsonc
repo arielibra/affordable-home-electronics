@@ -3,11 +3,9 @@
 
   // Cloudflare Workers deploy config for Affordable Home Electronics.
   //
-  // Two values must be filled in before the first deploy:
-  //   1. "database_id" below, from the D1 database you create in the Cloudflare
-  //      dashboard (Storage & Databases -> D1 -> Create). Copy the Database ID.
-  //   2. Nothing else. The account id and API token live in GitHub secrets,
-  //      never in this file.
+  // The D1 database id below is filled in and points at the real database.
+  // It is an address, not a secret. The account id and API token live in
+  // GitHub secrets and never in this file.
 
   "name": "affordable-home-electronics",
 
@@ -33,7 +31,7 @@
     {
       "binding": "DB",
       "database_name": "affordable-home-electronics-db",
-      "database_id": "PASTE_YOUR_D1_DATABASE_ID_HERE",
+      "database_id": "ff2529fe-4ff5-42c4-9b0d-2c37185deeda",
       "migrations_dir": "migrations"
     }
   ],

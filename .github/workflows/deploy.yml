@@ -25,6 +25,10 @@ jobs:
 
       - name: Build
         run: bun run build
+        env:
+          # The address customers see, baked into canonicals, the sitemap and
+          # the social cards. Change it here and nowhere else.
+          VITE_SITE_URL: https://affordablehomeelectronics.com
 
       # Applies any new files in app/migrations that have not run yet.
       # Safe to run on every deploy: already-applied migrations are skipped.

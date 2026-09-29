@@ -168,11 +168,6 @@ function Footer() {
               Contact
             </Link>
           </li>
-          <li>
-            <a href={`${SITE.legacyStore}/index.asp?PageAction=Custom&ID=4`} className="ahe-onblue">
-              Store policies
-            </a>
-          </li>
         </FooterColumn>
 
         <FooterColumn title="Reach us">
