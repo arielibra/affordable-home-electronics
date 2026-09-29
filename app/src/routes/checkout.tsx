@@ -126,18 +126,18 @@ function CheckoutBody() {
       return;
     }
     const el = document.createElement("script");
-    // Only `card` is disabled here: Stripe already handles cards, and two card
-    // paths is two places for an order to go wrong.
-    //
-    // Pay Later is NOT disabled here, deliberately. Adding it to this list
-    // made the SDK refuse to load at all and the button vanished, which is
-    // what happens when a funding source is named that the account is not
-    // enabled for. Turn Pay Later off in the PayPal account settings instead,
-    // where it can be switched without risking the whole button.
-    el.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(cfg.paypalClientId)}&currency=USD&intent=capture&disable-funding=card`;
+    // disable-funding trims what PayPal offers inside its own button:
+    //   card     — Stripe already handles cards, and two card paths is two
+    //              places for an order to go wrong.
+    //   paylater — buy now pay later. The shop does not offer credit, which is
+    //              the same call that took Klarna and Affirm off Stripe.
+    el.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(cfg.paypalClientId)}&currency=USD&intent=capture&disable-funding=card,paylater`;
     el.async = true;
     el.onload = () => setSdk(true);
-    el.onerror = () => setError("PayPal did not load. Use a card, or call the shop and we will take the order.");
+    el.onerror = () =>
+      setError(
+        "PayPal did not load, so that option is unavailable right now. Pay by card instead, or call the shop and we will take the order over the phone.",
+      );
     document.body.appendChild(el);
   }, [method, cfg.paypal, cfg.paypalClientId]);
 
