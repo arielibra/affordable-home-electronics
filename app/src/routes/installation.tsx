@@ -74,6 +74,32 @@ function Installation() {
         </Shell>
       </section>
 
+      <Shell className="py-16">
+        <div className="max-w-[62ch]">
+          <Eyebrow>Older systems</Eyebrow>
+          <h2 className="mt-5 text-3xl font-semibold leading-[1.04] tracking-tighter text-ink md:text-4xl">
+            We still work on tape.
+          </h2>
+          <p className="mt-6 text-base leading-relaxed text-muted">
+            Time-lapse recorders, VCR-based systems, the multiplexers that sat beside them. Plenty of buildings in
+            Queens still have one running in a closet, and most installers stopped touching them years ago.
+          </p>
+          <p className="mt-4 text-base leading-relaxed text-muted">
+            We supply and service them, and we carry a warranty on the parts that actually fail: six months on heads
+            and capstan motors, a year on the rest. If you would rather keep a system that works than replace one that
+            does, call the shop on{" "}
+            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
+              {SITE.phone}
+            </a>
+            .
+          </p>
+          <p className="mt-4 text-base leading-relaxed text-muted">
+            And when the tape system finally does have to go, we can tell you honestly what it takes to move that
+            building to digital — including which cable runs you already have that can be reused.
+          </p>
+        </div>
+      </Shell>
+
       <InstallBand />
     </SiteShell>
   );
