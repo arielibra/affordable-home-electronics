@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { undeliverableReason } from "../../lib/address";
 import { bindings } from "../../lib/bindings.server";
 import { cartLines, clearCart, decrementStock } from "../../lib/store.server";
 import { verifyStripeSignature, webhookSecret } from "../../lib/stripe.server";
@@ -70,10 +71,29 @@ export const Route = createFileRoute("/api/stripe-webhook")({
             .run();
         }
 
+        // Stripe collects the shipping address on its own page, so a PO box or
+        // an APO cannot be refused before the card is charged the way it is on
+        // our own form. The money is taken and the parcel is undeliverable.
+        //
+        // So the order is still recorded as paid — it is paid — but it lands in
+        // On hold with the reason spelled out, instead of sitting in the Paid
+        // queue looking ready to pack. The shop finds out when the order
+        // arrives rather than at the counter with a label half printed.
+        const undeliverable = undeliverableReason({
+          address1: addr.line1 ?? "",
+          address2: addr.line2 ?? "",
+          city: addr.city ?? "",
+          state: addr.state ?? "",
+        });
+        const status = undeliverable ? "on_hold" : "paid";
+        const hold = undeliverable
+          ? "Customer gave an address UPS cannot deliver to. Call them for a street address before shipping."
+          : "";
+
         await DB.prepare(
           `UPDATE orders SET name=?2, email=?3, phone=?4, address1=?5, address2=?6, city=?7, state=?8, zip=?9,
              amount_total_cents=?10, shipping_cents=?11, tax_cents=?12, subtotal_cents=?13,
-             stripe_payment_intent=?14, status='paid', paid_at=datetime('now') WHERE id=?1`,
+             stripe_payment_intent=?14, status=?15, hold_reason=?16, paid_at=datetime('now') WHERE id=?1`,
         )
           .bind(
             orderId,
@@ -90,6 +110,8 @@ export const Route = createFileRoute("/api/stripe-webhook")({
             s.total_details?.amount_tax ?? 0,
             s.amount_subtotal ?? 0,
             s.payment_intent ?? "",
+            status,
+            hold,
           )
           .run();
 

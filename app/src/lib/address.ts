@@ -13,7 +13,10 @@
  * well as the box part.
  */
 
-const PO_BOX = /\b(?:p[.\s]*o[.\s]*|post(?:al)?\s+office\s+)box\b/i;
+// `box(?![a-z])` rather than `box\b`, so "PO BOX2231" with no space is caught
+// while "Boxwood Lane" is not. The PO prefix is required either way, so a road
+// genuinely named after a box never reaches this test.
+const PO_BOX = /\b(?:p[.\s]*o[.\s]*|post(?:al)?\s+office\s+)box(?![a-z])/i;
 const BARE_POB = /\bp\.?\s?o\.?\s?b\.?\s?\d/i;
 const MILITARY = /\b(?:apo|fpo|dpo)\b/i;
 
