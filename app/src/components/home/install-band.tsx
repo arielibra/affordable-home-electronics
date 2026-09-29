@@ -34,7 +34,7 @@ export function InstallBand() {
       });
       setDone(true);
     } catch {
-      setError(`That did not send. Call the shop on ${SITE.phone} and we will take the details by phone.`);
+      setError(`That did not send. Email ${SITE.email} and we will take the details that way.`);
     } finally {
       setPending(false);
     }
@@ -72,12 +72,11 @@ export function InstallBand() {
         <div className="border border-line-dark bg-surface p-6 text-ink sm:p-8">
           {done ? (
             <div>
-              <h3 className="text-xl font-semibold tracking-tight">We have it. Expect a call.</h3>
+              <h3 className="text-xl font-semibold tracking-tight">We have it. Expect a reply.</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                Someone from the shop will call you back to walk through the building and give you a number. If you would
-                rather talk now, the shop line is{" "}
-                <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
-                  {SITE.phone}
+                We will come back to you by email to walk through the building and give you a number. If it is easier, email us at{" "}
+                <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
+                  {SITE.email}
                 </a>
                 .
               </p>

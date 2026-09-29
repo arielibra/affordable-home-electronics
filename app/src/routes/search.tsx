@@ -30,7 +30,7 @@ function SearchPage() {
         <Shell>
           <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Find the part.</h1>
           <p className="mt-4 max-w-[58ch] text-base leading-relaxed text-muted">
-            Search by model, part number or brand. If it is not listed, call the shop and we will check what we can order.
+            Search by model, part number or brand. If it is not listed, email us and we will check what we can order.
           </p>
           <form
             className="mt-8 flex max-w-[620px] gap-2"

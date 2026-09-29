@@ -179,8 +179,8 @@ function SignIn({ onIn }: { onIn: () => void }) {
         </form>
         <p className="mt-8 text-sm leading-relaxed text-muted">
           Locked out? The password is held by whoever set up the site. Shop line{" "}
-          <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
-            {SITE.phone}
+          <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
+            {SITE.email}
           </a>
           .
         </p>

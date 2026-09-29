@@ -105,9 +105,9 @@ function Confirmed() {
         ) : (
           <p className="mt-5 text-base leading-relaxed text-muted">
             The payment went through, and the confirmation is taking a moment to reach us. Nothing is lost. If you do not
-            see a receipt by email shortly, call the shop on{" "}
-            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
-              {SITE.phone}
+            see a receipt by email shortly, email us at{" "}
+            <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
+              {SITE.email}
             </a>{" "}
             and we will find it.
           </p>
@@ -133,8 +133,8 @@ function Confirmed() {
           <Link to="/shop" className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]">
             Keep browsing
           </Link>
-          <a href={SITE.phoneHref} className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
-            Call {SITE.phone}
+          <a href={SITE.emailHref} className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
+            Email the shop
           </a>
         </div>
       </div>

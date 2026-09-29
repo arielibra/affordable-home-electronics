@@ -1,34 +1,22 @@
 import { ORIGIN, SITE } from "../../lib/site";
 
+/**
+ * An OnlineStore, not an ElectronicsStore. ElectronicsStore is a LocalBusiness,
+ * which tells Google there is a counter to visit and asks for an address and
+ * opening hours to put on Maps. The shop sells online only, so claiming one
+ * would send people to a door that does not open.
+ */
 const DATA = {
   "@context": "https://schema.org",
-  "@type": "ElectronicsStore",
+  "@type": "OnlineStore",
   name: SITE.name,
   url: ORIGIN,
-  telephone: "+1-718-275-9343",
-  faxNumber: "+1-866-365-7643",
   email: SITE.email,
   foundingDate: String(SITE.since),
   image: `${ORIGIN}/assets/hero-storefront.png`,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: SITE.street,
-    addressLocality: "Rego Park",
-    addressRegion: "NY",
-    postalCode: "11374",
-    addressCountry: "US",
-  },
+  // Installation is a real local service, so the area served is still true
+  // even though there is no address to visit.
   areaServed: SITE.areas.map((a) => ({ "@type": "Place", name: a })),
-  // Google reads this for the opening hours shown in search and on Maps. Wrong
-  // hours here send somebody to Rego Park to find the shutters down.
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: [...SITE.hours.days],
-      opens: SITE.hours.opens,
-      closes: SITE.hours.closes,
-    },
-  ],
   makesOffer: {
     "@type": "Offer",
     itemOffered: {
@@ -36,6 +24,13 @@ const DATA = {
       name: "Security camera supply and installation",
       areaServed: "New York City",
     },
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    email: SITE.email,
+    url: `${ORIGIN}/contact`,
+    availableLanguage: "English",
   },
 };
 

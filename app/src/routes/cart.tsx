@@ -140,8 +140,8 @@ function CartBody() {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted">
               In a hurry? Call{" "}
-              <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
-                {SITE.phone}
+              <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
+                {SITE.email}
               </a>
               .
             </p>

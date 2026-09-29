@@ -24,16 +24,18 @@ export function ShopCta({ category, children = "Shop cameras" }: { category?: st
   );
 }
 
-/** Hero secondary: hairline ghost, mono numerals, fills to surface on hover. */
-export function CallCta({ phone, href }: { phone: string; href: string }) {
+/** Hero secondary: hairline ghost, fills to surface on hover. There is no
+ *  phone number to show, so this sends people to the contact form instead of
+ *  dialling. */
+export function AskCta({ children = "Ask a question" }: { children?: ReactNode }) {
   return (
-    <a
-      href={href}
+    <Link
+      to="/contact"
       className="inline-flex h-12 items-center gap-3 border border-line bg-transparent px-6 text-sm font-medium text-ink transition-colors duration-200 hover:bg-surface active:scale-[0.98]"
     >
-      <span>Call the shop</span>
-      <span className="font-mono text-[13px] tracking-tight text-muted">{phone}</span>
-    </a>
+      <span>{children}</span>
+      <IconArrow className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+    </Link>
   );
 }
 

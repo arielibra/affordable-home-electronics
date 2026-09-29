@@ -12,7 +12,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "An independent electronics dealer in Rego Park, Queens, selling security cameras, recorders and access control since 2003.",
+          "An independent online electronics dealer in Rego Park, Queens, selling security cameras, recorders and access control since 2003.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/about` }],
@@ -27,7 +27,7 @@ function About() {
       <Shell className="py-14">
         <Eyebrow>About</Eyebrow>
         <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
-          A counter in Rego Park, and a warehouse behind it.
+          A warehouse in Rego Park, and twenty-two years of knowing the gear.
         </h1>
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
           <div className="max-w-[62ch] space-y-5 text-base leading-relaxed text-muted">
@@ -48,25 +48,37 @@ function About() {
               all handled the same way.
             </p>
             <p>
-              The website changed. The phone number did not.
+              We sell and support online now &mdash; there is no counter to visit. Everything goes through email, and
+              the same people who have been doing this since {SITE.since} are the ones reading it.
             </p>
             <div className="pt-2">
               <QuoteCta>Ask for a quote</QuoteCta>
             </div>
           </div>
 
-          <figure className="border border-line bg-surface p-2.5">
-            <img
-              src="/assets/counter-shop.png"
-              alt="The shop counter with a desk phone, a binder of spec sheets and a coil of coaxial cable"
-              width={1344}
-              height={752}
-              className="block w-full object-cover"
-            />
-            <figcaption className="px-1 pb-0.5 pt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-              Rego Park, New York 11374
-            </figcaption>
-          </figure>
+          <aside className="border border-line bg-surface p-6 sm:p-8">
+            <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">How we work</h2>
+            <dl className="mt-5 space-y-4 text-sm leading-relaxed">
+              <div>
+                <dt className="font-medium text-ink">Online only</dt>
+                <dd className="mt-1 text-muted">No counter and no walk-in. Orders are placed on the site.</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-ink">Authorized dealer</dt>
+                <dd className="mt-1 text-muted">
+                  Genuine USA stock, sealed, with the full manufacturer warranty.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-medium text-ink">Ships nationwide</dt>
+                <dd className="mt-1 text-muted">United States and Canada, two business days to dispatch.</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-ink">Installed locally</dt>
+                <dd className="mt-1 text-muted">Across New York City, by arrangement.</dd>
+              </div>
+            </dl>
+          </aside>
         </div>
 
         <section className="mt-14 grid gap-8 border-t border-line pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">

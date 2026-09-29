@@ -32,11 +32,11 @@ function Warranty() {
         </p>
       </Clause>
 
-      <Clause title="If something fails, call us">
+      <Clause title="If something fails, email us">
         <p>
-          Whatever the age of the equipment, call the shop first on{" "}
-          <a href={SITE.phoneHref} className="font-mono">
-            {SITE.phone}
+          Whatever the age of the equipment, email us at{" "}
+          <a href={SITE.emailHref} className="font-mono">
+            {SITE.email}
           </a>
           .
         </p>

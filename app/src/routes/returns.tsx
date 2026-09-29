@@ -35,13 +35,17 @@ function Returns() {
         </p>
       </Clause>
 
-      <Clause title="Call first">
+      <Clause title="Ask for an authorization number first">
         <p>
-          Every return needs an <b>authorization number</b>. Call the shop on{" "}
-          <a href={SITE.phoneHref} className="font-mono">
-            {SITE.phone}
+          Every return needs an <b>authorization number</b>. Email us at{" "}
+          <a href={SITE.emailHref} className="font-mono">
+            {SITE.email}
           </a>{" "}
           and we will give you one.
+        </p>
+        <p>
+          <b>The return address comes with that number</b>, so wait for it before you post anything. Sending it to an
+          address you found elsewhere means we may never connect the parcel to your order.
         </p>
         <p>
           Parcels that arrive without a number take much longer to deal with, because we have no way of telling whose
@@ -85,7 +89,7 @@ function Returns() {
 
       <Clause title="Cancelling before it ships">
         <p>
-          Before checkout you can remove anything from your cart. After that, call the shop — if it has not gone out
+          Before checkout you can remove anything from your cart. After that, email us — if it has not gone out
           yet we can usually stop it.
         </p>
         <p>

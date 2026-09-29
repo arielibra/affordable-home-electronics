@@ -112,7 +112,7 @@ export function CatalogBody({
             <p className="mt-4 text-2xl font-semibold tracking-tight text-ink">
               {emptyNote ?? "Nothing in this category yet."}
             </p>
-            <p className="mt-2 text-sm text-muted">Call the shop and we will tell you what we can order in.</p>
+            <p className="mt-2 text-sm text-muted">Email us and we will tell you what we can order in.</p>
           </div>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

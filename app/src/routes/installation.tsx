@@ -87,9 +87,9 @@ function Installation() {
           <p className="mt-4 text-base leading-relaxed text-muted">
             We supply and service them, and we carry a warranty on the parts that actually fail: six months on heads
             and capstan motors, a year on the rest. If you would rather keep a system that works than replace one that
-            does, call the shop on{" "}
-            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
-              {SITE.phone}
+            does, email us at{" "}
+            <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
+              {SITE.email}
             </a>
             .
           </p>

@@ -19,26 +19,19 @@ export const SITE = {
   name: "Affordable Home Electronics",
   short: "AHE",
   since: 2003,
-  phone: "718.275.9343",
-  phoneHref: "tel:+17182759343",
-  whatsapp: "(917) 407-8921",
-  whatsappHref: "https://wa.me/19174078921",
-  fax: "866.365.7643",
   email: "info@AffordableHomeElectronics.com",
   emailHref: "mailto:info@AffordableHomeElectronics.com",
-  street: "62-65 Saunders Street",
-  cityLine: "Rego Park, NY 11374",
+  /** The shop sells and supports online only. There is no published phone
+   *  number, no counter and no opening hours: every route to a person is
+   *  email or the contact form, and the copy has to say so consistently or
+   *  customers are sent looking for something that is not there. */
+  city: "Rego Park, Queens",
+  /** Installation is still a local service, so the neighbourhoods stay —
+   *  they are what the installation page and the structured data advertise. */
   areas: ["Rego Park", "Forest Hills", "Elmhurst", "Jackson Heights", "Astoria", "The Bronx", "Manhattan", "Brooklyn"],
-  /** Sunday to Friday, 9 to 7. Closed Saturday. Stated once here so the contact
-   *  page, the footer and the structured data Google reads can never drift
-   *  apart. 24-hour times because that is what schema.org expects. */
-  hours: {
-    opens: "09:00",
-    closes: "19:00",
-    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    plain: "Sunday to Friday, 9am to 7pm",
-    closed: "Closed Saturday",
-  },
+  /** Quoted in every "we could not do that" message so a stuck customer
+   *  always has somewhere to go. */
+  replyTime: "one business day",
 } as const;
 
 export function money(cents: number): string {
