@@ -94,11 +94,22 @@ export async function relatedProducts(p: Product, limit = 4): Promise<Product[]>
   return r.results ?? [];
 }
 
-export async function listBrands(): Promise<{ brand: string; n: number }[]> {
+export type BrandListing = { brand: string; slug: string; blurb: string; logo: string; n: number };
+
+/** The curated list the shop maintains, in the order they chose, counted by
+ *  what is actually listed. Brands with nothing on the shelf are left out of
+ *  this particular list because the heading above it promises stock. */
+export async function listBrands(): Promise<BrandListing[]> {
   const r = await db()
-    .prepare("SELECT brand, COUNT(*) AS n FROM products WHERE brand <> '' AND active = 1 GROUP BY brand HAVING n > 0 ORDER BY n DESC, brand")
-    .all<{ brand: string; n: number }>();
-  return r.results ?? [];
+    .prepare(
+      `SELECT b.name AS brand, b.slug AS slug, b.blurb AS blurb, b.logo AS logo,
+              (SELECT COUNT(*) FROM products p WHERE p.brand_slug = b.slug AND p.active = 1) AS n
+         FROM brands b
+        WHERE b.active = 1
+        ORDER BY b.position, b.name`,
+    )
+    .all<BrandListing>();
+  return (r.results ?? []).filter((b) => b.n > 0);
 }
 
 export async function cartLines(cartId: string): Promise<CartLine[]> {

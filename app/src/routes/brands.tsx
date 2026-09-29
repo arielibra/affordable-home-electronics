@@ -46,14 +46,22 @@ function Brands() {
         </h2>
         <ul className="grid gap-px border-b border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
           {brands.map((b) => (
-            <li key={b.brand} className="bg-ground">
+            <li key={b.slug} className="bg-ground">
               <Link
                 to="/search"
                 search={{ q: b.brand }}
                 className="flex items-center justify-between gap-4 px-1 py-5 transition-colors hover:bg-surface"
               >
-                <span className="text-base font-medium text-ink">{b.brand}</span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+                <span className="flex min-w-0 items-center gap-3">
+                  {b.logo ? (
+                    <img src={b.logo} alt="" loading="lazy" className="h-8 w-8 shrink-0 object-contain" />
+                  ) : null}
+                  <span className="min-w-0">
+                    <span className="block text-base font-medium text-ink">{b.brand}</span>
+                    {b.blurb ? <span className="mt-0.5 block truncate text-xs text-muted">{b.blurb}</span> : null}
+                  </span>
+                </span>
+                <span className="shrink-0 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                   {b.n} {b.n === 1 ? "item" : "items"}
                 </span>
               </Link>

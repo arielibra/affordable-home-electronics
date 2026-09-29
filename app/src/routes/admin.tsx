@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { BrandsPanel } from "../components/admin/brands-panel";
+import { CatalogPanel } from "../components/admin/catalog-panel";
 import { MessagesPanel } from "../components/admin/messages-panel";
 import { OrdersPanel } from "../components/admin/orders-panel";
 import { StockPanel } from "../components/admin/stock-panel";
@@ -19,11 +21,11 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-type Tab = "stock" | "orders" | "messages";
+type Tab = "catalog" | "stock" | "brands" | "orders" | "messages";
 
 function Admin() {
   const [status, setStatus] = useState<"checking" | "unconfigured" | "out" | "in">("checking");
-  const [tab, setTab] = useState<Tab>("stock");
+  const [tab, setTab] = useState<Tab>("catalog");
 
   useEffect(() => {
     let alive = true;
@@ -91,7 +93,9 @@ function Admin() {
       <div className="mt-6 flex flex-wrap gap-1 border-b border-line">
         {(
           [
-            ["stock", "Stock and prices"],
+            ["catalog", "Products"],
+            ["stock", "Prices and stock"],
+            ["brands", "Brands"],
             ["orders", "Orders"],
             ["messages", "Messages"],
           ] as [Tab, string][]
@@ -111,7 +115,17 @@ function Admin() {
       </div>
 
       <div className="py-8">
-        {tab === "stock" ? <StockPanel /> : tab === "orders" ? <OrdersPanel /> : <MessagesPanel />}
+        {tab === "catalog" ? (
+          <CatalogPanel />
+        ) : tab === "stock" ? (
+          <StockPanel />
+        ) : tab === "brands" ? (
+          <BrandsPanel />
+        ) : tab === "orders" ? (
+          <OrdersPanel />
+        ) : (
+          <MessagesPanel />
+        )}
       </div>
     </Frame>
   );
