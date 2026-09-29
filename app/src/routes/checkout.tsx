@@ -54,16 +54,15 @@ function CheckoutBody() {
 
   const first: Method = cfg.payments ? "card" : cfg.paypal ? "paypal" : "phone";
   const [method, setMethod] = useState<Method>(first);
-  const [pickup, setPickup] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<Done>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
-  const stateRef = useRef({ cartId, pickup });
-  stateRef.current = { cartId, pickup };
+  const stateRef = useRef({ cartId });
+  stateRef.current = { cartId };
 
-  const shipping = pickup || subtotal >= cfg.freeShippingOverCents ? 0 : cfg.shippingFlatCents;
+  const shipping = subtotal >= cfg.freeShippingOverCents ? 0 : cfg.shippingFlatCents;
 
   function details() {
     const f = new FormData(formRef.current ?? undefined);
@@ -102,7 +101,7 @@ function CheckoutBody() {
   async function sendPhoneOrder(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const d0 = details();
-    const bad0 = pickup ? null : undeliverableReason(d0);
+    const bad0 = undeliverableReason(d0);
     if (bad0) {
       setError(bad0);
       return;
@@ -166,7 +165,7 @@ function CheckoutBody() {
       createOrder: async () => {
         const form = formRef.current;
         if (form && !form.reportValidity()) throw new Error("Delivery details are incomplete.");
-        const bad = stateRef.current.pickup ? null : undeliverableReason(details());
+        const bad = undeliverableReason(details());
         if (bad) {
           setError(bad);
           throw new Error(bad);
@@ -174,7 +173,6 @@ function CheckoutBody() {
         setError("");
         const r = await json("/api/paypal/create", {
           cartId: stateRef.current.cartId,
-          pickup: stateRef.current.pickup,
           ...details(),
         });
         if (!r.ok || typeof r.id !== "string") {
@@ -322,20 +320,7 @@ function CheckoutBody() {
 
                 <fieldset className="space-y-4 border-t border-line pt-6">
                   <legend className="sr-only">Where it goes</legend>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Where it goes</h2>
-                    <label className="flex items-center gap-2 text-[13px] text-ink">
-                      <input
-                        type="checkbox"
-                        checked={pickup}
-                        onChange={(e) => setPickup(e.currentTarget.checked)}
-                        className="h-4 w-4 accent-[color:var(--color-signal)]"
-                      />
-                      Pick up in Rego Park instead (free)
-                    </label>
-                  </div>
-                  {!pickup ? (
-                    <>
+                  <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Where it goes</h2>
                       <Field label="Street address" name="address1">
                         <TextInput id="address1" name="address1" required minLength={3} maxLength={160} autoComplete="address-line1" />
                       </Field>
@@ -353,13 +338,7 @@ function CheckoutBody() {
                           <TextInput id="zip" name="zip" required minLength={3} maxLength={16} autoComplete="postal-code" />
                         </Field>
                       </div>
-                    </>
-                  ) : (
-                    <p className="text-sm leading-relaxed text-muted">
-                      Collect from {SITE.street}, {SITE.cityLine}. We will call when it is ready.
-                    </p>
-                  )}
-                </fieldset>
+</fieldset>
               </>
             ) : null}
 
@@ -397,7 +376,7 @@ function CheckoutBody() {
                 </button>
                 <p className="text-[13px] leading-relaxed text-muted">
                   The card page is hosted by Stripe. Your card details never touch this website. You enter the shipping
-                  address and choose delivery or pickup there.
+                  address there.
                 </p>
               </>
             ) : null}
@@ -457,7 +436,7 @@ function CheckoutBody() {
               <span className="font-mono text-ink">{money(subtotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted">{pickup ? "Pickup" : "Shipping"}</span>
+              <span className="text-muted">Shipping</span>
               <span className="font-mono text-ink">{shipping === 0 ? "Free" : money(shipping)}</span>
             </div>
             <div className="flex justify-between">
@@ -466,7 +445,7 @@ function CheckoutBody() {
             </div>
           </div>
           <p className="mt-5 text-[13px] leading-relaxed text-muted">
-            Free shipping over {money(cfg.freeShippingOverCents)}. Pickup in Rego Park is always free.
+            Free shipping over {money(cfg.freeShippingOverCents)}.
           </p>
           <div className="mt-6 border-t border-line pt-5">
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Accepted here</p>

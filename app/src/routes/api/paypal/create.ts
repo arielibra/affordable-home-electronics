@@ -41,18 +41,15 @@ export const Route = createFileRoute("/api/paypal/create")({
           zip: str(body.zip, 16),
           notes: str(body.notes, 900),
         };
-        const pickup = body.pickup === true;
 
         if (!who.name || !who.email || !who.phone) {
           return Response.json({ ok: false, error: "Name, email and phone are all needed." }, { status: 400 });
         }
-        if (!pickup && (!who.address1 || !who.city || !who.state || !who.zip)) {
+        if (!who.address1 || !who.city || !who.state || !who.zip) {
           return Response.json({ ok: false, error: "A full shipping address is needed." }, { status: 400 });
         }
-        if (!pickup) {
-          const bad = undeliverableReason(who);
-          if (bad) return Response.json({ ok: false, error: bad }, { status: 400 });
-        }
+        const bad = undeliverableReason(who);
+        if (bad) return Response.json({ ok: false, error: bad }, { status: 400 });
 
         const DB = bindings().DB;
         if (!DB) return Response.json({ ok: false, error: "The store is unavailable." }, { status: 503 });
@@ -75,36 +72,32 @@ export const Route = createFileRoute("/api/paypal/create")({
         }
 
         const subtotal = lines.reduce((s, l) => s + l.price_cents * l.qty, 0);
-        const shipping = pickup || subtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS;
+        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS;
 
         // PayPal computes no tax of its own, so ask the same engine Stripe
         // Checkout uses and keep both routes reporting into one place.
-        const quote = pickup
-          ? await calculateTax(lines, shipping, { line1: "62-65 Saunders Street", city: "Rego Park", state: "NY", zip: "11374" })
-          : await calculateTax(lines, shipping, {
-              line1: who.address1,
-              line2: who.address2 || undefined,
-              city: who.city,
-              state: who.state,
-              zip: who.zip,
-            });
+        const quote = await calculateTax(lines, shipping, {
+          line1: who.address1,
+          line2: who.address2 || undefined,
+          city: who.city,
+          state: who.state,
+          zip: who.zip,
+        });
         const tax = quote?.taxCents ?? 0;
         const total = subtotal + shipping + tax;
 
-        const shippingBlock = pickup
-          ? undefined
-          : {
-              type: "SHIPPING",
-              name: { full_name: who.name },
-              address: {
-                address_line_1: who.address1,
-                address_line_2: who.address2 || undefined,
-                admin_area_2: who.city,
-                admin_area_1: who.state,
-                postal_code: who.zip,
-                country_code: "US",
-              },
-            };
+        const shippingBlock = {
+          type: "SHIPPING",
+          name: { full_name: who.name },
+          address: {
+            address_line_1: who.address1,
+            address_line_2: who.address2 || undefined,
+            admin_area_2: who.city,
+            admin_area_1: who.state,
+            postal_code: who.zip,
+            country_code: "US",
+          },
+        };
 
         let created: { id: string };
         try {
@@ -139,7 +132,7 @@ export const Route = createFileRoute("/api/paypal/create")({
                   experience_context: {
                     brand_name: "Affordable Home Electronics",
                     user_action: "PAY_NOW",
-                    shipping_preference: pickup ? "NO_SHIPPING" : "SET_PROVIDED_ADDRESS",
+                    shipping_preference: "SET_PROVIDED_ADDRESS",
                   },
                 },
               },

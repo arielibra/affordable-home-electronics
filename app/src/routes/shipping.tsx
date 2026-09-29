@@ -23,7 +23,7 @@ function Shipping() {
     <PolicyPage
       eyebrow="Store policy"
       title="Shipping."
-      lead="We ship from the shop in Rego Park, Queens, to anywhere in the United States and Canada. You are also welcome to collect from the counter, which costs nothing and is usually quicker."
+      lead="We ship from the shop in Rego Park, Queens, to anywhere in the United States and Canada."
     >
       <Clause title="When your order leaves us">
         <p>
@@ -43,9 +43,6 @@ function Shipping() {
           </li>
           <li>
             <b>Free</b> on orders over $199.
-          </li>
-          <li>
-            <b>Free</b> to collect from the shop at {SITE.street}, {SITE.cityLine}.
           </li>
         </ul>
         <p>

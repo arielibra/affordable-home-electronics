@@ -99,10 +99,9 @@ function ProductPage() {
             <div className="flex gap-4 border-b border-line py-5">
               <IconTruck className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
               <div>
-                <dt className="text-sm font-medium text-ink">Shipping and pickup</dt>
+                <dt className="text-sm font-medium text-ink">Shipping</dt>
                 <dd className="mt-1 max-w-[52ch] text-sm leading-relaxed text-muted">
-                  Ships nationwide and internationally. Pickup at the Rego Park counter is free, and NYC installation can be
-                  added to the order.
+                  Ships anywhere in the United States and Canada. NYC installation can be added to the order.
                 </dd>
               </div>
             </div>

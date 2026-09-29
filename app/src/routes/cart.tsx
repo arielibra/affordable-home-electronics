@@ -133,8 +133,7 @@ function CartBody() {
               </div>
             </dl>
             <p className="mt-5 text-sm leading-relaxed text-muted">
-              Flat rate shipping, free over $199, or pick up free in Rego Park. Sales tax and the final total are shown
-              before you pay.
+              Flat rate shipping, free over $199. Sales tax and the final total are shown before you pay.
             </p>
             <div className="mt-6">
               <CheckoutCta disabled={lines.length === 0} />

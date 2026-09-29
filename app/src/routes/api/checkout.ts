@@ -87,7 +87,6 @@ export const Route = createFileRoute("/api/checkout")({
         };
         if (freeShipping) ship(0, 0, "Free shipping", 3, 7);
         else ship(0, SHIPPING_FLAT_CENTS, "Standard shipping", 3, 7);
-        ship(1, 0, "Pick up in Rego Park", 1, 2);
 
         let session: Session;
         try {

@@ -124,10 +124,6 @@ function Contact() {
                 </div>
               </div>
             </dl>
-            <p className="mt-6 max-w-[48ch] text-sm leading-relaxed text-muted">
-              Retail, wholesale and government orders all go through the same counter. Call before you drive over so we can
-              have the part waiting.
-            </p>
           </div>
 
           <div className="border border-line bg-surface p-6 sm:p-8">

@@ -43,9 +43,9 @@ function About() {
               something fails in year two, there is a path that does not end with a shrug.
             </p>
             <p>
-              We ship anywhere in the United States, and to Canada and overseas when other dealers will not bother. Locally
-              we install: Queens, Brooklyn, Manhattan, the Bronx, out to Nassau and Westchester when it makes sense. Retail,
-              wholesale and government orders all go through the same counter.
+              We ship anywhere in the United States, and to Canada. Locally we install: Queens, Brooklyn, Manhattan,
+              the Bronx, out to Nassau and Westchester when it makes sense. Retail, wholesale and government orders are
+              all handled the same way.
             </p>
             <p>
               The website changed. The phone number did not.
