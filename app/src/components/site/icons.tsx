@@ -126,3 +126,9 @@ export const IconTruck = (p: SVGProps<SVGSVGElement>) => (
     <path d="M6 19h.01M17 19h.01" />
   </Glyph>
 );
+export const IconClock = (p: SVGProps<SVGSVGElement>) => (
+  <Glyph {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3.5 2" />
+  </Glyph>
+);

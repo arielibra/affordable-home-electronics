@@ -19,6 +19,16 @@ const DATA = {
     addressCountry: "US",
   },
   areaServed: SITE.areas.map((a) => ({ "@type": "Place", name: a })),
+  // Google reads this for the opening hours shown in search and on Maps. Wrong
+  // hours here send somebody to Rego Park to find the shutters down.
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [...SITE.hours.days],
+      opens: SITE.hours.opens,
+      closes: SITE.hours.closes,
+    },
+  ],
   makesOffer: {
     "@type": "Offer",
     itemOffered: {

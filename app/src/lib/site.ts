@@ -29,6 +29,16 @@ export const SITE = {
   street: "62-65 Saunders Street",
   cityLine: "Rego Park, NY 11374",
   areas: ["Rego Park", "Forest Hills", "Elmhurst", "Jackson Heights", "Astoria", "The Bronx", "Manhattan", "Brooklyn"],
+  /** Sunday to Friday, 9 to 7. Closed Saturday. Stated once here so the contact
+   *  page, the footer and the structured data Google reads can never drift
+   *  apart. 24-hour times because that is what schema.org expects. */
+  hours: {
+    opens: "09:00",
+    closes: "19:00",
+    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    plain: "Sunday to Friday, 9am to 7pm",
+    closed: "Closed Saturday",
+  },
 } as const;
 
 export function money(cents: number): string {

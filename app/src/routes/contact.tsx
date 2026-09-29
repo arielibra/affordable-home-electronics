@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SiteShell } from "../components/site/chrome";
 import { SendCta } from "../components/site/cta";
 import { Field, Notice, Select, TextArea, TextInput } from "../components/site/form";
-import { IconMail, IconPhone, IconPin } from "../components/site/icons";
+import { IconClock, IconMail, IconPhone, IconPin } from "../components/site/icons";
 import { Eyebrow, Shell } from "../components/site/section";
 import { submitQuote } from "../lib/api/store.functions";
 import { ORIGIN, SITE } from "../lib/site";
@@ -109,6 +109,17 @@ function Contact() {
                     {SITE.street}
                     <br />
                     {SITE.cityLine}
+                  </dd>
+                </div>
+              </div>
+              <div className="flex gap-4 border-b border-line py-6">
+                <IconClock className="mt-1 h-5 w-5 shrink-0 text-ink" />
+                <div>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Opening hours</dt>
+                  <dd className="mt-2 text-base leading-relaxed text-ink">
+                    {SITE.hours.plain}
+                    <br />
+                    <span className="text-muted">{SITE.hours.closed}</span>
                   </dd>
                 </div>
               </div>

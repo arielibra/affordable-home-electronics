@@ -204,6 +204,8 @@ function Footer() {
               {SITE.street}
               <br />
               {SITE.cityLine}
+              <br />
+              <span className="text-white/50">{SITE.hours.plain}</span>
             </span>
           </li>
         </FooterColumn>
