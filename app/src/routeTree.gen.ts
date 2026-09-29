@@ -9,10 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as SecurityCamerasRouteImport } from './routes/security-cameras'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as InstallationRouteImport } from './routes/installation'
@@ -44,9 +47,19 @@ import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
 import { Route as ApiAdminBrandsRouteImport } from './routes/api/admin/brands'
 
+const WarrantyRoute = WarrantyRouteImport.update({
+  id: '/warranty',
+  path: '/warranty',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShippingRoute = ShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecurityCamerasRoute = SecurityCamerasRouteImport.update({
@@ -62,6 +75,11 @@ const SearchRoute = SearchRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReturnsRoute = ReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrdersRoute = OrdersRouteImport.update({
@@ -226,10 +244,13 @@ export interface FileRoutesByFullPath {
   '/installation': typeof InstallationRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
+  '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
+  '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/warranty': typeof WarrantyRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
@@ -262,10 +283,13 @@ export interface FileRoutesByTo {
   '/installation': typeof InstallationRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
+  '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
+  '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/warranty': typeof WarrantyRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
@@ -299,10 +323,13 @@ export interface FileRoutesById {
   '/installation': typeof InstallationRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
+  '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/security-cameras': typeof SecurityCamerasRoute
+  '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/warranty': typeof WarrantyRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
@@ -337,10 +364,13 @@ export interface FileRouteTypes {
     | '/installation'
     | '/order-confirmed'
     | '/orders'
+    | '/returns'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
+    | '/shipping'
     | '/sitemap.xml'
+    | '/warranty'
     | '/api/checkout'
     | '/api/order-lookup'
     | '/api/paypal-webhook'
@@ -373,10 +403,13 @@ export interface FileRouteTypes {
     | '/installation'
     | '/order-confirmed'
     | '/orders'
+    | '/returns'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
+    | '/shipping'
     | '/sitemap.xml'
+    | '/warranty'
     | '/api/checkout'
     | '/api/order-lookup'
     | '/api/paypal-webhook'
@@ -409,10 +442,13 @@ export interface FileRouteTypes {
     | '/installation'
     | '/order-confirmed'
     | '/orders'
+    | '/returns'
     | '/robots.txt'
     | '/search'
     | '/security-cameras'
+    | '/shipping'
     | '/sitemap.xml'
+    | '/warranty'
     | '/api/checkout'
     | '/api/order-lookup'
     | '/api/paypal-webhook'
@@ -446,10 +482,13 @@ export interface RootRouteChildren {
   InstallationRoute: typeof InstallationRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   OrdersRoute: typeof OrdersRoute
+  ReturnsRoute: typeof ReturnsRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SecurityCamerasRoute: typeof SecurityCamerasRoute
+  ShippingRoute: typeof ShippingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  WarrantyRoute: typeof WarrantyRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   ApiOrderLookupRoute: typeof ApiOrderLookupRoute
   ApiPaypalWebhookRoute: typeof ApiPaypalWebhookRoute
@@ -474,11 +513,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/warranty': {
+      id: '/warranty'
+      path: '/warranty'
+      fullPath: '/warranty'
+      preLoaderRoute: typeof WarrantyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shipping': {
+      id: '/shipping'
+      path: '/shipping'
+      fullPath: '/shipping'
+      preLoaderRoute: typeof ShippingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/security-cameras': {
@@ -500,6 +553,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/returns': {
+      id: '/returns'
+      path: '/returns'
+      fullPath: '/returns'
+      preLoaderRoute: typeof ReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orders': {
@@ -726,10 +786,13 @@ const rootRouteChildren: RootRouteChildren = {
   InstallationRoute: InstallationRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   OrdersRoute: OrdersRoute,
+  ReturnsRoute: ReturnsRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SecurityCamerasRoute: SecurityCamerasRoute,
+  ShippingRoute: ShippingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  WarrantyRoute: WarrantyRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   ApiOrderLookupRoute: ApiOrderLookupRoute,
   ApiPaypalWebhookRoute: ApiPaypalWebhookRoute,

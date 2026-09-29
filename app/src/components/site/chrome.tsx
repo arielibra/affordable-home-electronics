@@ -168,6 +168,21 @@ function Footer() {
               Contact
             </Link>
           </li>
+          <li>
+            <Link to="/shipping" className="ahe-onblue">
+              Shipping
+            </Link>
+          </li>
+          <li>
+            <Link to="/returns" className="ahe-onblue">
+              Returns and refunds
+            </Link>
+          </li>
+          <li>
+            <Link to="/warranty" className="ahe-onblue">
+              Warranty
+            </Link>
+          </li>
         </FooterColumn>
 
         <FooterColumn title="Reach us">

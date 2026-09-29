@@ -370,6 +370,18 @@ function CheckoutBody() {
               </Field>
             </fieldset>
 
+            <p className="border-t border-line pt-5 text-[13px] leading-relaxed text-muted">
+              Before you pay, our{" "}
+              <Link to="/returns" className="text-ink underline underline-offset-4 hover:text-signal">
+                returns and refunds policy
+              </Link>{" "}
+              and{" "}
+              <Link to="/shipping" className="text-ink underline underline-offset-4 hover:text-signal">
+                shipping policy
+              </Link>
+              . Ten days from delivery to return something, and we ship by UPS, which cannot deliver to a PO box.
+            </p>
+
             {error ? <Notice tone="bad">{error}</Notice> : null}
 
             {method === "card" ? (
