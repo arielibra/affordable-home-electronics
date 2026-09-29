@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { undeliverableReason } from "../../../lib/address";
 import { bindings } from "../../../lib/bindings.server";
 import { parkPaypalOrder, type PaypalAddress } from "../../../lib/paypal-order.server";
 import { paypalEnabled, paypalFetch, usd } from "../../../lib/paypal.server";
@@ -47,6 +48,10 @@ export const Route = createFileRoute("/api/paypal/create")({
         }
         if (!pickup && (!who.address1 || !who.city || !who.state || !who.zip)) {
           return Response.json({ ok: false, error: "A full shipping address is needed." }, { status: 400 });
+        }
+        if (!pickup) {
+          const bad = undeliverableReason(who);
+          if (bad) return Response.json({ ok: false, error: bad }, { status: 400 });
         }
 
         const DB = bindings().DB;

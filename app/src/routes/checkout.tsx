@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useCart } from "../components/site/cart-context";
+import { undeliverableReason } from "../lib/address";
 import { SiteShell } from "../components/site/chrome";
 import { Field, Notice, TextArea, TextInput } from "../components/site/form";
 import { PayMarks } from "../components/site/pay-marks";
@@ -100,6 +101,12 @@ function CheckoutBody() {
 
   async function sendPhoneOrder(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const d0 = details();
+    const bad0 = pickup ? null : undeliverableReason(d0);
+    if (bad0) {
+      setError(bad0);
+      return;
+    }
     setPending(true);
     setError("");
     try {
@@ -159,6 +166,11 @@ function CheckoutBody() {
       createOrder: async () => {
         const form = formRef.current;
         if (form && !form.reportValidity()) throw new Error("Delivery details are incomplete.");
+        const bad = stateRef.current.pickup ? null : undeliverableReason(details());
+        if (bad) {
+          setError(bad);
+          throw new Error(bad);
+        }
         setError("");
         const r = await json("/api/paypal/create", {
           cartId: stateRef.current.cartId,
