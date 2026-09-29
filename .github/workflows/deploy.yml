@@ -38,7 +38,11 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: app
-          wranglerVersion: "4.143.0"
+          # Pinned, and deliberately NOT the newest release: app/bunfig.toml
+          # refuses any package published in the last 24 hours as a
+          # supply-chain guard, so a brand new wrangler will not install.
+          # When bumping this, pick a version at least a couple of days old.
+          wranglerVersion: "4.141.0"
           command: d1 migrations apply affordable-home-electronics-db --remote
 
       - name: Deploy the Worker
@@ -47,5 +51,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: app
-          wranglerVersion: "4.143.0"
+          wranglerVersion: "4.141.0"
           command: deploy
