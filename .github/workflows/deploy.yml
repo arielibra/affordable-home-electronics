@@ -38,6 +38,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: app
+          wranglerVersion: "4.143.0"
           command: d1 migrations apply affordable-home-electronics-db --remote
 
       - name: Deploy the Worker
@@ -46,4 +47,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: app
+          wranglerVersion: "4.143.0"
           command: deploy
