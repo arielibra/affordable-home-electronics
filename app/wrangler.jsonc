@@ -36,5 +36,15 @@
     }
   ],
 
+  // Product photography uploaded from the admin page, plus copies of
+  // manufacturer images. Served back through /media/<key> by the Worker, so
+  // the bucket itself stays private.
+  "r2_buckets": [
+    {
+      "binding": "STORAGE",
+      "bucket_name": "affordable-home-electronics-media"
+    }
+  ],
+
   "vars": { "HF_ENV": "production", "APP_SLUG": "affordable-home-electronics" }
 }
