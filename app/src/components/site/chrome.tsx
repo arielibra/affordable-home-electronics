@@ -29,10 +29,17 @@ function Header() {
     <header className="sticky top-0 z-40 border-b border-line bg-ground/95 backdrop-blur">
       <div className="border-b border-line bg-band text-surface">
         <div className="mx-auto flex h-9 max-w-[1240px] items-center justify-between gap-4 px-5 font-mono text-[11px] tracking-tight">
-          <span className="truncate">Authorized dealer. Full USA warranty on every item.</span>
-          <a href={SITE.phoneHref} className="ahe-onblue shrink-0">
-            {SITE.phone}
-          </a>
+          {/* Hidden on the narrowest screens so the two useful links keep their
+              room. A reassurance is worth less than a way to do something. */}
+          <span className="hidden truncate sm:inline">Authorized dealer. Full USA warranty on every item.</span>
+          <div className="flex shrink-0 items-center gap-5">
+            <Link to="/orders" className="ahe-onblue">
+              Track an order
+            </Link>
+            <a href={SITE.phoneHref} className="ahe-onblue">
+              {SITE.phone}
+            </a>
+          </div>
         </div>
       </div>
 
@@ -92,6 +99,15 @@ function Header() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                to="/orders"
+                onClick={() => setOpen(false)}
+                className="block py-3.5 text-sm font-medium text-signal"
+              >
+                Track an order
+              </Link>
+            </li>
           </ul>
         </nav>
       ) : null}
