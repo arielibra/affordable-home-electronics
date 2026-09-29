@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { CARRIERS, STATE_LABEL, carrierName, trackingUrl, type OrderState } from "../../lib/orders";
 import { money } from "../../lib/site";
 
 type Item = { name: string; qty: number; price_cents: number };
-type Order = {
+
+export type AdminOrder = {
   id: string;
   reference: string;
   name: string;
@@ -20,167 +22,353 @@ type Order = {
   tax_cents: number | null;
   amount_total_cents: number | null;
   status: string;
+  provider: string;
+  carrier: string;
+  tracking_number: string;
+  hold_reason: string;
   created_at: string;
   paid_at: string | null;
+  shipped_at: string | null;
   items: Item[];
 };
 
-function when(value: string | null): string {
-  if (!value) return "";
-  const d = new Date(value.replace(" ", "T") + "Z");
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+type Tab = OrderState | "all" | "year";
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "paid", label: "Paid" },
+  { key: "ready_to_ship", label: "Ready to ship" },
+  { key: "shipped", label: "Shipped" },
+  { key: "on_hold", label: "On hold" },
+  { key: "all", label: "Everything" },
+  { key: "year", label: "By year" },
+];
+
+const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+const when = (s: string | null) => (s ? s.replace("T", " ").slice(0, 16) : "");
+
+function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [carrier, setCarrier] = useState(order.carrier || "ups");
+  const [tracking, setTracking] = useState(order.tracking_number);
+  const [hold, setHold] = useState(order.hold_reason);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function patch(body: Record<string, unknown>) {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference: order.reference, ...body }),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!data.ok) {
+        setError(data.error ?? "Could not save.");
+        return;
+      }
+      onChanged();
+    } catch {
+      setError("Could not reach the site.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const link = trackingUrl(order.carrier, order.tracking_number);
+
+  return (
+    <div className="border-b border-line py-4">
+      <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-4 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-sm text-ink">{order.reference}</span>
+            <span className="border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              {STATE_LABEL[order.status as OrderState] ?? order.status}
+            </span>
+          </span>
+          <span className="mt-1 block truncate text-sm text-muted">
+            {order.name || "No name"} · {when(order.paid_at ?? order.created_at)}
+          </span>
+        </span>
+        <span className="shrink-0 text-right">
+          <span className="block font-mono text-sm text-ink">{money(order.amount_total_cents ?? 0)}</span>
+          {order.tracking_number ? (
+            <span className="block font-mono text-[10px] text-muted">{carrierName(order.carrier)}</span>
+          ) : null}
+        </span>
+      </button>
+
+      {open ? (
+        <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">In this order</p>
+            <ul className="mt-2 divide-y divide-line border-y border-line">
+              {order.items.length === 0 ? (
+                <li className="py-2 text-sm text-muted">No line items recorded.</li>
+              ) : (
+                order.items.map((it, i) => (
+                  <li key={i} className="flex justify-between gap-4 py-2 text-sm">
+                    <span className="text-ink">
+                      {it.name}
+                      <span className="ml-2 font-mono text-[11px] text-muted">x{it.qty}</span>
+                    </span>
+                    <span className="shrink-0 font-mono text-ink">{money(it.price_cents * it.qty)}</span>
+                  </li>
+                ))
+              )}
+            </ul>
+
+            <dl className="mt-3 space-y-1 text-sm">
+              {[
+                ["Subtotal", order.subtotal_cents],
+                ["Shipping", order.shipping_cents],
+                ["Tax", order.tax_cents],
+                ["Total", order.amount_total_cents],
+              ].map(([label, v]) => (
+                <div key={String(label)} className="flex justify-between">
+                  <dt className="text-muted">{label}</dt>
+                  <dd className="font-mono text-ink">{money((v as number | null) ?? 0)}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Ships to</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink">
+              {order.name}
+              {order.address1 ? (
+                <>
+                  <br />
+                  {order.address1}
+                  {order.address2 ? `, ${order.address2}` : ""}
+                  <br />
+                  {order.city}, {order.state} {order.zip}
+                </>
+              ) : null}
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              {order.email}
+              {order.phone ? ` · ${order.phone}` : ""}
+            </p>
+            {order.notes ? (
+              <p className="mt-3 border-l-2 border-line pl-3 text-sm leading-relaxed text-muted">{order.notes}</p>
+            ) : null}
+          </div>
+
+          <div className="border border-line bg-surface p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Tracking</p>
+            <div className="mt-2 space-y-2">
+              <select value={carrier} onChange={(e) => setCarrier(e.currentTarget.value)} className={input}>
+                {CARRIERS.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={tracking}
+                placeholder="Tracking number"
+                onChange={(e) => setTracking(e.currentTarget.value)}
+                className={input}
+              />
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => patch({ carrier, tracking_number: tracking })}
+                className="h-9 w-full border border-line text-xs font-medium text-ink hover:border-ink disabled:text-muted"
+              >
+                Save tracking
+              </button>
+              {link ? (
+                <a
+                  href={link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-xs text-ink underline underline-offset-4"
+                >
+                  Track this parcel
+                </a>
+              ) : null}
+            </div>
+
+            <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Move to</p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {(["paid", "ready_to_ship", "shipped", "on_hold"] as OrderState[]).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={busy || order.status === s}
+                  onClick={() => patch(s === "shipped" ? { status: s, carrier, tracking_number: tracking } : { status: s })}
+                  className={`h-9 border px-2 text-xs ${
+                    order.status === s ? "border-ink bg-ground text-muted" : "border-line text-ink hover:border-ink"
+                  }`}
+                >
+                  {STATE_LABEL[s]}
+                </button>
+              ))}
+            </div>
+
+            {order.status === "on_hold" || hold ? (
+              <div className="mt-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Why it is on hold</p>
+                <input
+                  value={hold}
+                  placeholder="Waiting on stock, customer to confirm…"
+                  onChange={(e) => setHold(e.currentTarget.value)}
+                  onBlur={() => hold !== order.hold_reason && patch({ hold_reason: hold })}
+                  className={`mt-2 ${input}`}
+                />
+              </div>
+            ) : null}
+
+            {order.shipped_at ? (
+              <p className="mt-4 text-xs text-muted">Handed to the carrier {when(order.shipped_at)}.</p>
+            ) : null}
+            {error ? <p className="mt-3 text-xs text-[color:var(--color-signal)]">{error}</p> : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
-function Badge({ status }: { status: string }) {
-  const paid = status === "paid";
+function YearView({ years }: { years: string[] }) {
+  const [year, setYear] = useState(years[0] ?? String(new Date().getFullYear()));
+  const [data, setData] = useState<{
+    totals: { orders: number; subtotal: number; shipping: number; tax: number; total: number };
+    unpaid: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setData(null);
+    void fetch(`/api/admin/report?year=${year}`)
+      .then((r) => r.json())
+      .then((d) => setData(d.ok ? d : null))
+      .catch(() => setData(null));
+  }, [year]);
+
   return (
-    <span
-      className={`inline-block px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] ${
-        paid ? "bg-ink text-surface" : "border border-line text-muted"
-      }`}
-    >
-      {paid ? "Paid" : status === "pending_payment" ? "Not paid" : status}
-    </span>
+    <div>
+      <div className="flex flex-wrap items-center gap-3">
+        <select
+          value={year}
+          onChange={(e) => setYear(e.currentTarget.value)}
+          className="h-10 border border-line bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
+        >
+          {(years.length ? years : [year]).map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+        <a
+          href={`/api/admin/report?year=${year}&format=csv`}
+          className="inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface"
+        >
+          Download {year} as a spreadsheet
+        </a>
+      </div>
+
+      {!data ? (
+        <p className="mt-6 text-sm text-muted">Adding it up.</p>
+      ) : (
+        <>
+          <div className="mt-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+            {[
+              ["Orders paid", String(data.totals.orders)],
+              ["Goods", money(data.totals.subtotal)],
+              ["Shipping", money(data.totals.shipping)],
+              ["Sales tax", money(data.totals.tax)],
+              ["Taken in total", money(data.totals.total)],
+            ].map(([label, value]) => (
+              <div key={label} className="bg-surface p-4">
+                <p className="font-mono text-[26px] leading-none tracking-tight text-ink">{value}</p>
+                <p className="mt-2 text-xs text-muted">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 max-w-[70ch] text-xs leading-relaxed text-muted">
+            Counts money actually taken, by the date it was paid — so an order placed in December and paid in January
+            lands in January. {data.unpaid > 0
+              ? `${data.unpaid} order${data.unpaid === 1 ? " was" : "s were"} raised in ${year} and never paid; ${data.unpaid === 1 ? "it is" : "they are"} not in these figures.`
+              : "Every order raised this year was paid."}
+          </p>
+        </>
+      )}
+    </div>
   );
 }
 
 export function OrdersPanel() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [open, setOpen] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("paid");
+  const [orders, setOrders] = useState<AdminOrder[] | null>(null);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [years, setYears] = useState<string[]>([]);
+
+  const load = useCallback(async () => {
+    const qs = tab === "all" || tab === "year" ? "" : `?status=${tab}`;
+    const res = await fetch(`/api/admin/orders${qs}`);
+    const data = (await res.json()) as {
+      orders?: AdminOrder[];
+      counts?: Record<string, number>;
+      years?: string[];
+    };
+    setOrders(data.orders ?? []);
+    setCounts(data.counts ?? {});
+    setYears(data.years ?? []);
+  }, [tab]);
 
   useEffect(() => {
-    let alive = true;
-    fetch("/api/admin/orders")
-      .then((r) => r.json() as Promise<{ ok: boolean; orders?: Order[]; error?: string }>)
-      .then((d) => {
-        if (!alive) return;
-        if (d.ok && d.orders) setOrders(d.orders);
-        else setError(d.error ?? "Could not load orders.");
-      })
-      .catch(() => alive && setError("Could not load orders."))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  if (loading) return <p className="text-sm text-muted">Loading orders.</p>;
-  if (error) return <p className="border-l-2 border-signal py-2 pl-3 text-sm text-signal">{error}</p>;
-  if (orders.length === 0)
-    return (
-      <div className="border border-line bg-surface p-10 text-center">
-        <p className="text-base text-ink">No orders yet.</p>
-        <p className="mt-2 text-sm text-muted">Everything that comes through the website will appear here.</p>
-      </div>
-    );
-
-  const paid = orders.filter((o) => o.status === "paid");
-  const takings = paid.reduce((s, o) => s + (o.amount_total_cents ?? 0), 0);
+    void load();
+  }, [load]);
 
   return (
     <div>
-      <p className="border-b border-line pb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-        {orders.length} orders · {paid.length} paid · {money(takings)} taken
-      </p>
+      <div className="flex flex-wrap gap-1 border-b border-line">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            className={`-mb-px border-b-2 px-3.5 py-2 text-sm transition-colors ${
+              tab === t.key ? "border-signal text-ink" : "border-transparent text-muted hover:text-ink"
+            }`}
+          >
+            {t.label}
+            {t.key !== "all" && t.key !== "year" && counts[t.key] ? (
+              <span className="ml-1.5 font-mono text-[11px] text-muted">{counts[t.key]}</span>
+            ) : null}
+          </button>
+        ))}
+      </div>
 
-      <ul className="mt-2">
-        {orders.map((o) => {
-          const isOpen = open === o.id;
-          return (
-            <li key={o.id} className="border-b border-line">
-              <button
-                type="button"
-                onClick={() => setOpen(isOpen ? null : o.id)}
-                aria-expanded={isOpen}
-                className="flex w-full flex-wrap items-center justify-between gap-4 py-4 text-left"
-              >
-                <span className="flex items-center gap-4">
-                  <span className="font-mono text-sm text-ink">{o.reference}</span>
-                  <Badge status={o.status} />
-                </span>
-                <span className="flex items-center gap-6 text-sm">
-                  <span className="text-ink">{o.name || "Awaiting details"}</span>
-                  <span className="font-mono text-ink">{money(o.amount_total_cents ?? o.subtotal_cents ?? 0)}</span>
-                  <span className="hidden font-mono text-[11px] text-muted sm:inline">{when(o.paid_at ?? o.created_at)}</span>
-                </span>
-              </button>
-
-              {isOpen ? (
-                <div className="grid gap-8 pb-6 lg:grid-cols-[1.3fr_1fr]">
-                  <div>
-                    <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Items</h3>
-                    <ul className="mt-3 border-t border-line">
-                      {o.items.length === 0 ? (
-                        <li className="py-3 text-sm text-muted">No line items recorded.</li>
-                      ) : (
-                        o.items.map((it, i) => (
-                          <li key={`${it.name}-${i}`} className="flex justify-between gap-6 border-b border-line py-2.5 text-sm">
-                            <span className="text-ink">
-                              {it.name}
-                              <span className="ml-2 font-mono text-[11px] text-muted">x{it.qty}</span>
-                            </span>
-                            <span className="shrink-0 font-mono text-ink">{money(it.price_cents * it.qty)}</span>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                    <dl className="mt-4 space-y-1.5 text-sm">
-                      {[
-                        ["Items", o.subtotal_cents],
-                        ["Shipping", o.shipping_cents],
-                        ["Tax", o.tax_cents],
-                        ["Total", o.amount_total_cents],
-                      ].map(([label, v]) => (
-                        <div key={String(label)} className="flex justify-between">
-                          <dt className="text-muted">{label}</dt>
-                          <dd className="font-mono text-ink">{money((v as number | null) ?? 0)}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </div>
-
-                  <div>
-                    <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Ship to</h3>
-                    <address className="mt-3 text-sm not-italic leading-relaxed text-ink">
-                      {o.name || "—"}
-                      <br />
-                      {o.address1}
-                      {o.address2 ? (
-                        <>
-                          <br />
-                          {o.address2}
-                        </>
-                      ) : null}
-                      <br />
-                      {[o.city, o.state, o.zip].filter(Boolean).join(", ")}
-                    </address>
-                    <div className="mt-4 space-y-1 text-sm">
-                      {o.email ? (
-                        <a href={`mailto:${o.email}`} className="block break-all text-ink underline underline-offset-4">
-                          {o.email}
-                        </a>
-                      ) : null}
-                      {o.phone ? (
-                        <a href={`tel:${o.phone}`} className="block font-mono text-ink underline underline-offset-4">
-                          {o.phone}
-                        </a>
-                      ) : null}
-                    </div>
-                    {o.notes ? (
-                      <>
-                        <h3 className="mt-6 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Notes</h3>
-                        <p className="mt-2 max-w-[46ch] text-sm leading-relaxed text-ink">{o.notes}</p>
-                      </>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
+      <div className="pt-6">
+        {tab === "year" ? (
+          <YearView years={years} />
+        ) : !orders ? (
+          <p className="text-sm text-muted">Loading.</p>
+        ) : orders.length === 0 ? (
+          <p className="text-sm text-muted">
+            {tab === "paid"
+              ? "Nothing waiting to be packed."
+              : tab === "ready_to_ship"
+                ? "Nothing boxed and waiting for a carrier."
+                : tab === "shipped"
+                  ? "Nothing shipped yet."
+                  : tab === "on_hold"
+                    ? "Nothing on hold. Good."
+                    : "No orders yet."}
+          </p>
+        ) : (
+          <div className="border-t border-line">
+            {orders.map((o) => (
+              <Card key={o.id} order={o} onChanged={load} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
