@@ -126,7 +126,12 @@ function CheckoutBody() {
       return;
     }
     const el = document.createElement("script");
-    el.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(cfg.paypalClientId)}&currency=USD&intent=capture&disable-funding=card`;
+    // disable-funding trims what PayPal offers inside its own button:
+    //   card     — Stripe already handles cards, and two card paths is just
+    //              two places for an order to go wrong.
+    //   paylater — buy now pay later. The shop does not offer credit, and the
+    //              same decision took Klarna and Affirm off the Stripe side.
+    el.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(cfg.paypalClientId)}&currency=USD&intent=capture&disable-funding=card,paylater`;
     el.async = true;
     el.onload = () => setSdk(true);
     el.onerror = () => setError("PayPal did not load. Use a card, or call the shop and we will take the order.");
