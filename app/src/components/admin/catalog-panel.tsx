@@ -1,0 +1,323 @@
+import { useEffect, useMemo, useState } from "react";
+
+import { money } from "../../lib/site";
+import { ImageField } from "./image-field";
+
+export type CatalogProduct = {
+  slug: string;
+  name: string;
+  brand: string;
+  brand_slug: string;
+  category: string;
+  price_cents: number;
+  msrp_cents: number | null;
+  blurb: string;
+  image: string;
+  featured: number;
+  stock: number;
+  stock_tracked: number;
+  active: number;
+};
+
+type Option = { slug: string; name: string };
+
+const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+const dollars = (cents: number | null) => (cents === null ? "" : (cents / 100).toFixed(2));
+const toCents = (v: string) => Math.round(Number(v.replace(/[^0-9.]/g, "")) * 100);
+
+function Editor({
+  product,
+  categories,
+  brands,
+  onDone,
+  onCancel,
+}: {
+  product: CatalogProduct | null;
+  categories: Option[];
+  brands: Option[];
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(product?.name ?? "");
+  const [slug, setSlug] = useState("");
+  const [brand, setBrand] = useState(product?.brand_slug ?? "");
+  const [category, setCategory] = useState(product?.category ?? categories[0]?.slug ?? "");
+  const [price, setPrice] = useState(dollars(product?.price_cents ?? null));
+  const [msrp, setMsrp] = useState(dollars(product?.msrp_cents ?? null));
+  const [blurb, setBlurb] = useState(product?.blurb ?? "");
+  const [image, setImage] = useState(product?.image ?? "");
+  const [featured, setFeatured] = useState(product ? product.featured === 1 : false);
+  const [stock, setStock] = useState(String(product?.stock ?? 0));
+  const [tracked, setTracked] = useState(product ? product.stock_tracked === 1 : false);
+  const [active, setActive] = useState(product ? product.active === 1 : true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save() {
+    if (!name.trim()) return setError("A product needs a name.");
+    if (!price.trim()) return setError("A product needs a price.");
+    setSaving(true);
+    setError("");
+
+    const payload: Record<string, unknown> = {
+      name,
+      brand_slug: brand,
+      category,
+      price_cents: toCents(price),
+      msrp_cents: msrp.trim() === "" ? null : toCents(msrp),
+      blurb,
+      image,
+      featured,
+      stock: Number(stock) || 0,
+      stock_tracked: tracked,
+      active,
+    };
+    if (product) payload.slug = product.slug;
+    else if (slug.trim()) payload.slug = slug.trim();
+
+    try {
+      const res = await fetch("/api/admin/products", {
+        method: product ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!data.ok) {
+        setError(data.error ?? "Could not save.");
+        return;
+      }
+      onDone();
+    } catch {
+      setError("Could not reach the site.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="border border-ink bg-surface p-5">
+      <h3 className="text-sm font-semibold text-ink">{product ? `Editing ${product.name}` : "New product"}</h3>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <label className="block sm:col-span-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Name</span>
+          <input value={name} onChange={(e) => setName(e.currentTarget.value)} className={`mt-1.5 ${input}`} autoFocus />
+        </label>
+
+        {!product ? (
+          <label className="block sm:col-span-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+              Web address <span className="normal-case tracking-normal">— optional, part number works well</span>
+            </span>
+            <input
+              value={slug}
+              placeholder="made from the name if you leave this blank"
+              onChange={(e) => setSlug(e.currentTarget.value)}
+              className={`mt-1.5 ${input}`}
+            />
+          </label>
+        ) : null}
+
+        <label className="block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Brand</span>
+          <select value={brand} onChange={(e) => setBrand(e.currentTarget.value)} className={`mt-1.5 ${input}`}>
+            <option value="">No brand</option>
+            {brands.map((b) => (
+              <option key={b.slug} value={b.slug}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Category</span>
+          <select value={category} onChange={(e) => setCategory(e.currentTarget.value)} className={`mt-1.5 ${input}`}>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Price</span>
+          <input value={price} inputMode="decimal" onChange={(e) => setPrice(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+            List price <span className="normal-case tracking-normal">— shown struck through</span>
+          </span>
+          <input value={msrp} inputMode="decimal" onChange={(e) => setMsrp(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
+        </label>
+      </div>
+
+      <label className="mt-4 block">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Description</span>
+        <textarea
+          value={blurb}
+          rows={3}
+          maxLength={600}
+          onChange={(e) => setBlurb(e.currentTarget.value)}
+          className="mt-1.5 w-full border border-line bg-surface p-2 text-sm text-ink focus:border-ink focus:outline-none"
+        />
+      </label>
+
+      <div className="mt-5">
+        <ImageField value={image} onChange={setImage} />
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">How many in stock</span>
+          <input value={stock} inputMode="numeric" onChange={(e) => setStock(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
+        </label>
+        <div className="space-y-2 pt-6">
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input type="checkbox" checked={tracked} onChange={(e) => setTracked(e.currentTarget.checked)} className="h-4 w-4" />
+            Count the stock down as it sells
+          </label>
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.currentTarget.checked)} className="h-4 w-4" />
+            Show on the front page
+          </label>
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.currentTarget.checked)} className="h-4 w-4" />
+            Listed on the site
+          </label>
+        </div>
+      </div>
+
+      {!tracked ? (
+        <p className="mt-3 text-xs leading-relaxed text-muted">
+          With counting off, this stays buyable no matter what the number says. Turn it on for anything you can actually
+          run out of.
+        </p>
+      ) : null}
+
+      {error ? <p className="mt-4 text-sm text-[color:var(--color-signal)]">{error}</p> : null}
+
+      <div className="mt-5 flex gap-2">
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="h-10 bg-ink px-5 text-sm font-medium text-surface active:scale-[0.98] disabled:bg-line disabled:text-muted"
+        >
+          {saving ? "Saving" : product ? "Save changes" : "Add product"}
+        </button>
+        <button type="button" onClick={onCancel} className="h-10 border border-line px-5 text-sm text-ink hover:border-ink">
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function CatalogPanel() {
+  const [products, setProducts] = useState<CatalogProduct[] | null>(null);
+  const [categories, setCategories] = useState<Option[]>([]);
+  const [brands, setBrands] = useState<Option[]>([]);
+  const [q, setQ] = useState("");
+  const [editing, setEditing] = useState<CatalogProduct | null | "new">(null);
+
+  async function load() {
+    const res = await fetch("/api/admin/products");
+    const data = (await res.json()) as { ok: boolean; products?: CatalogProduct[] };
+    setProducts(data.products ?? []);
+  }
+
+  useEffect(() => {
+    void load();
+    void fetch("/api/admin/taxonomy")
+      .then((r) => r.json() as Promise<{ categories?: Option[]; brands?: Option[] }>)
+      .then((d) => {
+        setCategories(d.categories ?? []);
+        setBrands(d.brands ?? []);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const shown = useMemo(() => {
+    if (!products) return [];
+    const needle = q.trim().toLowerCase();
+    if (!needle) return products;
+    return products.filter((p) =>
+      `${p.name} ${p.brand} ${p.slug}`.toLowerCase().includes(needle),
+    );
+  }, [products, q]);
+
+  if (!products) return <p className="text-sm text-muted">Loading.</p>;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <input
+          value={q}
+          placeholder="Search by name, brand or part number"
+          onChange={(e) => setQ(e.currentTarget.value)}
+          className="h-10 w-full max-w-[340px] border border-line bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
+        />
+        {editing === null ? (
+          <button
+            type="button"
+            onClick={() => setEditing("new")}
+            className="h-10 bg-ink px-5 text-sm font-medium text-surface active:scale-[0.98]"
+          >
+            Add a product
+          </button>
+        ) : null}
+      </div>
+
+      {editing !== null ? (
+        <div className="mt-5">
+          <Editor
+            product={editing === "new" ? null : editing}
+            categories={categories}
+            brands={brands}
+            onCancel={() => setEditing(null)}
+            onDone={() => {
+              setEditing(null);
+              void load();
+            }}
+          />
+        </div>
+      ) : null}
+
+      <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+        {shown.length} of {products.length} products
+      </p>
+
+      <div className="mt-3 divide-y divide-line border-y border-line">
+        {shown.map((p) => (
+          <div key={p.slug} className={`flex items-center gap-3 py-3 ${p.active ? "" : "opacity-55"}`}>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-line bg-white">
+              {p.image ? <img src={p.image} alt="" className="h-full w-full object-contain p-1" /> : null}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{p.brand || "No brand"}</p>
+              <p className="mt-0.5 truncate text-sm text-ink" title={p.name}>
+                {p.name}
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="font-mono text-sm text-ink">{money(p.price_cents)}</p>
+              <p className="font-mono text-[11px] text-muted">
+                {p.stock_tracked ? `${p.stock} in stock` : "always available"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEditing(p)}
+              className="ml-2 shrink-0 text-xs text-ink underline underline-offset-4"
+            >
+              Edit
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
