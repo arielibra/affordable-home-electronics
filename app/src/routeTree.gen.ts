@@ -36,6 +36,7 @@ import { Route as ApiPaypalCaptureRouteImport } from './routes/api/paypal/captur
 import { Route as ApiAdminUploadRouteImport } from './routes/api/admin/upload'
 import { Route as ApiAdminTaxonomyRouteImport } from './routes/api/admin/taxonomy'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
+import { Route as ApiAdminReportRouteImport } from './routes/api/admin/report'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
 import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
@@ -178,6 +179,11 @@ const ApiAdminSessionRoute = ApiAdminSessionRouteImport.update({
   path: '/api/admin/session',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminReportRoute = ApiAdminReportRouteImport.update({
+  id: '/api/admin/report',
+  path: '/api/admin/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminProductsRoute = ApiAdminProductsRouteImport.update({
   id: '/api/admin/products',
   path: '/api/admin/products',
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/messages': typeof ApiAdminMessagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
+  '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
@@ -273,6 +280,7 @@ export interface FileRoutesByTo {
   '/api/admin/messages': typeof ApiAdminMessagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
+  '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
@@ -309,6 +317,7 @@ export interface FileRoutesById {
   '/api/admin/messages': typeof ApiAdminMessagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
+  '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
@@ -346,6 +355,7 @@ export interface FileRouteTypes {
     | '/api/admin/messages'
     | '/api/admin/orders'
     | '/api/admin/products'
+    | '/api/admin/report'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/upload'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/api/admin/messages'
     | '/api/admin/orders'
     | '/api/admin/products'
+    | '/api/admin/report'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/upload'
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/api/admin/messages'
     | '/api/admin/orders'
     | '/api/admin/products'
+    | '/api/admin/report'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/upload'
@@ -452,6 +464,7 @@ export interface RootRouteChildren {
   ApiAdminMessagesRoute: typeof ApiAdminMessagesRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRoute
+  ApiAdminReportRoute: typeof ApiAdminReportRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
   ApiAdminTaxonomyRoute: typeof ApiAdminTaxonomyRoute
   ApiAdminUploadRoute: typeof ApiAdminUploadRoute
@@ -650,6 +663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminSessionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/report': {
+      id: '/api/admin/report'
+      path: '/api/admin/report'
+      fullPath: '/api/admin/report'
+      preLoaderRoute: typeof ApiAdminReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/products': {
       id: '/api/admin/products'
       path: '/api/admin/products'
@@ -724,6 +744,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminMessagesRoute: ApiAdminMessagesRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRoute,
+  ApiAdminReportRoute: ApiAdminReportRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
   ApiAdminTaxonomyRoute: ApiAdminTaxonomyRoute,
   ApiAdminUploadRoute: ApiAdminUploadRoute,

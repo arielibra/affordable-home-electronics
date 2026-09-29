@@ -17,8 +17,11 @@ type Order = {
   tax_cents: number | null;
   amount_total_cents: number | null;
   status: string;
+  carrier: string;
+  tracking_number: string;
   created_at: string;
   paid_at: string | null;
+  shipped_at: string | null;
 };
 
 /** Normalise what people actually type: "ahe 1a2b3c", "1A2B3C", "AHE-1a2b3c". */
@@ -51,7 +54,8 @@ export const Route = createFileRoute("/api/order-lookup")({
         // cannot be used to discover which order numbers exist.
         const order = await DB.prepare(
           `SELECT id,reference,name,address1,address2,city,state,zip,notes,
-                  subtotal_cents,shipping_cents,tax_cents,amount_total_cents,status,created_at,paid_at
+                  subtotal_cents,shipping_cents,tax_cents,amount_total_cents,status,
+                  carrier,tracking_number,created_at,paid_at,shipped_at
              FROM orders WHERE reference = ?1 AND lower(email) = ?2`,
         )
           .bind(reference, email)

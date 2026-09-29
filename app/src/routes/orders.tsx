@@ -5,6 +5,7 @@ import { SiteShell } from "../components/site/chrome";
 import { Field, Notice, TextInput } from "../components/site/form";
 import { Mark } from "../components/site/mark";
 import { Eyebrow, Shell } from "../components/site/section";
+import { carrierName, trackingUrl } from "../lib/orders";
 import { ORIGIN, SITE, money } from "../lib/site";
 
 export const Route = createFileRoute("/orders")({
@@ -40,8 +41,11 @@ type Order = {
   tax_cents: number | null;
   amount_total_cents: number | null;
   status: string;
+  carrier: string;
+  tracking_number: string;
   created_at: string;
   paid_at: string | null;
+  shipped_at: string | null;
   items: Item[];
 };
 
@@ -58,11 +62,28 @@ function describe(status: string): { label: string; body: string } {
       label: "Paid",
       body: "We have your payment and the order is with the counter. You will hear from us if anything on it needs a word before it ships.",
     };
+  if (status === "ready_to_ship")
+    return {
+      label: "Packed",
+      body: "It is boxed with a label on it, waiting for the carrier's next pickup. The tracking number below will start moving once they have it.",
+    };
+  if (status === "shipped")
+    return {
+      label: "Shipped",
+      body: "It is with the carrier. Track it below for where it has got to.",
+    };
+  if (status === "on_hold")
+    return {
+      label: "On hold",
+      body: "Something on this order needs sorting before it can ship. The shop will have called or emailed; if not, call us and we will tell you where it stands.",
+    };
   if (status === "pending_payment")
     return {
       label: "Not paid yet",
       body: "This order was started but no payment has come through. If you think that is wrong, call the shop and we will look at it with you.",
     };
+  if (status === "cancelled")
+    return { label: "Cancelled", body: "This order was cancelled. Call the shop if that is a surprise." };
   return { label: status, body: "Call the shop if you need the detail on this one." };
 }
 
@@ -158,6 +179,28 @@ function TrackOrder() {
               </div>
 
               <p className="mt-5 max-w-[62ch] text-base leading-relaxed text-muted">{state?.body}</p>
+
+              {order.tracking_number ? (
+                <div className="mt-6 max-w-[460px] border border-line bg-surface p-4">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+                    {carrierName(order.carrier) || "Tracking"}
+                  </p>
+                  <p className="mt-2 break-all font-mono text-sm text-ink">{order.tracking_number}</p>
+                  {trackingUrl(order.carrier, order.tracking_number) ? (
+                    <a
+                      href={trackingUrl(order.carrier, order.tracking_number)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface"
+                    >
+                      Track it with {carrierName(order.carrier)}
+                    </a>
+                  ) : null}
+                  {order.shipped_at ? (
+                    <p className="mt-3 text-xs text-muted">Handed over {when(order.shipped_at)}.</p>
+                  ) : null}
+                </div>
+              ) : null}
 
               {order.items.length > 0 ? (
                 <>
