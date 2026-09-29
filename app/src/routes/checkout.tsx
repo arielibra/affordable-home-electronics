@@ -11,6 +11,7 @@ import { ORIGIN, SITE, money } from "../lib/site";
 
 type PaypalButtons = {
   Buttons: (o: Record<string, unknown>) => { render: (el: HTMLElement) => void; close: () => void };
+  FUNDING: Record<string, string>;
 };
 declare global {
   interface Window {
@@ -147,6 +148,13 @@ function CheckoutBody() {
     const host = slot.current;
     host.innerHTML = "";
     const buttons = window.paypal.Buttons({
+      // Render exactly one button: PayPal itself.
+      //
+      // `disable-funding` on the script URL is only a hint about what PayPal
+      // *may* offer, and Pay Later kept appearing through it. Naming the
+      // funding source here is the definitive version — the SDK renders this
+      // one and nothing else, so no buy-now-pay-later, no Venmo, no card.
+      fundingSource: window.paypal.FUNDING.PAYPAL,
       style: { layout: "vertical", shape: "rect", height: 48 },
       createOrder: async () => {
         const form = formRef.current;
