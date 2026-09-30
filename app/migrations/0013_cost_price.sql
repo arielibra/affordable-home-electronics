@@ -1,0 +1,11 @@
+-- What he paid for it.
+--
+-- Nullable on purpose: NULL means "not recorded", which is not the same as a
+-- cost of zero. 129 products already exist and he has not entered a cost for
+-- any of them, so a DEFAULT 0 would quietly claim every one of them is pure
+-- profit.
+--
+-- This column must never reach a customer. Everything the storefront reads
+-- goes through the explicit column list in lib/store.server.ts, which was
+-- changed from SELECT * in the same commit for exactly this reason.
+ALTER TABLE products ADD COLUMN cost_cents INTEGER;

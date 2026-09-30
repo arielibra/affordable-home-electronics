@@ -11,6 +11,7 @@ export type CatalogProduct = {
   category: string;
   price_cents: number;
   msrp_cents: number | null;
+  cost_cents: number | null;
   blurb: string;
   image: string;
   images?: string[];
@@ -32,6 +33,38 @@ type EditTarget =
 const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
 const dollars = (cents: number | null) => (cents === null ? "" : (cents / 100).toFixed(2));
 const toCents = (v: string) => Math.round(Number(v.replace(/[^0-9.]/g, "")) * 100);
+
+/** Worked out as he types, so the number he is choosing has its consequence
+ *  next to it rather than in a spreadsheet afterwards. */
+function Margin({ price, cost }: { price: string; cost: string }) {
+  if (!cost.trim() || !price.trim()) {
+    return (
+      <p className="mt-2 text-[11px] leading-relaxed text-muted">
+        Used only for your own margin figures. It is never sent to the shop pages, never in the page source, and never
+        in anything a customer can open.
+      </p>
+    );
+  }
+  const p = toCents(price);
+  const c = toCents(cost);
+  if (!Number.isFinite(p) || !Number.isFinite(c) || p <= 0) return null;
+  const profit = p - c;
+  const pct = c > 0 ? Math.round((profit / c) * 100) : null;
+  const thin = profit <= 0;
+  return (
+    <p className={`mt-2 text-xs ${thin ? "text-[color:var(--color-signal)]" : "text-ink"}`}>
+      {thin ? (
+        <>
+          That sells at <b>{money(Math.abs(profit))} {profit === 0 ? "break-even" : "below cost"}</b>.
+        </>
+      ) : (
+        <>
+          You make <b>{money(profit)}</b> on it{pct !== null ? <> — a {pct}% markup</> : null}.
+        </>
+      )}
+    </p>
+  );
+}
 
 function Editor({
   product,
@@ -62,6 +95,9 @@ function Editor({
   const [category, setCategory] = useState(src?.category ?? categories[0]?.slug ?? "");
   const [price, setPrice] = useState(dollars(src?.price_cents ?? null));
   const [msrp, setMsrp] = useState(dollars(src?.msrp_cents ?? null));
+  // What he paid. Never leaves the back office — the storefront queries name
+  // their columns and this is not one of them.
+  const [cost, setCost] = useState(dollars(src?.cost_cents ?? null));
   const [blurb, setBlurb] = useState(src?.blurb ?? "");
   // A copy takes the original's whole gallery, not just its main photo.
   const [images, setImages] = useState<string[]>(
@@ -91,6 +127,7 @@ function Editor({
       category,
       price_cents: toCents(price),
       msrp_cents: msrp.trim() === "" ? null : toCents(msrp),
+      cost_cents: cost.trim() === "" ? null : toCents(cost),
       blurb,
       images,
       featured,
@@ -187,6 +224,22 @@ function Editor({
           </span>
           <input value={msrp} inputMode="decimal" onChange={(e) => setMsrp(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
         </label>
+      </div>
+
+      <div className="mt-4 border border-line bg-ground p-3">
+        <label className="block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+            What it cost you <span className="normal-case tracking-normal">— only you ever see this</span>
+          </span>
+          <input
+            value={cost}
+            inputMode="decimal"
+            placeholder="leave blank if you would rather not record it"
+            onChange={(e) => setCost(e.currentTarget.value)}
+            className={`mt-1.5 max-w-[220px] ${input}`}
+          />
+        </label>
+        <Margin price={price} cost={cost} />
       </div>
 
       <label className="mt-4 block">

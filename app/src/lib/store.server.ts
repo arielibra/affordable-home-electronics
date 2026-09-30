@@ -39,6 +39,18 @@ function db(): D1Database {
   return d;
 }
 
+/**
+ * The only product columns a customer is ever sent.
+ *
+ * These queries used to be SELECT *, which meant every column the table would
+ * ever grow went straight into the page. `cost_cents` — what the shop paid —
+ * would have been sitting in the HTML of every product page the day it was
+ * added. Naming the columns makes the storefront private by default: a new
+ * column stays in the back office until somebody deliberately adds it here.
+ */
+const PUBLIC =
+  "slug, name, brand, brand_slug, category, price_cents, msrp_cents, blurb, image, featured, stock, stock_tracked, active";
+
 export async function listCategories(): Promise<Category[]> {
   const r = await db().prepare("SELECT slug,name,blurb,position FROM categories ORDER BY position").all<Category>();
   return r.results ?? [];
@@ -53,7 +65,7 @@ export async function categoryCounts(): Promise<Record<string, number>> {
 
 export async function featuredProducts(limit = 8): Promise<Product[]> {
   const r = await db()
-    .prepare("SELECT * FROM products WHERE featured = 1 AND active = 1 ORDER BY price_cents LIMIT ?1")
+    .prepare(`SELECT ${PUBLIC} FROM products WHERE featured = 1 AND active = 1 ORDER BY price_cents LIMIT ?1`)
     .bind(limit)
     .all<Product>();
   return r.results ?? [];
@@ -62,28 +74,28 @@ export async function featuredProducts(limit = 8): Promise<Product[]> {
 export async function productsIn(category: string, sort = "featured"): Promise<Product[]> {
   const order =
     sort === "price-asc" ? "price_cents ASC" : sort === "price-desc" ? "price_cents DESC" : sort === "name" ? "name ASC" : "featured DESC, price_cents ASC";
-  const r = await db().prepare(`SELECT * FROM products WHERE category = ?1 AND active = 1 ORDER BY ${order}`).bind(category).all<Product>();
+  const r = await db().prepare(`SELECT ${PUBLIC} FROM products WHERE category = ?1 AND active = 1 ORDER BY ${order}`).bind(category).all<Product>();
   return r.results ?? [];
 }
 
 export async function allProducts(sort = "featured"): Promise<Product[]> {
   const order =
     sort === "price-asc" ? "price_cents ASC" : sort === "price-desc" ? "price_cents DESC" : sort === "name" ? "name ASC" : "featured DESC, category, price_cents ASC";
-  const r = await db().prepare(`SELECT * FROM products WHERE active = 1 ORDER BY ${order}`).all<Product>();
+  const r = await db().prepare(`SELECT ${PUBLIC} FROM products WHERE active = 1 ORDER BY ${order}`).all<Product>();
   return r.results ?? [];
 }
 
 export async function searchProducts(q: string, limit = 60): Promise<Product[]> {
   const like = `%${q.trim().toLowerCase()}%`;
   const r = await db()
-    .prepare("SELECT * FROM products WHERE active = 1 AND (lower(name) LIKE ?1 OR lower(brand) LIKE ?1 OR lower(blurb) LIKE ?1) ORDER BY featured DESC, price_cents LIMIT ?2")
+    .prepare(`SELECT ${PUBLIC} FROM products WHERE active = 1 AND (lower(name) LIKE ?1 OR lower(brand) LIKE ?1 OR lower(blurb) LIKE ?1) ORDER BY featured DESC, price_cents LIMIT ?2`)
     .bind(like, limit)
     .all<Product>();
   return r.results ?? [];
 }
 
 export async function getProduct(slug: string): Promise<Product | null> {
-  return await db().prepare("SELECT * FROM products WHERE slug = ?1 AND active = 1").bind(slug).first<Product>();
+  return await db().prepare(`SELECT ${PUBLIC} FROM products WHERE slug = ?1 AND active = 1`).bind(slug).first<Product>();
 }
 
 /**
@@ -104,7 +116,7 @@ export async function productImages(slug: string, fallback: string): Promise<str
 
 export async function relatedProducts(p: Product, limit = 4): Promise<Product[]> {
   const r = await db()
-    .prepare("SELECT * FROM products WHERE category = ?1 AND slug <> ?2 AND active = 1 AND (stock_tracked = 0 OR stock > 0) ORDER BY abs(price_cents - ?3) LIMIT ?4")
+    .prepare(`SELECT ${PUBLIC} FROM products WHERE category = ?1 AND slug <> ?2 AND active = 1 AND (stock_tracked = 0 OR stock > 0) ORDER BY abs(price_cents - ?3) LIMIT ?4`)
     .bind(p.category, p.slug, p.price_cents, limit)
     .all<Product>();
   return r.results ?? [];

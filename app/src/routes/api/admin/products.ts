@@ -13,6 +13,7 @@ type Row = {
   category: string;
   price_cents: number;
   msrp_cents: number | null;
+  cost_cents: number | null;
   blurb: string;
   image: string;
   featured: number;
@@ -22,7 +23,7 @@ type Row = {
 };
 
 const COLUMNS =
-  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,blurb,image,featured,stock,stock_tracked,active";
+  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,image,featured,stock,stock_tracked,active";
 
 /** At most twenty, no blanks, no duplicates, order preserved. */
 function cleanImages(v: unknown): string[] | null {
@@ -170,11 +171,16 @@ export const Route = createFileRoute("/api/admin/products")({
         }
 
         const msrp = body.msrp_cents === null || body.msrp_cents === "" ? null : clampInt(body.msrp_cents, 1, 100000000);
+        // Null means "not recorded", which is not the same as a cost of zero.
+        const cost =
+          body.cost_cents === null || body.cost_cents === "" || body.cost_cents === undefined
+            ? null
+            : clampInt(body.cost_cents, 0, 100000000);
         const stock = clampInt(body.stock, 0, 100000) ?? 0;
 
         await DB.prepare(
-          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,blurb,image,featured,stock,stock_tracked,active)
-           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)`,
+          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,image,featured,stock,stock_tracked,active)
+           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)`,
         )
           .bind(
             slug,
@@ -184,6 +190,7 @@ export const Route = createFileRoute("/api/admin/products")({
             category,
             price,
             msrp,
+            cost,
             str(body.blurb, 600),
             // Filled in properly by writeImages below; this keeps the insert
             // valid for a product saved without any pictures at all.
@@ -247,6 +254,14 @@ export const Route = createFileRoute("/api/admin/products")({
             const n = clampInt(body.msrp_cents, 1, 100000000);
             if (n === null) return Response.json({ ok: false, error: "List price must be a number." }, { status: 400 });
             put("msrp_cents", n);
+          }
+        }
+        if ("cost_cents" in body) {
+          if (body.cost_cents === null || body.cost_cents === "") put("cost_cents", null);
+          else {
+            const n = clampInt(body.cost_cents, 0, 100000000);
+            if (n === null) return Response.json({ ok: false, error: "Cost must be a number." }, { status: 400 });
+            put("cost_cents", n);
           }
         }
         if ("name" in body) {
