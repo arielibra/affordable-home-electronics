@@ -150,41 +150,46 @@ export async function lockoutFor(ip: string): Promise<Lockout> {
   return { locked: true, minutesLeft: Math.max(1, row.mins ?? 1) };
 }
 
-/** Record a wrong password and lock the address once it has had enough goes. */
+/**
+ * Record a wrong password and lock the address once it has had enough goes.
+ *
+ * The count and the lock decision happen in ONE statement, on purpose. Doing
+ * the increment and then reading the total back in a second query looks
+ * equivalent and is not: D1 serves reads from replicas, so a parallel burst of
+ * guesses can read a stale count and skip setting the lock. The increments are
+ * never lost, so the lock still lands — but a few guesses later than it should,
+ * which is exactly the margin an attacker is trying to buy. RETURNING gives the
+ * post-write value from the write itself, so there is no window.
+ */
 export async function recordFailure(ip: string, country: string): Promise<Lockout> {
-  // A fresh run of failures if the last one was long ago.
-  await db()
+  // Repeated in both branches because SQLite has no way to name the new value
+  // mid-statement. `login_attempts.fails` is the pre-update value.
+  const nextFails =
+    `CASE WHEN login_attempts.first_fail_at < datetime('now', ?3) THEN 1 ELSE login_attempts.fails + 1 END`;
+
+  const row = await db()
     .prepare(
       `INSERT INTO login_attempts (ip, fails, first_fail_at, last_fail_at, country)
        VALUES (?1, 1, datetime('now'), datetime('now'), ?2)
        ON CONFLICT(ip) DO UPDATE SET
-         fails = CASE
-                   WHEN login_attempts.first_fail_at < datetime('now', ?3) THEN 1
-                   ELSE login_attempts.fails + 1
-                 END,
+         fails = ${nextFails},
          first_fail_at = CASE
-                   WHEN login_attempts.first_fail_at < datetime('now', ?3) THEN datetime('now')
-                   ELSE login_attempts.first_fail_at
-                 END,
+                           WHEN login_attempts.first_fail_at < datetime('now', ?3) THEN datetime('now')
+                           ELSE login_attempts.first_fail_at
+                         END,
          last_fail_at = datetime('now'),
-         country = ?2`,
+         country = ?2,
+         locked_until = CASE
+                          WHEN ${nextFails} >= ?4 THEN datetime('now', ?5)
+                          ELSE login_attempts.locked_until
+                        END
+       RETURNING fails, locked_until`,
     )
-    .bind(ip, country, `-${WINDOW_MINUTES} minutes`)
-    .run();
+    .bind(ip, country, `-${WINDOW_MINUTES} minutes`, MAX_FAILS, `+${LOCKOUT_MINUTES} minutes`)
+    .first<{ fails: number; locked_until: string | null }>();
 
-  const row = await db()
-    .prepare("SELECT fails FROM login_attempts WHERE ip = ?1")
-    .bind(ip)
-    .first<{ fails: number }>();
-
-  if ((row?.fails ?? 0) >= MAX_FAILS) {
-    await db()
-      .prepare("UPDATE login_attempts SET locked_until = datetime('now', ?2) WHERE ip = ?1")
-      .bind(ip, `+${LOCKOUT_MINUTES} minutes`)
-      .run();
-    return { locked: true, minutesLeft: LOCKOUT_MINUTES };
-  }
-  return { locked: false, minutesLeft: 0 };
+  const locked = Boolean(row?.locked_until) && (row?.fails ?? 0) >= MAX_FAILS;
+  return { locked, minutesLeft: locked ? LOCKOUT_MINUTES : 0 };
 }
 
 /** A correct password wipes that address's record clean. */
