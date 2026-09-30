@@ -54,16 +54,28 @@ async function writeImages(DB: D1Database, slug: string, images: string[]): Prom
   await DB.prepare("UPDATE products SET image = ?2 WHERE slug = ?1").bind(slug, images[0] ?? "").run();
 }
 
+/**
+ * D1 refuses a query with more than 100 bound parameters, so the slugs go in
+ * batches. One `IN (?…)` with a parameter per product looked fine against the
+ * 127 products that existed when it was written and broke the whole Products
+ * tab the moment there were more — the query threw, the endpoint 500'd, and
+ * the panel sat on "Loading." with nothing to say.
+ */
+const BATCH = 50;
+
 async function readImages(DB: D1Database, slugs: string[]): Promise<Record<string, string[]>> {
-  if (slugs.length === 0) return {};
-  const ph = slugs.map((_, i) => `?${i + 1}`).join(",");
-  const r = await DB.prepare(
-    `SELECT product_slug, url FROM product_images WHERE product_slug IN (${ph}) ORDER BY product_slug, position`,
-  )
-    .bind(...slugs)
-    .all<{ product_slug: string; url: string }>();
   const out: Record<string, string[]> = {};
-  for (const row of r.results ?? []) (out[row.product_slug] ??= []).push(row.url);
+  for (let i = 0; i < slugs.length; i += BATCH) {
+    const group = slugs.slice(i, i + BATCH);
+    if (group.length === 0) continue;
+    const ph = group.map((_, j) => `?${j + 1}`).join(",");
+    const r = await DB.prepare(
+      `SELECT product_slug, url FROM product_images WHERE product_slug IN (${ph}) ORDER BY product_slug, position`,
+    )
+      .bind(...group)
+      .all<{ product_slug: string; url: string }>();
+    for (const row of r.results ?? []) (out[row.product_slug] ??= []).push(row.url);
+  }
   return out;
 }
 

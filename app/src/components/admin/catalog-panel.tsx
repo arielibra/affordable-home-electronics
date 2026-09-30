@@ -306,15 +306,25 @@ function Editor({
 
 export function CatalogPanel() {
   const [products, setProducts] = useState<CatalogProduct[] | null>(null);
+  const [loadError, setLoadError] = useState("");
   const [categories, setCategories] = useState<Option[]>([]);
   const [brands, setBrands] = useState<Option[]>([]);
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<EditTarget | null>(null);
 
+  // Without this, a failing request left the tab saying "Loading." for ever,
+  // which looks identical to a slow connection and tells him nothing.
   async function load() {
-    const res = await fetch("/api/admin/products");
-    const data = (await res.json()) as { ok: boolean; products?: CatalogProduct[] };
-    setProducts(data.products ?? []);
+    try {
+      const res = await fetch("/api/admin/products");
+      const data = (await res.json()) as { ok: boolean; products?: CatalogProduct[]; error?: string };
+      if (!data.ok && data.error) setLoadError(data.error);
+      else setLoadError("");
+      setProducts(data.products ?? []);
+    } catch {
+      setLoadError("Could not load the catalogue. Reload the page; if it keeps happening the site needs a look.");
+      setProducts([]);
+    }
   }
 
   useEffect(() => {
@@ -374,6 +384,10 @@ export function CatalogPanel() {
             }}
           />
         </div>
+      ) : null}
+
+      {loadError ? (
+        <p className="mt-5 border border-line bg-ground p-3 text-sm text-[color:var(--color-signal)]">{loadError}</p>
       ) : null}
 
       <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">

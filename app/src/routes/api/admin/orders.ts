@@ -86,15 +86,17 @@ export const Route = createFileRoute("/api/admin/orders")({
         const rows = orders.results ?? [];
         const ids = rows.map((o) => o.id);
 
-        let byOrder: Record<string, { name: string; qty: number; price_cents: number }[]> = {};
-        if (ids.length > 0) {
-          const placeholders = ids.map((_, i) => `?${i + 1}`).join(",");
+        // In batches: D1 refuses more than 100 bound parameters in one query,
+        // and "Everything" already returns more orders than that.
+        const byOrder: Record<string, { name: string; qty: number; price_cents: number }[]> = {};
+        for (let i = 0; i < ids.length; i += 50) {
+          const group = ids.slice(i, i + 50);
+          const placeholders = group.map((_, j) => `?${j + 1}`).join(",");
           const items = await DB.prepare(
             `SELECT order_id, name, qty, price_cents FROM order_items WHERE order_id IN (${placeholders})`,
           )
-            .bind(...ids)
+            .bind(...group)
             .all<{ order_id: string; name: string; qty: number; price_cents: number }>();
-          byOrder = {};
           for (const it of items.results ?? []) {
             (byOrder[it.order_id] ??= []).push({ name: it.name, qty: it.qty, price_cents: it.price_cents });
           }
