@@ -1,5 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { adminConfigured, checkPassword, createSession, logAdmin, sessionCookie } from "../../../lib/admin.server";
+
+import {
+  adminConfigured,
+  checkPassword,
+  clearFailures,
+  clientCountry,
+  clientIp,
+  createSession,
+  lockoutFor,
+  logAdmin,
+  pruneAttempts,
+  recordFailure,
+  sessionCookie,
+} from "../../../lib/admin.server";
 
 export const Route = createFileRoute("/api/admin/login")({
   server: {
@@ -12,6 +25,25 @@ export const Route = createFileRoute("/api/admin/login")({
           );
         }
 
+        const ip = clientIp(request);
+
+        // Checked BEFORE the password is read or compared. A locked-out
+        // address learns nothing at all about whether its guess was right,
+        // and a correct password during a lockout still does not let anyone
+        // in — which is what makes the limit worth anything.
+        const lock = await lockoutFor(ip);
+        if (lock.locked) {
+          return Response.json(
+            {
+              ok: false,
+              error: `Too many wrong passwords. Try again in ${lock.minutesLeft} minute${
+                lock.minutesLeft === 1 ? "" : "s"
+              }.`,
+            },
+            { status: 429, headers: { "Retry-After": String(lock.minutesLeft * 60) } },
+          );
+        }
+
         let body: { password?: unknown };
         try {
           body = (await request.json()) as typeof body;
@@ -21,15 +53,31 @@ export const Route = createFileRoute("/api/admin/login")({
         const password = typeof body.password === "string" ? body.password : "";
 
         if (!checkPassword(password)) {
-          // Slow every failure down so the password cannot be guessed quickly.
-          await new Promise((r) => setTimeout(r, 700));
-          await logAdmin("login_failed", "", "");
+          const now = await recordFailure(ip, clientCountry(request));
+          await logAdmin("login_failed", ip, clientCountry(request));
+          if (now.locked) {
+            return Response.json(
+              {
+                ok: false,
+                error: `Too many wrong passwords. Try again in ${now.minutesLeft} minutes.`,
+              },
+              { status: 429, headers: { "Retry-After": String(now.minutesLeft * 60) } },
+            );
+          }
           return Response.json({ ok: false, error: "That password is not right." }, { status: 401 });
         }
 
+        // The right password wipes that address's record, so an honest
+        // mistype or two never accumulates into a lockout later.
+        await clearFailures(ip);
+        await pruneAttempts();
+
         const token = await createSession();
-        await logAdmin("login", "", "");
-        return Response.json({ ok: true }, { headers: { "Set-Cookie": sessionCookie(token), "Cache-Control": "no-store" } });
+        await logAdmin("login", ip, clientCountry(request));
+        return Response.json(
+          { ok: true },
+          { headers: { "Set-Cookie": sessionCookie(token), "Cache-Control": "no-store" } },
+        );
       },
     },
   },

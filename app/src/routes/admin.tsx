@@ -23,17 +23,63 @@ export const Route = createFileRoute("/admin")({
 
 type Tab = "catalog" | "stock" | "brands" | "orders" | "messages";
 
+type Security = {
+  fails24h: number;
+  addresses24h: number;
+  lockedNow: number;
+  lastAt: string | null;
+  countries: string[];
+};
+
+/**
+ * Only shown when something actually looks like an attempt to get in.
+ *
+ * The distinction that matters is attempts versus addresses: one address
+ * failing a few times is a forgotten password, several addresses failing is
+ * somebody working through a list. A banner that cried wolf on every mistype
+ * would be ignored within a week, so a single address under the lockout
+ * threshold says nothing at all.
+ */
+function SecurityBanner({ s }: { s: Security }) {
+  const many = s.addresses24h > 1;
+  const noisy = s.fails24h >= 5 || s.lockedNow > 0 || many;
+  if (!noisy) return null;
+  return (
+    <div className="mt-6 border border-line border-l-[3px] border-l-[color:var(--color-signal)] bg-surface p-4">
+      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Sign-in attempts</p>
+      <p className="mt-2 text-sm leading-relaxed text-ink">
+        <b>{s.fails24h}</b> failed sign-in{s.fails24h === 1 ? "" : "s"} in the last 24 hours, from{" "}
+        <b>{s.addresses24h}</b> address{s.addresses24h === 1 ? "" : "es"}
+        {s.countries.length ? ` (${s.countries.join(", ")})` : ""}.
+        {s.lockedNow > 0 ? (
+          <>
+            {" "}
+            <b>{s.lockedNow}</b> {s.lockedNow === 1 ? "is" : "are"} locked out right now.
+          </>
+        ) : null}
+      </p>
+      <p className="mt-2 max-w-[74ch] text-xs leading-relaxed text-muted">
+        {many
+          ? "Several different addresses is the pattern worth noticing — that is someone guessing, not a forgotten password. Each is shut out for 15 minutes after 5 wrong tries, so the password itself is not at risk unless it is an easy one."
+          : "Probably just a mistyped password. Worth a glance rather than a worry."}
+      </p>
+    </div>
+  );
+}
+
 function Admin() {
   const [status, setStatus] = useState<"checking" | "unconfigured" | "out" | "in">("checking");
   const [tab, setTab] = useState<Tab>("catalog");
+  const [security, setSecurity] = useState<Security | null>(null);
 
   useEffect(() => {
     let alive = true;
     fetch("/api/admin/session")
-      .then((r) => r.json() as Promise<{ configured: boolean; authed: boolean }>)
+      .then((r) => r.json() as Promise<{ configured: boolean; authed: boolean; security: Security | null }>)
       .then((d) => {
         if (!alive) return;
         setStatus(!d.configured ? "unconfigured" : d.authed ? "in" : "out");
+        setSecurity(d.security ?? null);
       })
       .catch(() => alive && setStatus("out"));
     return () => {
@@ -89,6 +135,8 @@ function Admin() {
           </button>
         </div>
       </div>
+
+      {security ? <SecurityBanner s={security} /> : null}
 
       <div className="mt-6 flex flex-wrap gap-1 border-b border-line">
         {(
