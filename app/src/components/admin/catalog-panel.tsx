@@ -21,35 +21,57 @@ export type CatalogProduct = {
 
 type Option = { slug: string; name: string };
 
+/** What the editor is open for: a fresh product, one being changed, or a copy
+ *  of an existing one. */
+type EditTarget =
+  | { kind: "new" }
+  | { kind: "edit"; product: CatalogProduct }
+  | { kind: "clone"; product: CatalogProduct };
+
 const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
 const dollars = (cents: number | null) => (cents === null ? "" : (cents / 100).toFixed(2));
 const toCents = (v: string) => Math.round(Number(v.replace(/[^0-9.]/g, "")) * 100);
 
 function Editor({
   product,
+  cloneOf,
   categories,
   brands,
   onDone,
   onCancel,
 }: {
+  /** The product being changed. Null when making a new one. */
   product: CatalogProduct | null;
+  /** When making a new one, the product to copy the details from. */
+  cloneOf?: CatalogProduct | null;
   categories: Option[];
   brands: Option[];
   onDone: () => void;
   onCancel: () => void;
 }) {
-  const [name, setName] = useState(product?.name ?? "");
+  // Where the starting values come from: the product itself when editing, the
+  // original when copying, nothing at all when starting fresh.
+  const src = product ?? cloneOf ?? null;
+
+  const [name, setName] = useState(
+    product ? product.name : cloneOf ? `${cloneOf.name} (copy)` : "",
+  );
   const [slug, setSlug] = useState("");
-  const [brand, setBrand] = useState(product?.brand_slug ?? "");
-  const [category, setCategory] = useState(product?.category ?? categories[0]?.slug ?? "");
-  const [price, setPrice] = useState(dollars(product?.price_cents ?? null));
-  const [msrp, setMsrp] = useState(dollars(product?.msrp_cents ?? null));
-  const [blurb, setBlurb] = useState(product?.blurb ?? "");
-  const [image, setImage] = useState(product?.image ?? "");
+  const [brand, setBrand] = useState(src?.brand_slug ?? "");
+  const [category, setCategory] = useState(src?.category ?? categories[0]?.slug ?? "");
+  const [price, setPrice] = useState(dollars(src?.price_cents ?? null));
+  const [msrp, setMsrp] = useState(dollars(src?.msrp_cents ?? null));
+  const [blurb, setBlurb] = useState(src?.blurb ?? "");
+  const [image, setImage] = useState(src?.image ?? "");
+  // Three things are deliberately NOT copied. Featured would put two of the
+  // same thing on the front page. Stock belongs to the original, not to a
+  // product that does not exist yet. And a copy starts unlisted, so a
+  // half-finished duplicate never appears in the shop while he is still
+  // deciding what to change about it.
   const [featured, setFeatured] = useState(product ? product.featured === 1 : false);
   const [stock, setStock] = useState(String(product?.stock ?? 0));
-  const [tracked, setTracked] = useState(product ? product.stock_tracked === 1 : false);
-  const [active, setActive] = useState(product ? product.active === 1 : true);
+  const [tracked, setTracked] = useState(src ? src.stock_tracked === 1 : false);
+  const [active, setActive] = useState(product ? product.active === 1 : cloneOf ? false : true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -96,7 +118,16 @@ function Editor({
 
   return (
     <div className="border border-ink bg-surface p-5">
-      <h3 className="text-sm font-semibold text-ink">{product ? `Editing ${product.name}` : "New product"}</h3>
+      <h3 className="text-sm font-semibold text-ink">
+        {product ? `Editing ${product.name}` : cloneOf ? `Copy of ${cloneOf.name}` : "New product"}
+      </h3>
+      {cloneOf ? (
+        <p className="mt-2 max-w-[70ch] text-xs leading-relaxed text-muted">
+          Everything has been copied across except the stock count and the front-page flag. It is{" "}
+          <b>not listed in the shop yet</b> &mdash; change what needs changing, give it its own part number, then tick
+          Listed when it is ready. The original is untouched.
+        </p>
+      ) : null}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
@@ -221,7 +252,7 @@ export function CatalogPanel() {
   const [categories, setCategories] = useState<Option[]>([]);
   const [brands, setBrands] = useState<Option[]>([]);
   const [q, setQ] = useState("");
-  const [editing, setEditing] = useState<CatalogProduct | null | "new">(null);
+  const [editing, setEditing] = useState<EditTarget | null>(null);
 
   async function load() {
     const res = await fetch("/api/admin/products");
@@ -263,7 +294,7 @@ export function CatalogPanel() {
         {editing === null ? (
           <button
             type="button"
-            onClick={() => setEditing("new")}
+            onClick={() => setEditing({ kind: "new" })}
             className="h-10 bg-ink px-5 text-sm font-medium text-surface active:scale-[0.98]"
           >
             Add a product
@@ -274,7 +305,9 @@ export function CatalogPanel() {
       {editing !== null ? (
         <div className="mt-5">
           <Editor
-            product={editing === "new" ? null : editing}
+            key={editing.kind === "new" ? "new" : `${editing.kind}:${editing.product.slug}`}
+            product={editing.kind === "edit" ? editing.product : null}
+            cloneOf={editing.kind === "clone" ? editing.product : null}
             categories={categories}
             brands={brands}
             onCancel={() => setEditing(null)}
@@ -308,13 +341,23 @@ export function CatalogPanel() {
                 {p.stock_tracked ? `${p.stock} in stock` : "always available"}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setEditing(p)}
-              className="ml-2 shrink-0 text-xs text-ink underline underline-offset-4"
-            >
-              Edit
-            </button>
+            <div className="ml-2 flex shrink-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setEditing({ kind: "edit", product: p })}
+                className="text-xs text-ink underline underline-offset-4"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing({ kind: "clone", product: p })}
+                title={`Start a new product from ${p.name}`}
+                className="text-xs text-muted underline underline-offset-4 hover:text-ink"
+              >
+                Copy
+              </button>
+            </div>
           </div>
         ))}
       </div>
