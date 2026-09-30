@@ -34,17 +34,11 @@ const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink fo
 const dollars = (cents: number | null) => (cents === null ? "" : (cents / 100).toFixed(2));
 const toCents = (v: string) => Math.round(Number(v.replace(/[^0-9.]/g, "")) * 100);
 
-/** Worked out as he types, so the number he is choosing has its consequence
- *  next to it rather than in a spreadsheet afterwards. */
+/** Worked out as he types, so the consequence of a price sits next to the
+ *  price rather than in a spreadsheet afterwards. Renders nothing at all when
+ *  there is nothing to say. */
 function Margin({ price, cost }: { price: string; cost: string }) {
-  if (!cost.trim() || !price.trim()) {
-    return (
-      <p className="mt-2 text-[11px] leading-relaxed text-muted">
-        Used only for your own margin figures. It is never sent to the shop pages, never in the page source, and never
-        in anything a customer can open.
-      </p>
-    );
-  }
+  if (!cost.trim() || !price.trim()) return null;
   const p = toCents(price);
   const c = toCents(cost);
   if (!Number.isFinite(p) || !Number.isFinite(c) || p <= 0) return null;
@@ -52,17 +46,18 @@ function Margin({ price, cost }: { price: string; cost: string }) {
   const pct = c > 0 ? Math.round((profit / c) * 100) : null;
   const thin = profit <= 0;
   return (
-    <p className={`mt-2 text-xs ${thin ? "text-[color:var(--color-signal)]" : "text-ink"}`}>
+    <span className={`text-sm ${thin ? "text-[color:var(--color-signal)]" : "text-ink"}`}>
       {thin ? (
         <>
-          That sells at <b>{money(Math.abs(profit))} {profit === 0 ? "break-even" : "below cost"}</b>.
+          Sells at <b>{profit === 0 ? "break-even" : `${money(Math.abs(profit))} below cost`}</b>
         </>
       ) : (
         <>
-          You make <b>{money(profit)}</b> on it{pct !== null ? <> — a {pct}% markup</> : null}.
+          You make <b>{money(profit)}</b>
+          {pct !== null ? <span className="text-muted"> · {pct}% markup</span> : null}
         </>
       )}
-    </p>
+    </span>
   );
 }
 
@@ -226,20 +221,23 @@ function Editor({
         </label>
       </div>
 
-      <div className="mt-4 border border-line bg-ground p-3">
+      <div className="mt-4 border border-line bg-ground p-4">
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
-            What it cost you <span className="normal-case tracking-normal">— only you ever see this</span>
+          <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-muted">What it cost you</span>
+          <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <input
+              value={cost}
+              inputMode="decimal"
+              onChange={(e) => setCost(e.currentTarget.value)}
+              className={`${input} block w-[150px] shrink-0`}
+            />
+            <Margin price={price} cost={cost} />
           </span>
-          <input
-            value={cost}
-            inputMode="decimal"
-            placeholder="leave blank if you would rather not record it"
-            onChange={(e) => setCost(e.currentTarget.value)}
-            className={`mt-1.5 max-w-[220px] ${input}`}
-          />
         </label>
-        <Margin price={price} cost={cost} />
+        <p className="mt-2.5 max-w-[68ch] text-[11px] leading-relaxed text-muted">
+          Only you ever see this. It is never sent to the shop pages, never in the page source, and never in anything a
+          customer can open. Leave it blank if you would rather not record it.
+        </p>
       </div>
 
       <label className="mt-4 block">
