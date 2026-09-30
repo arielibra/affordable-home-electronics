@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { BrandsPanel } from "../components/admin/brands-panel";
 import { CatalogPanel } from "../components/admin/catalog-panel";
+import { CategoriesPanel } from "../components/admin/categories-panel";
 import { MessagesPanel } from "../components/admin/messages-panel";
 import { OrdersPanel } from "../components/admin/orders-panel";
 import { StockPanel } from "../components/admin/stock-panel";
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-type Tab = "catalog" | "stock" | "brands" | "orders" | "messages";
+type Tab = "catalog" | "stock" | "categories" | "brands" | "orders" | "messages";
 
 type Security = {
   fails24h: number;
@@ -143,6 +144,7 @@ function Admin() {
           [
             ["catalog", "Products"],
             ["stock", "Prices and stock"],
+            ["categories", "Categories"],
             ["brands", "Brands"],
             ["orders", "Orders"],
             ["messages", "Messages"],
@@ -167,6 +169,8 @@ function Admin() {
           <CatalogPanel />
         ) : tab === "stock" ? (
           <StockPanel />
+        ) : tab === "categories" ? (
+          <CategoriesPanel />
         ) : tab === "brands" ? (
           <BrandsPanel />
         ) : tab === "orders" ? (

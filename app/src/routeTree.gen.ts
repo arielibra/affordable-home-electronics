@@ -46,6 +46,7 @@ import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
 import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
 import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
+import { Route as ApiAdminCategoriesRouteImport } from './routes/api/admin/categories'
 import { Route as ApiAdminBrandsRouteImport } from './routes/api/admin/brands'
 
 const WarrantyRoute = WarrantyRouteImport.update({
@@ -233,6 +234,11 @@ const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
   path: '/api/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminCategoriesRoute = ApiAdminCategoriesRouteImport.update({
+  id: '/api/admin/categories',
+  path: '/api/admin/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminBrandsRoute = ApiAdminBrandsRouteImport.update({
   id: '/api/admin/brands',
   path: '/api/admin/brands',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
+  '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
@@ -306,6 +313,7 @@ export interface FileRoutesByTo {
   '/shop/$category': typeof ShopCategoryRoute
   '/shop': typeof ShopIndexRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
+  '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
+  '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/shop/$category'
     | '/shop/'
     | '/api/admin/brands'
+    | '/api/admin/categories'
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/messages'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/shop/$category'
     | '/shop'
     | '/api/admin/brands'
+    | '/api/admin/categories'
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/messages'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/shop/$category'
     | '/shop/'
     | '/api/admin/brands'
+    | '/api/admin/categories'
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/messages'
@@ -510,6 +522,7 @@ export interface RootRouteChildren {
   ShopCategoryRoute: typeof ShopCategoryRoute
   ShopIndexRoute: typeof ShopIndexRoute
   ApiAdminBrandsRoute: typeof ApiAdminBrandsRoute
+  ApiAdminCategoriesRoute: typeof ApiAdminCategoriesRoute
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
   ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
   ApiAdminMessagesRoute: typeof ApiAdminMessagesRoute
@@ -785,6 +798,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/categories': {
+      id: '/api/admin/categories'
+      path: '/api/admin/categories'
+      fullPath: '/api/admin/categories'
+      preLoaderRoute: typeof ApiAdminCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/brands': {
       id: '/api/admin/brands'
       path: '/api/admin/brands'
@@ -822,6 +842,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopCategoryRoute: ShopCategoryRoute,
   ShopIndexRoute: ShopIndexRoute,
   ApiAdminBrandsRoute: ApiAdminBrandsRoute,
+  ApiAdminCategoriesRoute: ApiAdminCategoriesRoute,
   ApiAdminLoginRoute: ApiAdminLoginRoute,
   ApiAdminLogoutRoute: ApiAdminLogoutRoute,
   ApiAdminMessagesRoute: ApiAdminMessagesRoute,
