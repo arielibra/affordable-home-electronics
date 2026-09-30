@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { CARRIERS, STATE_LABEL, carrierName, trackingUrl, type OrderState } from "../../lib/orders";
+import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, trackingUrl, type OrderState } from "../../lib/orders";
+import { AddOrder } from "./add-order";
 import { money } from "../../lib/site";
 
 type Item = { name: string; qty: number; price_cents: number };
@@ -29,6 +30,8 @@ export type AdminOrder = {
   created_at: string;
   paid_at: string | null;
   shipped_at: string | null;
+  channel: string;
+  channel_ref: string;
   items: Item[];
 };
 
@@ -87,6 +90,11 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
             <span className="border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
               {STATE_LABEL[order.status as OrderState] ?? order.status}
             </span>
+            {order.channel && order.channel !== "site" ? (
+              <span className="border border-ink px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink">
+                {channelName(order.channel)}
+              </span>
+            ) : null}
           </span>
           <span className="mt-1 block truncate text-sm text-muted">
             {order.name || "No name"} · {when(order.paid_at ?? order.created_at)}
@@ -133,6 +141,13 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
                 </div>
               ))}
             </dl>
+
+            {order.channel && order.channel !== "site" ? (
+              <p className="mt-3 text-sm text-muted">
+                {channelName(order.channel)} order{" "}
+                <span className="font-mono text-ink">{order.channel_ref}</span>
+              </p>
+            ) : null}
 
             <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Ships to</p>
             <p className="mt-1.5 text-sm leading-relaxed text-ink">
@@ -235,8 +250,12 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
 
 function YearView({ years }: { years: string[] }) {
   const [year, setYear] = useState(years[0] ?? String(new Date().getFullYear()));
+  type Sums = { orders: number; subtotal: number; shipping: number; tax: number; total: number };
   const [data, setData] = useState<{
-    totals: { orders: number; subtotal: number; shipping: number; tax: number; total: number };
+    totals: Sums;
+    own: Sums;
+    marketplace: Sums;
+    byChannel: (Sums & { id: string; name: string })[];
     unpaid: number;
   } | null>(null);
 
@@ -289,12 +308,52 @@ function YearView({ years }: { years: string[] }) {
             ))}
           </div>
 
+          {data.marketplace.orders > 0 ? (
+            <div className="mt-6 grid gap-px border border-line bg-line sm:grid-cols-2">
+              <div className="bg-surface p-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                  Your own sales — the tax you file
+                </p>
+                <p className="mt-3 font-mono text-[22px] leading-none tracking-tight text-ink">
+                  {money(data.own.total)}
+                </p>
+                <p className="mt-2 text-xs text-muted">
+                  {data.own.orders} order{data.own.orders === 1 ? "" : "s"} · {money(data.own.tax)} sales tax collected
+                </p>
+              </div>
+              <div className="bg-surface p-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                  Marketplace sales — tax already remitted
+                </p>
+                <p className="mt-3 font-mono text-[22px] leading-none tracking-tight text-ink">
+                  {money(data.marketplace.total)}
+                </p>
+                <p className="mt-2 text-xs text-muted">
+                  {data.marketplace.orders} order{data.marketplace.orders === 1 ? "" : "s"} ·{" "}
+                  {data.byChannel
+                    .filter((c) => c.id !== "site" && c.orders > 0)
+                    .map((c) => `${c.name} ${money(c.total)}`)
+                    .join(" · ")}
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           <p className="mt-4 max-w-[70ch] text-xs leading-relaxed text-muted">
             Counts money actually taken, by the date it was paid — so an order placed in December and paid in January
             lands in January. {data.unpaid > 0
               ? `${data.unpaid} order${data.unpaid === 1 ? " was" : "s were"} raised in ${year} and never paid; ${data.unpaid === 1 ? "it is" : "they are"} not in these figures.`
               : "Every order raised this year was paid."}
           </p>
+
+          {data.marketplace.orders > 0 ? (
+            <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-xs leading-relaxed text-muted">
+              The two boxes above are split because they are filed differently. Amazon, eBay, Walmart and Etsy are
+              required to collect sales tax on your behalf and pay it to the state themselves, so the only sales tax
+              you owe New York is the amount on the left. Give your accountant the spreadsheet rather than the headline
+              figure — it labels every row with where it sold and who remitted the tax.
+            </p>
+          ) : null}
         </>
       )}
     </div>
@@ -303,22 +362,28 @@ function YearView({ years }: { years: string[] }) {
 
 export function OrdersPanel() {
   const [tab, setTab] = useState<Tab>("paid");
+  const [channel, setChannel] = useState("all");
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [chanCounts, setChanCounts] = useState<Record<string, number>>({});
   const [years, setYears] = useState<string[]>([]);
 
   const load = useCallback(async () => {
-    const qs = tab === "all" || tab === "year" ? "" : `?status=${tab}`;
-    const res = await fetch(`/api/admin/orders${qs}`);
+    const qs = new URLSearchParams();
+    if (tab !== "all" && tab !== "year") qs.set("status", tab);
+    if (channel !== "all") qs.set("channel", channel);
+    const res = await fetch(`/api/admin/orders${qs.toString() ? `?${qs}` : ""}`);
     const data = (await res.json()) as {
       orders?: AdminOrder[];
       counts?: Record<string, number>;
+      channels?: Record<string, number>;
       years?: string[];
     };
     setOrders(data.orders ?? []);
     setCounts(data.counts ?? {});
+    setChanCounts(data.channels ?? {});
     setYears(data.years ?? []);
-  }, [tab]);
+  }, [tab, channel]);
 
   useEffect(() => {
     void load();
@@ -345,6 +410,30 @@ export function OrdersPanel() {
       </div>
 
       <div className="pt-6">
+        {tab !== "year" ? (
+          <>
+            <AddOrder onAdded={() => void load()} />
+            {Object.keys(chanCounts).filter((c) => c !== "site").length > 0 ? (
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Where from</span>
+                {["all", ...CHANNELS.map((c) => c.id).filter((c) => chanCounts[c])].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setChannel(c)}
+                    className={`border px-2 py-1 text-xs ${
+                      channel === c ? "border-ink text-ink" : "border-line text-muted hover:border-ink hover:text-ink"
+                    }`}
+                  >
+                    {c === "all" ? "Everywhere" : channelName(c)}
+                    {c !== "all" ? <span className="ml-1.5 font-mono text-[10px] text-muted">{chanCounts[c]}</span> : null}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+
         {tab === "year" ? (
           <YearView years={years} />
         ) : !orders ? (

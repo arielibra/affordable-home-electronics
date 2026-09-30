@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
-import { CARRIERS, MANUAL_STATES, type OrderState } from "../../../lib/orders";
+import { CARRIERS, CHANNELS, MANUAL_STATES, type OrderState } from "../../../lib/orders";
 
 type Order = {
   id: string;
@@ -28,11 +28,13 @@ type Order = {
   created_at: string;
   paid_at: string | null;
   shipped_at: string | null;
+  channel: string;
+  channel_ref: string;
 };
 
 const COLUMNS = `id,reference,name,email,phone,address1,address2,city,state,zip,notes,
   subtotal_cents,shipping_cents,tax_cents,amount_total_cents,status,provider,
-  carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at`;
+  carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at,channel,channel_ref`;
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -59,6 +61,11 @@ export const Route = createFileRoute("/api/admin/orders")({
         if (year) {
           binds.push(year);
           where.push(`strftime('%Y', created_at) = ?${binds.length}`);
+        }
+        const channel = url.searchParams.get("channel") ?? "";
+        if (channel && channel !== "all") {
+          binds.push(channel);
+          where.push(`channel = ?${binds.length}`);
         }
         const clause = where.length ? ` WHERE ${where.join(" AND ")}` : "";
 
@@ -92,6 +99,9 @@ export const Route = createFileRoute("/api/admin/orders")({
         const years = await DB.prepare(
           "SELECT DISTINCT strftime('%Y', created_at) AS y FROM orders ORDER BY y DESC",
         ).all<{ y: string }>();
+        const chan = await DB.prepare(
+          "SELECT channel, COUNT(*) AS n FROM orders GROUP BY channel",
+        ).all<{ channel: string; n: number }>();
 
         return Response.json(
           {
@@ -99,9 +109,169 @@ export const Route = createFileRoute("/api/admin/orders")({
             orders: rows.map((o) => ({ ...o, items: byOrder[o.id] ?? [] })),
             counts: Object.fromEntries((counts.results ?? []).map((c) => [c.status, c.n])),
             years: (years.results ?? []).map((r) => r.y).filter(Boolean),
+            channels: Object.fromEntries((chan.results ?? []).map((c) => [c.channel, c.n])),
           },
           { headers: { "Cache-Control": "no-store" } },
         );
+      },
+
+      /**
+       * Record an order that did not come through this site.
+       *
+       * His dad also sells on Amazon and eBay and wants one place to look, so
+       * these are typed in by hand and then travel through exactly the same
+       * Paid -> Ready to ship -> Shipped workflow as everything else.
+       *
+       * Two things this deliberately does not do. It does not touch stock:
+       * marketplace listings are managed on the marketplace, and a late entry
+       * silently changing what this site has on the shelf would be worse than
+       * no link at all. And it records no sales tax, because Amazon, eBay,
+       * Walmart and Etsy collect and remit it themselves \u2014 putting it here
+       * would mean New York is paid twice for the same sale.
+       */
+      PUT: async ({ request }) => {
+        if (!(await isSignedIn(request))) return denied();
+        const DB = bindings().DB;
+        if (!DB) return Response.json({ ok: false, error: "No database." }, { status: 503 });
+
+        let body: Record<string, unknown>;
+        try {
+          body = (await request.json()) as Record<string, unknown>;
+        } catch {
+          return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
+        }
+
+        const channel = str(body.channel, 20);
+        const chan = CHANNELS.find((c) => c.id === channel);
+        if (!chan || channel === "site") {
+          return Response.json({ ok: false, error: "Pick where the order came from." }, { status: 400 });
+        }
+
+        const channelRef = str(body.channel_ref, 80);
+        if (!channelRef) {
+          return Response.json(
+            { ok: false, error: `Put in the ${chan.name} order number, so this can be matched back later.` },
+            { status: 400 },
+          );
+        }
+
+        // Entering the same order twice is the easy mistake here, and it would
+        // quietly inflate the year's takings with a sale that never happened.
+        const dupe = await DB.prepare(
+          "SELECT reference FROM orders WHERE channel = ?1 AND channel_ref = ?2",
+        )
+          .bind(channel, channelRef)
+          .first<{ reference: string }>();
+        if (dupe) {
+          return Response.json(
+            { ok: false, error: `That ${chan.name} order is already in here as ${dupe.reference}.` },
+            { status: 409 },
+          );
+        }
+
+        // Items. Either picked from the catalogue or typed in free-hand; both
+        // end up as the same order_items rows, so the rest of the back office
+        // cannot tell the difference.
+        const rawItems = Array.isArray(body.items) ? body.items : [];
+        const items: { slug: string; name: string; qty: number; price: number }[] = [];
+        for (const raw of rawItems) {
+          if (!raw || typeof raw !== "object") continue;
+          const r = raw as Record<string, unknown>;
+          const name = str(r.name, 200);
+          const qty = Math.trunc(Number(r.qty));
+          const price = Math.trunc(Number(r.price_cents));
+          if (!name) continue;
+          if (!Number.isFinite(qty) || qty < 1 || qty > 9999) {
+            return Response.json({ ok: false, error: `Check the quantity on "${name}".` }, { status: 400 });
+          }
+          if (!Number.isFinite(price) || price < 0 || price > 99_999_999) {
+            return Response.json({ ok: false, error: `Check the price on "${name}".` }, { status: 400 });
+          }
+          items.push({ slug: str(r.product_slug, 200), name, qty, price });
+        }
+        if (items.length === 0) {
+          return Response.json({ ok: false, error: "Add at least one item." }, { status: 400 });
+        }
+
+        const shipping = Math.trunc(Number(body.shipping_cents ?? 0));
+        if (!Number.isFinite(shipping) || shipping < 0 || shipping > 99_999_999) {
+          return Response.json({ ok: false, error: "Check the shipping amount." }, { status: 400 });
+        }
+
+        const subtotal = items.reduce((a, i) => a + i.price * i.qty, 0);
+        const total = subtotal + shipping;
+
+        // The date the money landed. Drives the year report, so it is the sale
+        // date on the marketplace, not the day he got round to typing it in.
+        const day = str(body.paid_on, 10);
+        const paidOn = /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : new Date().toISOString().slice(0, 10);
+        const paidAt = `${paidOn} 12:00:00`;
+
+        const status = str(body.status, 30) || "paid";
+        if (!MANUAL_STATES.includes(status as OrderState)) {
+          return Response.json({ ok: false, error: "That is not a state you can set by hand." }, { status: 400 });
+        }
+
+        const carrier = str(body.carrier, 20);
+        if (carrier && !CARRIERS.some((c) => c.id === carrier)) {
+          return Response.json({ ok: false, error: "Unknown carrier." }, { status: 400 });
+        }
+        const tracking = str(body.tracking_number, 80);
+        if (status === "shipped" && !tracking) {
+          return Response.json(
+            { ok: false, error: "Add a tracking number before marking this shipped." },
+            { status: 400 },
+          );
+        }
+
+        const id = crypto.randomUUID();
+        const bytes = crypto.getRandomValues(new Uint8Array(3));
+        const reference = "AHE-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+
+        await DB.prepare(
+          `INSERT INTO orders
+             (id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,
+              subtotal_cents,shipping_cents,tax_cents,amount_total_cents,
+              status,provider,channel,channel_ref,carrier,tracking_number,paid_at,shipped_at)
+           VALUES (?1,?2,?3,?4,?5,'',?6,?7,?8,?9,?10,?11,?12,?13,0,?14,?15,'manual',?16,?17,?18,?19,?20,?21)`,
+        )
+          .bind(
+            id,
+            reference,
+            str(body.name, 120),
+            str(body.email, 160),
+            str(body.phone, 40),
+            str(body.address1, 200),
+            str(body.address2, 200),
+            str(body.city, 120),
+            str(body.state, 40),
+            str(body.zip, 20),
+            str(body.notes, 1000),
+            subtotal,
+            shipping,
+            total,
+            status,
+            channel,
+            channelRef,
+            carrier,
+            tracking,
+            paidAt,
+            status === "shipped" ? paidAt : null,
+          )
+          .run();
+
+        for (const it of items) {
+          await DB.prepare(
+            "INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)",
+          )
+            .bind(id, it.slug, it.name, it.qty, it.price)
+            .run();
+        }
+
+        await logAdmin("order_manual_add", reference, `${channel} ${channelRef} ${total}`);
+
+        const row = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`).bind(id).first<Order>();
+        return Response.json({ ok: true, order: row });
       },
 
       POST: async ({ request }) => {

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { denied, isSignedIn } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
-import { carrierName } from "../../../lib/orders";
+import { carrierName, channelName, marketplaceRemitsTax } from "../../../lib/orders";
 
 type Row = {
   reference: string;
@@ -21,6 +21,8 @@ type Row = {
   amount_total_cents: number | null;
   carrier: string;
   tracking_number: string;
+  channel: string;
+  channel_ref: string;
 };
 
 const money = (c: number | null) => ((c ?? 0) / 100).toFixed(2);
@@ -55,7 +57,8 @@ export const Route = createFileRoute("/api/admin/report")({
 
         const res = await DB.prepare(
           `SELECT reference,paid_at,created_at,status,provider,name,email,city,state,zip,
-                  subtotal_cents,shipping_cents,tax_cents,amount_total_cents,carrier,tracking_number
+                  subtotal_cents,shipping_cents,tax_cents,amount_total_cents,carrier,tracking_number,
+                  channel,channel_ref
              FROM orders
             WHERE paid_at IS NOT NULL AND strftime('%Y', paid_at) = ?1
             ORDER BY paid_at`,
@@ -64,16 +67,39 @@ export const Route = createFileRoute("/api/admin/report")({
           .all<Row>();
         const rows = res.results ?? [];
 
-        const totals = rows.reduce(
-          (a, r) => ({
-            orders: a.orders + 1,
-            subtotal: a.subtotal + (r.subtotal_cents ?? 0),
-            shipping: a.shipping + (r.shipping_cents ?? 0),
-            tax: a.tax + (r.tax_cents ?? 0),
-            total: a.total + (r.amount_total_cents ?? 0),
-          }),
-          { orders: 0, subtotal: 0, shipping: 0, tax: 0, total: 0 },
-        );
+        const sum = (rs: Row[]) =>
+          rs.reduce(
+            (a, r) => ({
+              orders: a.orders + 1,
+              subtotal: a.subtotal + (r.subtotal_cents ?? 0),
+              shipping: a.shipping + (r.shipping_cents ?? 0),
+              tax: a.tax + (r.tax_cents ?? 0),
+              total: a.total + (r.amount_total_cents ?? 0),
+            }),
+            { orders: 0, subtotal: 0, shipping: 0, tax: 0, total: 0 },
+          );
+
+        const totals = sum(rows);
+
+        /*
+         * Split by where the sale happened, because the two are filed
+         * differently. Amazon, eBay, Walmart and Etsy collect and remit the
+         * sales tax themselves under the marketplace facilitator rules, so the
+         * only tax he owes New York is the tax on his own orders. A single
+         * combined figure here is how a shop ends up paying twice.
+         */
+        const ownRows = rows.filter((r) => !marketplaceRemitsTax(r.channel));
+        const mktRows = rows.filter((r) => marketplaceRemitsTax(r.channel));
+        const own = sum(ownRows);
+        const marketplace = sum(mktRows);
+        const byChannel = Object.entries(
+          rows.reduce<Record<string, Row[]>>((a, r) => {
+            (a[r.channel || "site"] ??= []).push(r);
+            return a;
+          }, {}),
+        )
+          .map(([id, rs]) => ({ id, name: channelName(id), ...sum(rs) }))
+          .sort((a, b) => b.total - a.total);
 
         if (!csv) {
           // Also show what is sitting unpaid, so the year's picture is honest.
@@ -85,20 +111,24 @@ export const Route = createFileRoute("/api/admin/report")({
             .first<{ n: number }>();
 
           return Response.json(
-            { ok: true, year, totals, unpaid: unpaid?.n ?? 0 },
+            { ok: true, year, totals, own, marketplace, byChannel, unpaid: unpaid?.n ?? 0 },
             { headers: { "Cache-Control": "no-store" } },
           );
         }
 
         const header = [
-          "Reference", "Paid", "Status", "Paid via", "Customer", "Email", "City", "State", "ZIP",
+          "Reference", "Paid", "Status", "Sold on", "Their order number", "Tax remitted by",
+          "Paid via", "Customer", "Email", "City", "State", "ZIP",
           "Subtotal", "Shipping", "Tax", "Total", "Carrier", "Tracking",
         ];
         const lines = [header.map(cell).join(",")];
         for (const r of rows) {
           lines.push(
             [
-              r.reference, r.paid_at ?? "", r.status, r.provider, r.name, r.email, r.city, r.state, r.zip,
+              r.reference, r.paid_at ?? "", r.status,
+              channelName(r.channel || "site"), r.channel_ref,
+              marketplaceRemitsTax(r.channel) ? channelName(r.channel) : "You",
+              r.provider, r.name, r.email, r.city, r.state, r.zip,
               money(r.subtotal_cents), money(r.shipping_cents), money(r.tax_cents), money(r.amount_total_cents),
               carrierName(r.carrier), r.tracking_number,
             ]
@@ -106,12 +136,23 @@ export const Route = createFileRoute("/api/admin/report")({
               .join(","),
           );
         }
+        const pad = (first: string) => [first, "", "", "", "", "", "", "", "", "", "", ""];
         lines.push("");
         lines.push(
-          [`Totals for ${year}`, "", "", "", "", "", "", "", "",
+          [...pad(`Your own sales ${year} \u2014 tax is yours to file`),
+            money(own.subtotal), money(own.shipping), money(own.tax), money(own.total), "", ""]
+            .map(cell).join(","),
+        );
+        lines.push(
+          [...pad(`Marketplace sales ${year} \u2014 tax collected and remitted by the marketplace`),
+            money(marketplace.subtotal), money(marketplace.shipping), money(marketplace.tax),
+            money(marketplace.total), "", ""]
+            .map(cell).join(","),
+        );
+        lines.push(
+          [...pad(`Everything ${year}`),
             money(totals.subtotal), money(totals.shipping), money(totals.tax), money(totals.total), "", ""]
-            .map(cell)
-            .join(","),
+            .map(cell).join(","),
         );
 
         // The BOM is what makes Excel open a UTF-8 CSV without mangling

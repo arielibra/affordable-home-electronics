@@ -58,3 +58,41 @@ export function trackingUrl(carrier: string, tracking: string): string {
       return "";
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Sales channels
+ * ------------------------------------------------------------------ */
+
+export type ChannelId = "site" | "amazon" | "ebay" | "walmart" | "etsy" | "facebook" | "other";
+
+export const CHANNELS: { id: ChannelId; name: string; remitsTax: boolean }[] = [
+  { id: "site", name: "This site", remitsTax: false },
+  { id: "amazon", name: "Amazon", remitsTax: true },
+  { id: "ebay", name: "eBay", remitsTax: true },
+  { id: "walmart", name: "Walmart", remitsTax: true },
+  { id: "etsy", name: "Etsy", remitsTax: true },
+  { id: "facebook", name: "Facebook Marketplace", remitsTax: true },
+  { id: "other", name: "Somewhere else", remitsTax: false },
+];
+
+/** The channels an order can be typed in against. Orders on this site arrive
+ *  through checkout and are never entered by hand. */
+export const MANUAL_CHANNELS = CHANNELS.filter((c) => c.id !== "site");
+
+export function channelName(id: string): string {
+  return CHANNELS.find((c) => c.id === id)?.name ?? id;
+}
+
+/**
+ * Whether the marketplace collected and remitted the sales tax itself.
+ *
+ * Under the marketplace facilitator laws every US state now has, Amazon, eBay,
+ * Walmart and Etsy are required to collect sales tax on a seller’s behalf and
+ * pay it to the state directly. That tax is not his to file, and including it
+ * in his own New York return would mean the state is paid twice for the same
+ * sale. So those orders are recorded with no tax against them and reported in
+ * a separate column.
+ */
+export function marketplaceRemitsTax(channel: string): boolean {
+  return CHANNELS.find((c) => c.id === channel)?.remitsTax ?? false;
+}
