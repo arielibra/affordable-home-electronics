@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { money } from "../../lib/site";
-import { ImageField } from "./image-field";
+import { GalleryField } from "./gallery-field";
 
 export type CatalogProduct = {
   slug: string;
@@ -13,6 +13,7 @@ export type CatalogProduct = {
   msrp_cents: number | null;
   blurb: string;
   image: string;
+  images?: string[];
   featured: number;
   stock: number;
   stock_tracked: number;
@@ -62,7 +63,10 @@ function Editor({
   const [price, setPrice] = useState(dollars(src?.price_cents ?? null));
   const [msrp, setMsrp] = useState(dollars(src?.msrp_cents ?? null));
   const [blurb, setBlurb] = useState(src?.blurb ?? "");
-  const [image, setImage] = useState(src?.image ?? "");
+  // A copy takes the original's whole gallery, not just its main photo.
+  const [images, setImages] = useState<string[]>(
+    src?.images && src.images.length > 0 ? [...src.images] : src?.image ? [src.image] : [],
+  );
   // Three things are deliberately NOT copied. Featured would put two of the
   // same thing on the front page. Stock belongs to the original, not to a
   // product that does not exist yet. And a copy starts unlisted, so a
@@ -88,7 +92,7 @@ function Editor({
       price_cents: toCents(price),
       msrp_cents: msrp.trim() === "" ? null : toCents(msrp),
       blurb,
-      image,
+      images,
       featured,
       stock: Number(stock) || 0,
       stock_tracked: tracked,
@@ -197,7 +201,7 @@ function Editor({
       </label>
 
       <div className="mt-5">
-        <ImageField value={image} onChange={setImage} />
+        <GalleryField value={images} onChange={setImages} />
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -327,7 +331,9 @@ export function CatalogPanel() {
         {shown.map((p) => (
           <div key={p.slug} className={`flex items-center gap-3 py-3 ${p.active ? "" : "opacity-55"}`}>
             <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-line bg-white">
-              {p.image ? <img src={p.image} alt="" className="h-full w-full object-contain p-1" /> : null}
+              {(p.images?.[0] ?? p.image) ? (
+                <img src={p.images?.[0] ?? p.image} alt="" className="h-full w-full object-contain p-1" />
+              ) : null}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{p.brand || "No brand"}</p>

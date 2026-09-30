@@ -12,6 +12,7 @@ import {
   listBrands,
   listCategories,
   productsIn,
+  productImages,
   relatedProducts,
   searchProducts,
   setCartQty,
@@ -48,8 +49,17 @@ export const getProductPage = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const product = await getProduct(data.slug);
     if (!product) return { product: null, related: [], categoryName: "" };
-    const [related, categories] = await Promise.all([relatedProducts(product), listCategories()]);
-    return { product, related, categoryName: categories.find((c) => c.slug === product.category)?.name ?? "" };
+    const [related, categories, images] = await Promise.all([
+      relatedProducts(product),
+      listCategories(),
+      productImages(product.slug, product.image),
+    ]);
+    return {
+      product,
+      images,
+      related,
+      categoryName: categories.find((c) => c.slug === product.category)?.name ?? "",
+    };
   });
 
 export const searchCatalog = createServerFn({ method: "GET" })

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { D1Database } from "@cloudflare/workers-types";
 
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
@@ -22,6 +23,48 @@ type Row = {
 
 const COLUMNS =
   "slug,name,brand,brand_slug,category,price_cents,msrp_cents,blurb,image,featured,stock,stock_tracked,active";
+
+/** At most twenty, no blanks, no duplicates, order preserved. */
+function cleanImages(v: unknown): string[] | null {
+  if (!Array.isArray(v)) return null;
+  const out: string[] = [];
+  for (const raw of v) {
+    const u = typeof raw === "string" ? raw.trim().slice(0, 300) : "";
+    if (!u || out.includes(u)) continue;
+    out.push(u);
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+
+/** Rewrite a product's gallery, and keep products.image pointing at the first
+ *  one. The single column is what the shop grid, the cart, the checkout and
+ *  the social card all read, so it has to stay in step or the listing shows a
+ *  different photo from the product page. */
+async function writeImages(DB: D1Database, slug: string, images: string[]): Promise<void> {
+  await DB.prepare("DELETE FROM product_images WHERE product_slug = ?1").bind(slug).run();
+  for (let i = 0; i < images.length; i += 1) {
+    await DB.prepare(
+      "INSERT OR IGNORE INTO product_images (product_slug, url, position) VALUES (?1,?2,?3)",
+    )
+      .bind(slug, images[i], i)
+      .run();
+  }
+  await DB.prepare("UPDATE products SET image = ?2 WHERE slug = ?1").bind(slug, images[0] ?? "").run();
+}
+
+async function readImages(DB: D1Database, slugs: string[]): Promise<Record<string, string[]>> {
+  if (slugs.length === 0) return {};
+  const ph = slugs.map((_, i) => `?${i + 1}`).join(",");
+  const r = await DB.prepare(
+    `SELECT product_slug, url FROM product_images WHERE product_slug IN (${ph}) ORDER BY product_slug, position`,
+  )
+    .bind(...slugs)
+    .all<{ product_slug: string; url: string }>();
+  const out: Record<string, string[]> = {};
+  for (const row of r.results ?? []) (out[row.product_slug] ??= []).push(row.url);
+  return out;
+}
 
 function clampInt(v: unknown, min: number, max: number): number | null {
   const n = typeof v === "number" ? v : Number(v);
@@ -49,7 +92,11 @@ export const Route = createFileRoute("/api/admin/products")({
         if (slug) {
           const one = await DB.prepare(`SELECT ${COLUMNS} FROM products WHERE slug = ?1`).bind(slug).first<Row>();
           if (!one) return Response.json({ ok: false, error: "No such product." }, { status: 404 });
-          return Response.json({ ok: true, product: one }, { headers: { "Cache-Control": "no-store" } });
+          const gallery = await readImages(DB, [slug]);
+          return Response.json(
+            { ok: true, product: { ...one, images: gallery[slug] ?? (one.image ? [one.image] : []) } },
+            { headers: { "Cache-Control": "no-store" } },
+          );
         }
 
         const where: string[] = [];
@@ -68,7 +115,16 @@ export const Route = createFileRoute("/api/admin/products")({
           " ORDER BY active DESC, brand, name LIMIT 400";
 
         const res = await DB.prepare(sql).bind(...binds).all<Row>();
-        return Response.json({ ok: true, products: res.results ?? [] }, { headers: { "Cache-Control": "no-store" } });
+        const rows = res.results ?? [];
+        // One extra query for the whole page rather than one per product.
+        const gallery = await readImages(DB, rows.map((r) => r.slug));
+        return Response.json(
+          {
+            ok: true,
+            products: rows.map((r) => ({ ...r, images: gallery[r.slug] ?? (r.image ? [r.image] : []) })),
+          },
+          { headers: { "Cache-Control": "no-store" } },
+        );
       },
 
       // Create a product.
@@ -129,17 +185,21 @@ export const Route = createFileRoute("/api/admin/products")({
             price,
             msrp,
             str(body.blurb, 600),
-            str(body.image, 300),
+            // Filled in properly by writeImages below; this keeps the insert
+            // valid for a product saved without any pictures at all.
+            "",
             body.featured ? 1 : 0,
             stock,
             body.stock_tracked ? 1 : 0,
             body.active === false ? 0 : 1,
           )
           .run();
-        await logAdmin("product_create", slug, name);
+        const images = cleanImages(body.images) ?? (str(body.image, 300) ? [str(body.image, 300)] : []);
+        await writeImages(DB, slug, images);
+        await logAdmin("product_create", slug, `${name} (${images.length} photo${images.length === 1 ? "" : "s"})`);
 
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM products WHERE slug = ?1`).bind(slug).first<Row>();
-        return Response.json({ ok: true, product: row });
+        return Response.json({ ok: true, product: { ...row, images } });
       },
 
       // Change one. Any subset of fields; the slug itself never moves, because
@@ -195,7 +255,13 @@ export const Route = createFileRoute("/api/admin/products")({
           put("name", v);
         }
         if ("blurb" in body) put("blurb", str(body.blurb, 600));
-        if ("image" in body) put("image", str(body.image, 300));
+        // The gallery is authoritative when it is sent; the single column is
+        // kept in step by writeImages rather than set here.
+        const nextImages = "images" in body ? cleanImages(body.images) : null;
+        if ("images" in body && nextImages === null) {
+          return Response.json({ ok: false, error: "Photos must be a list." }, { status: 400 });
+        }
+        if (nextImages === null && "image" in body) put("image", str(body.image, 300));
         if ("category" in body) {
           const v = str(body.category, 40);
           const cat = await DB.prepare("SELECT slug FROM categories WHERE slug = ?1").bind(v).first();
@@ -215,15 +281,24 @@ export const Route = createFileRoute("/api/admin/products")({
           }
         }
 
-        if (sets.length === 0) return Response.json({ ok: false, error: "Nothing to change." }, { status: 400 });
+        if (sets.length === 0 && nextImages === null) {
+          return Response.json({ ok: false, error: "Nothing to change." }, { status: 400 });
+        }
 
-        await DB.prepare(`UPDATE products SET ${sets.join(", ")} WHERE slug = ?1`)
-          .bind(slug, ...binds)
-          .run();
+        if (sets.length > 0) {
+          await DB.prepare(`UPDATE products SET ${sets.join(", ")} WHERE slug = ?1`)
+            .bind(slug, ...binds)
+            .run();
+        }
+        if (nextImages !== null) {
+          await writeImages(DB, slug, nextImages);
+          note.push(`photos=${nextImages.length}`);
+        }
         await logAdmin("product_update", slug, note.join(" "));
 
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM products WHERE slug = ?1`).bind(slug).first<Row>();
-        return Response.json({ ok: true, product: row });
+        const gallery = await readImages(DB, [slug]);
+        return Response.json({ ok: true, product: { ...row, images: gallery[slug] ?? [] } });
       },
     },
   },

@@ -86,6 +86,22 @@ export async function getProduct(slug: string): Promise<Product | null> {
   return await db().prepare("SELECT * FROM products WHERE slug = ?1 AND active = 1").bind(slug).first<Product>();
 }
 
+/**
+ * Every photo for a product, main one first.
+ *
+ * Falls back to the single `products.image` when the gallery table has nothing
+ * for it, so a product added before galleries existed still shows its picture.
+ */
+export async function productImages(slug: string, fallback: string): Promise<string[]> {
+  const r = await db()
+    .prepare("SELECT url FROM product_images WHERE product_slug = ?1 ORDER BY position")
+    .bind(slug)
+    .all<{ url: string }>();
+  const urls = (r.results ?? []).map((x) => x.url).filter(Boolean);
+  if (urls.length > 0) return urls;
+  return fallback ? [fallback] : [];
+}
+
 export async function relatedProducts(p: Product, limit = 4): Promise<Product[]> {
   const r = await db()
     .prepare("SELECT * FROM products WHERE category = ?1 AND slug <> ?2 AND active = 1 AND (stock_tracked = 0 OR stock > 0) ORDER BY abs(price_cents - ?3) LIMIT ?4")

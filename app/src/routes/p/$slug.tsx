@@ -1,4 +1,5 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { SiteShell } from "../../components/site/chrome";
 import { IconShield, IconTruck } from "../../components/site/icons";
@@ -27,8 +28,11 @@ export const Route = createFileRoute("/p/$slug")({
 });
 
 function ProductPage() {
-  const { product, related, categoryName } = Route.useLoaderData();
+  const { product, images, related, categoryName } = Route.useLoaderData();
+  const shots = images && images.length > 0 ? images : product?.image ? [product.image] : [];
+  const [shown, setShown] = useState(0);
   if (!product) return null;
+  const main = shots[shown] ?? product.image;
   const save = savings(product.price_cents, product.msrp_cents);
   const available = isAvailable(product);
 
@@ -47,15 +51,38 @@ function ProductPage() {
       </Shell>
 
       <Shell className="grid gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        <figure className="border border-line bg-white p-8">
-          <img
-            src={product.image}
-            alt={product.name}
-            width={520}
-            height={520}
-            className="mx-auto h-[320px] w-auto max-w-full object-contain md:h-[440px]"
-          />
-        </figure>
+        <div>
+          <figure className="border border-line bg-white p-8">
+            <img
+              src={main}
+              alt={product.name}
+              width={520}
+              height={520}
+              className="mx-auto h-[320px] w-auto max-w-full object-contain md:h-[440px]"
+            />
+          </figure>
+
+          {/* Only worth showing when there is actually a choice to make. */}
+          {shots.length > 1 ? (
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {shots.map((src, i) => (
+                <li key={src}>
+                  <button
+                    type="button"
+                    onClick={() => setShown(i)}
+                    aria-label={`Photo ${i + 1} of ${shots.length}`}
+                    aria-current={i === shown}
+                    className={`flex h-16 w-16 items-center justify-center border bg-white p-1 transition-colors ${
+                      i === shown ? "border-ink" : "border-line hover:border-muted"
+                    }`}
+                  >
+                    <img src={src} alt="" className="h-full w-full object-contain" loading="lazy" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
 
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{product.brand}</p>
