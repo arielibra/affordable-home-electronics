@@ -36,6 +36,7 @@ import { Route as ApiOrderLookupRouteImport } from './routes/api/order-lookup'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as ApiPaypalCreateRouteImport } from './routes/api/paypal/create'
 import { Route as ApiPaypalCaptureRouteImport } from './routes/api/paypal/capture'
+import { Route as ApiAdminZipRouteImport } from './routes/api/admin/zip'
 import { Route as ApiAdminUploadRouteImport } from './routes/api/admin/upload'
 import { Route as ApiAdminTaxonomyRouteImport } from './routes/api/admin/taxonomy'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
@@ -182,6 +183,11 @@ const ApiPaypalCaptureRoute = ApiPaypalCaptureRouteImport.update({
   path: '/api/paypal/capture',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminZipRoute = ApiAdminZipRouteImport.update({
+  id: '/api/admin/zip',
+  path: '/api/admin/zip',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUploadRoute = ApiAdminUploadRouteImport.update({
   id: '/api/admin/upload',
   path: '/api/admin/upload',
@@ -269,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
+  '/api/admin/zip': typeof ApiAdminZipRoute
   '/api/paypal/capture': typeof ApiPaypalCaptureRoute
   '/api/paypal/create': typeof ApiPaypalCreateRoute
 }
@@ -308,6 +315,7 @@ export interface FileRoutesByTo {
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
+  '/api/admin/zip': typeof ApiAdminZipRoute
   '/api/paypal/capture': typeof ApiPaypalCaptureRoute
   '/api/paypal/create': typeof ApiPaypalCreateRoute
 }
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
+  '/api/admin/zip': typeof ApiAdminZipRoute
   '/api/paypal/capture': typeof ApiPaypalCaptureRoute
   '/api/paypal/create': typeof ApiPaypalCreateRoute
 }
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/upload'
+    | '/api/admin/zip'
     | '/api/paypal/capture'
     | '/api/paypal/create'
   fileRoutesByTo: FileRoutesByTo
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/upload'
+    | '/api/admin/zip'
     | '/api/paypal/capture'
     | '/api/paypal/create'
   id:
@@ -467,6 +478,7 @@ export interface FileRouteTypes {
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/upload'
+    | '/api/admin/zip'
     | '/api/paypal/capture'
     | '/api/paypal/create'
   fileRoutesById: FileRoutesById
@@ -507,6 +519,7 @@ export interface RootRouteChildren {
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
   ApiAdminTaxonomyRoute: typeof ApiAdminTaxonomyRoute
   ApiAdminUploadRoute: typeof ApiAdminUploadRoute
+  ApiAdminZipRoute: typeof ApiAdminZipRoute
   ApiPaypalCaptureRoute: typeof ApiPaypalCaptureRoute
   ApiPaypalCreateRoute: typeof ApiPaypalCreateRoute
 }
@@ -702,6 +715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPaypalCaptureRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/zip': {
+      id: '/api/admin/zip'
+      path: '/api/admin/zip'
+      fullPath: '/api/admin/zip'
+      preLoaderRoute: typeof ApiAdminZipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/upload': {
       id: '/api/admin/upload'
       path: '/api/admin/upload'
@@ -811,6 +831,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSessionRoute: ApiAdminSessionRoute,
   ApiAdminTaxonomyRoute: ApiAdminTaxonomyRoute,
   ApiAdminUploadRoute: ApiAdminUploadRoute,
+  ApiAdminZipRoute: ApiAdminZipRoute,
   ApiPaypalCaptureRoute: ApiPaypalCaptureRoute,
   ApiPaypalCreateRoute: ApiPaypalCreateRoute,
 }
