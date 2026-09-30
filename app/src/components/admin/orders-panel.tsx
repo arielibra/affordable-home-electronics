@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, trackingUrl, type OrderState } from "../../lib/orders";
 import { AddOrder } from "./add-order";
+import { OrderEditor } from "./order-editor";
 import { money } from "../../lib/site";
 
 type Item = { name: string; qty: number; price_cents: number };
@@ -12,6 +13,7 @@ export type AdminOrder = {
   name: string;
   email: string;
   phone: string;
+  company: string;
   address1: string;
   address2: string;
   city: string;
@@ -51,6 +53,7 @@ const when = (s: string | null) => (s ? s.replace("T", " ").slice(0, 16) : "");
 
 function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }) {
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [carrier, setCarrier] = useState(order.carrier || "ups");
   const [tracking, setTracking] = useState(order.tracking_number);
   const [hold, setHold] = useState(order.hold_reason);
@@ -240,9 +243,29 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
             {order.shipped_at ? (
               <p className="mt-4 text-xs text-muted">Handed to the carrier {when(order.shipped_at)}.</p>
             ) : null}
+
+            <button
+              type="button"
+              onClick={() => setEditing((v) => !v)}
+              className="mt-5 h-9 w-full border border-line text-xs font-medium text-ink hover:border-ink"
+            >
+              {editing ? "Close the editor" : "Edit everything on this order"}
+            </button>
+
             {error ? <p className="mt-3 text-xs text-[color:var(--color-signal)]">{error}</p> : null}
           </div>
         </div>
+      ) : null}
+
+      {open && editing ? (
+        <OrderEditor
+          order={order}
+          onCancel={() => setEditing(false)}
+          onSaved={() => {
+            setEditing(false);
+            onChanged();
+          }}
+        />
       ) : null}
     </div>
   );

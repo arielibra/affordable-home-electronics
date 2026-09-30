@@ -4,12 +4,20 @@ import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
 import { CARRIERS, CHANNELS, MANUAL_STATES, type OrderState } from "../../../lib/orders";
 
+/** Dollars-or-cents from a form field, as whole cents. */
+function money(v: unknown): number | null {
+  const n = Math.trunc(Number(v));
+  if (!Number.isFinite(n) || n < 0 || n > 99_999_999) return null;
+  return n;
+}
+
 type Order = {
   id: string;
   reference: string;
   name: string;
   email: string;
   phone: string;
+  company: string;
   address1: string;
   address2: string;
   city: string;
@@ -32,7 +40,7 @@ type Order = {
   channel_ref: string;
 };
 
-const COLUMNS = `id,reference,name,email,phone,address1,address2,city,state,zip,notes,
+const COLUMNS = `id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,
   subtotal_cents,shipping_cents,tax_cents,amount_total_cents,status,provider,
   carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at,channel,channel_ref`;
 
@@ -289,19 +297,73 @@ export const Route = createFileRoute("/api/admin/orders")({
         const reference = str(body.reference, 40);
         if (!reference) return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
 
-        const existing = await DB.prepare("SELECT id, status FROM orders WHERE reference = ?1")
+        // The whole row, because every field is editable now and the audit
+        // line records what each one changed FROM as well as to. With money
+        // editable that trail stops being a nicety: a mistyped total quietly
+        // moves the year's takings, and without a before-value there is no way
+        // to tell later what it used to say.
+        const existing = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE reference = ?1`)
           .bind(reference)
-          .first<{ id: string; status: string }>();
+          .first<Order>();
         if (!existing) return Response.json({ ok: false, error: "No such order." }, { status: 404 });
 
+        const before = existing as unknown as Record<string, unknown>;
         const sets: string[] = [];
         const binds: unknown[] = [];
         const note: string[] = [];
         const put = (col: string, val: unknown) => {
+          const was = before[col];
+          if (String(was ?? "") === String(val ?? "")) return; // nothing actually changed
           binds.push(val);
           sets.push(`${col} = ?${binds.length + 1}`);
-          note.push(`${col}=${String(val)}`);
+          note.push(`${col}: ${String(was ?? "")} -> ${String(val ?? "")}`);
         };
+
+        /* ---- who it goes to ---- */
+        if ("name" in body) put("name", str(body.name, 120));
+        if ("email" in body) put("email", str(body.email, 160));
+        if ("phone" in body) put("phone", str(body.phone, 40));
+        if ("company" in body) put("company", str(body.company, 120));
+        if ("address1" in body) put("address1", str(body.address1, 200));
+        if ("address2" in body) put("address2", str(body.address2, 200));
+        if ("city" in body) put("city", str(body.city, 120));
+        if ("state" in body) put("state", str(body.state, 40));
+        if ("zip" in body) put("zip", str(body.zip, 20));
+        if ("notes" in body) put("notes", str(body.notes, 1000));
+
+        /* ---- where it came from ---- */
+        if ("channel" in body) {
+          const v = str(body.channel, 20);
+          if (!CHANNELS.some((c) => c.id === v)) {
+            return Response.json({ ok: false, error: "Unknown sales channel." }, { status: 400 });
+          }
+          put("channel", v);
+        }
+        if ("channel_ref" in body) put("channel_ref", str(body.channel_ref, 80));
+
+        /* ---- the money ---- */
+        for (const [key, label] of [
+          ["subtotal_cents", "goods"],
+          ["shipping_cents", "shipping"],
+          ["tax_cents", "tax"],
+          ["amount_total_cents", "total"],
+        ] as const) {
+          if (key in body) {
+            const n = money(body[key]);
+            if (n === null) return Response.json({ ok: false, error: `Check the ${label} amount.` }, { status: 400 });
+            put(key, n);
+          }
+        }
+
+        /* ---- when the money landed: this drives which tax year it falls in ---- */
+        if ("paid_on" in body) {
+          const day = str(body.paid_on, 10);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+            return Response.json({ ok: false, error: "Use a date like 2026-09-30." }, { status: 400 });
+          }
+          const keepTime = (existing.paid_at ?? "").slice(11, 19) || "12:00:00";
+          put("paid_at", `${day} ${keepTime}`);
+        }
 
         if ("carrier" in body) {
           const v = str(body.carrier, 20);
@@ -320,30 +382,67 @@ export const Route = createFileRoute("/api/admin/orders")({
           }
           // Shipping without a tracking number is how parcels get lost and
           // customers get told "it's on its way" with nothing to show them.
+          // Moving an order BACK out of shipped is always allowed — that is
+          // usually somebody fixing a mistake.
           if (next === "shipped") {
             const tracking = "tracking_number" in body ? str(body.tracking_number, 80) : "";
-            if (!tracking) {
-              const current = await DB.prepare("SELECT tracking_number FROM orders WHERE id = ?1")
-                .bind(existing.id)
-                .first<{ tracking_number: string }>();
-              if (!current?.tracking_number) {
-                return Response.json(
-                  { ok: false, error: "Add a tracking number before marking this shipped." },
-                  { status: 400 },
-                );
-              }
+            if (!tracking && !existing.tracking_number) {
+              return Response.json(
+                { ok: false, error: "Add a tracking number before marking this shipped." },
+                { status: 400 },
+              );
             }
-            put("shipped_at", new Date().toISOString().slice(0, 19).replace("T", " "));
+            if (existing.status !== "shipped") {
+              put("shipped_at", new Date().toISOString().slice(0, 19).replace("T", " "));
+            }
           }
           put("status", next);
         }
 
-        if (sets.length === 0) return Response.json({ ok: false, error: "Nothing to change." }, { status: 400 });
+        /* ---- the lines on the order, replaced wholesale ---- */
+        let itemsChanged = false;
+        if (Array.isArray(body.items)) {
+          const rows: { slug: string; name: string; qty: number; price: number }[] = [];
+          for (const raw of body.items) {
+            if (!raw || typeof raw !== "object") continue;
+            const r = raw as Record<string, unknown>;
+            const name = str(r.name, 200);
+            if (!name) continue;
+            const qty = Math.trunc(Number(r.qty));
+            const price = money(r.price_cents);
+            if (!Number.isFinite(qty) || qty < 1 || qty > 9999) {
+              return Response.json({ ok: false, error: `Check the quantity on "${name}".` }, { status: 400 });
+            }
+            if (price === null) {
+              return Response.json({ ok: false, error: `Check the price on "${name}".` }, { status: 400 });
+            }
+            rows.push({ slug: str(r.product_slug, 200), name, qty, price });
+          }
+          if (rows.length === 0) {
+            return Response.json({ ok: false, error: "An order needs at least one line." }, { status: 400 });
+          }
+          await DB.prepare("DELETE FROM order_items WHERE order_id = ?1").bind(existing.id).run();
+          for (const it of rows) {
+            await DB.prepare(
+              "INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)",
+            )
+              .bind(existing.id, it.slug, it.name, it.qty, it.price)
+              .run();
+          }
+          note.push(`items: ${rows.length} line${rows.length === 1 ? "" : "s"} rewritten`);
+          itemsChanged = true;
+        }
 
-        await DB.prepare(`UPDATE orders SET ${sets.join(", ")} WHERE id = ?1`)
-          .bind(existing.id, ...binds)
-          .run();
-        await logAdmin("order_update", reference, note.join(" "));
+        if (sets.length === 0 && !itemsChanged) {
+          return Response.json({ ok: false, error: "Nothing to change." }, { status: 400 });
+        }
+
+        if (sets.length > 0) {
+          await DB.prepare(`UPDATE orders SET ${sets.join(", ")} WHERE id = ?1`)
+            .bind(existing.id, ...binds)
+            .run();
+        }
+        await logAdmin("order_update", reference, note.join(" | "));
 
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`).bind(existing.id).first<Order>();
         return Response.json({ ok: true, order: row });
