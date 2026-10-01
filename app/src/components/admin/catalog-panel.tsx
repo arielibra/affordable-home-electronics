@@ -253,9 +253,9 @@ function Editor({
       <label className="mt-4 block">
         <span className="text-[13px] font-medium text-muted">Specifications</span>
         <p className="mt-1 text-[12px] leading-[1.5] text-muted">
-          The manufacturer&rsquo;s numbers. Shown under the description on the product page, in its own section.
+          The manufacturer&rsquo;s numbers. Paste the specification table straight off their site &mdash; the two columns are kept.
         </p>
-        <RichTextArea value={specs} onChange={setSpecs} />
+        <RichTextArea value={specs} onChange={setSpecs} mode="specs" />
       </label>
 
       <div className="mt-5">

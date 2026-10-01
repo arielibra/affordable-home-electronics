@@ -7,7 +7,7 @@ import { AddToCartButton, ProductCard, isAvailable } from "../../components/site
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
-import { plainText, renderRichText } from "../../lib/rich-text";
+import { plainText, renderRichText, renderSpecs } from "../../lib/rich-text";
 
 /** Search engines show about 160 characters and drop the rest, so the full
  *  description does not belong in the head — it would sit in the page source of
@@ -106,7 +106,7 @@ function ProductPage() {
           {product.specs ? (
             <div className="mt-7 max-w-[58ch]">
               <h2 className="text-sm font-semibold tracking-tight text-ink">Specifications</h2>
-              <div className="mt-2 text-base leading-relaxed text-muted">{renderRichText(product.specs)}</div>
+              <div className="mt-2 text-base leading-relaxed">{renderSpecs(product.specs)}</div>
             </div>
           ) : null}
 

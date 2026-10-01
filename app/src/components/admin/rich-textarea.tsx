@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { cleanPastedText, renderRichText } from "../../lib/rich-text";
+import { cleanPastedText, renderRichText, renderSpecs, specsFromHtml } from "../../lib/rich-text";
 import { btnTiny, textarea as textareaStyle } from "./ui";
 
 /**
@@ -59,10 +59,13 @@ export function RichTextArea({
   value,
   onChange,
   rows = 8,
+  mode = "prose",
 }: {
   value: string;
   onChange: (v: string) => void;
   rows?: number;
+  /** "specs" reads copied tables as two columns and previews them that way. */
+  mode?: "prose" | "specs";
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const run = (mark: "**" | "*") => {
@@ -87,7 +90,13 @@ export function RichTextArea({
         rows={rows}
         onChange={(e) => onChange(e.currentTarget.value)}
         onPaste={(e) => {
-          const raw = e.clipboardData.getData("text/plain");
+          // A copied table carries its rows in the HTML flavour. The plain
+          // flavour of the same selection may arrive as one cell per line,
+          // which is how a tidy two-column sheet turns into one ragged column
+          // with every value orphaned from its label. Read the rows rather
+          // than try to guess them back.
+          const fromHtml = mode === "specs" ? specsFromHtml(e.clipboardData.getData("text/html")) : null;
+          const raw = fromHtml ?? e.clipboardData.getData("text/plain");
           if (!raw) return;
           const text = cleanPastedText(raw);
           e.preventDefault();
@@ -108,11 +117,11 @@ export function RichTextArea({
       />
 
       {/* Only worth the space once there is something to show. */}
-      {/\*/.test(value) ? (
+      {/\*/.test(value) || (mode === "specs" && value.includes("\t")) ? (
         <div className="mt-2.5">
           <span className="text-[12px] text-muted">How it will look on the shop page</span>
           <div className="mt-1.5 rounded-[12px] bg-[color:var(--admin-sunken)] px-4 py-3 text-[15px] leading-[1.55] text-ink">
-            {renderRichText(value)}
+            {mode === "specs" ? renderSpecs(value) : renderRichText(value)}
           </div>
         </div>
       ) : null}
