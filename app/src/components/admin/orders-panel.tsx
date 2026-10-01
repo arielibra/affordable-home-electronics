@@ -281,6 +281,10 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
               {editing ? "Close the editor" : "Edit everything on this order"}
             </button>
 
+            <div className="mt-3 flex justify-end">
+              <DeleteOrder order={order} onDone={onChanged} />
+            </div>
+
             {error ? <p className="mt-3 text-[13px] text-[color:var(--color-signal)]">{error}</p> : null}
           </div>
         </div>
@@ -417,6 +421,84 @@ function YearView({ years }: { years: string[] }) {
  * sends one message to the shop's own address and says exactly what came
  * back, so a wrong key or an unverified domain shows up here.
  */
+/**
+ * Removing an order. Two clicks always, and a paid one answers the first with
+ * what it is worth and which year it counts toward before it will go — that is
+ * the number his accountant sees, and nothing else in the admin can move it by
+ * this much in one click.
+ */
+function DeleteOrder({ order, onDone }: { order: { reference: string }; onDone: () => void }) {
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [warning, setWarning] = useState("");
+
+  async function go(force: boolean) {
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `/api/admin/orders?reference=${encodeURIComponent(order.reference)}${force ? "&force=1" : ""}`,
+        { method: "DELETE" },
+      );
+      const data = (await res.json()) as { ok: boolean; error?: string; needsConfirm?: boolean };
+      if (!data.ok) {
+        setWarning(data.error ?? "Could not remove that.");
+        if (!data.needsConfirm) setArmed(false);
+        return;
+      }
+      onDone();
+    } catch {
+      setWarning("Could not reach the site.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (warning) {
+    return (
+      <div className="w-full rounded-[12px] bg-[color:var(--admin-sunken)] px-4 py-3">
+        <p className="text-[13px] leading-[1.5] text-[color:var(--admin-bad)]">{warning}</p>
+        <p className="mt-1.5 text-[12px] leading-[1.5] text-muted">
+          A copy of the whole order is kept either way, so it can be looked up again if anyone asks.
+        </p>
+        <div className="mt-2.5 flex items-center gap-3">
+          <button type="button" disabled={busy} onClick={() => void go(true)} className={`${btnLink} text-[color:var(--admin-bad)]`}>
+            {busy ? "Deleting." : "Delete it anyway"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setWarning("");
+              setArmed(false);
+            }}
+            className={`${btnLink} text-muted`}
+          >
+            Keep it
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!armed) {
+    return (
+      <button type="button" onClick={() => setArmed(true)} className={`${btnLink} text-muted`}>
+        Delete this order
+      </button>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-3">
+      <button type="button" disabled={busy} onClick={() => void go(false)} className={`${btnLink} text-[color:var(--admin-bad)]`}>
+        {busy ? "Deleting." : "Really delete it?"}
+      </button>
+      <button type="button" onClick={() => setArmed(false)} className={`${btnLink} text-muted`}>
+        No
+      </button>
+    </span>
+  );
+}
+
 function EmailCheck() {
   const [state, setState] = useState<{ kind: "idle" | "busy" | "ok" | "bad"; detail: string }>({
     kind: "idle",

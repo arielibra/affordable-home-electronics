@@ -539,6 +539,76 @@ export const Route = createFileRoute("/api/admin/orders")({
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`).bind(existing.id).first<Order>();
         return Response.json({ ok: true, order: row, notified });
       },
+
+      /**
+       * Remove an order, keeping a copy.
+       *
+       * Most deletions are a test row or something entered twice, and those
+       * should simply go. A paid order is different: it counts toward the
+       * year's takings and the sales tax he files, and Stripe or PayPal still
+       * holds its own record of the money either way — so deleting one here
+       * makes his books disagree with the processor rather than undoing
+       * anything. That case asks a second time and says what it is worth.
+       *
+       * Stock is deliberately left alone. If an order shipped, the goods left
+       * the shelf; quietly putting them back because the paperwork was tidied
+       * up would make the counts wrong.
+       */
+      DELETE: async ({ request }) => {
+        if (!(await isSignedIn(request))) return denied();
+        const DB = bindings().DB;
+        if (!DB) return Response.json({ ok: false, error: "No database." }, { status: 503 });
+
+        const url = new URL(request.url);
+        const reference = (url.searchParams.get("reference") ?? "").trim().slice(0, 60);
+        if (!reference) return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
+
+        const order = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE reference = ?1`)
+          .bind(reference)
+          .first<Order>();
+        if (!order) return Response.json({ ok: false, error: "That order is already gone." }, { status: 404 });
+
+        const paid = Boolean(order.paid_at);
+        if (paid && url.searchParams.get("force") !== "1") {
+          const amount = `$${((order.amount_total_cents ?? 0) / 100).toFixed(2)}`;
+          const year = String(order.paid_at ?? "").slice(0, 4);
+          const where = order.provider && order.provider !== "manual" ? ` ${order.provider} still has its own record of the payment.` : "";
+          return Response.json(
+            {
+              ok: false,
+              needsConfirm: true,
+              error: `This one was paid — ${amount}, counted in ${year}. Removing it changes that year's takings and the sales tax figure.${where}`,
+            },
+            { status: 409 },
+          );
+        }
+
+        const items = await DB.prepare("SELECT product_slug, name, qty, price_cents FROM order_items WHERE order_id = ?1")
+          .bind(order.id)
+          .all<{ product_slug: string; name: string; qty: number; price_cents: number }>();
+
+        // The copy goes in first. If this fails, nothing is destroyed.
+        await DB.prepare(
+          "INSERT OR REPLACE INTO deleted_orders (reference, was_paid, amount_total_cents, record) VALUES (?1,?2,?3,?4)",
+        )
+          .bind(
+            reference,
+            paid ? 1 : 0,
+            order.amount_total_cents ?? 0,
+            JSON.stringify({ order, items: items.results ?? [] }),
+          )
+          .run();
+
+        await DB.prepare("DELETE FROM order_items WHERE order_id = ?1").bind(order.id).run();
+        await DB.prepare("DELETE FROM orders WHERE id = ?1").bind(order.id).run();
+        await logAdmin(
+          "order_delete",
+          reference,
+          `${paid ? "paid " : ""}${((order.amount_total_cents ?? 0) / 100).toFixed(2)} ${order.channel} - copy kept`,
+        );
+
+        return Response.json({ ok: true });
+      },
     },
   },
 });
