@@ -77,6 +77,24 @@ export const CHANNELS: { id: ChannelId; name: string; remitsTax: boolean }[] = [
 
 /** The channels an order can be typed in against. Orders on this site arrive
  *  through checkout and are never entered by hand. */
+/**
+ * Marketplaces that tell the buyer themselves.
+ *
+ * Amazon, eBay, Walmart and Etsy all send their own shipping notice and treat
+ * contacting a buyer directly as a policy breach; the address on the order is
+ * usually a relay anyway. Emailing those buyers risks his seller account, so
+ * the shop never does it regardless of what is typed in the email box.
+ *
+ * Facebook Marketplace and "Somewhere else" are different: there he IS the
+ * seller of record and the buyer expects to hear from him, so those notify
+ * whenever a real email address is on the order.
+ */
+export const MARKETPLACE_TELLS_BUYER = ["amazon", "ebay", "walmart", "etsy"];
+
+export function shopMayEmailBuyer(channel: string): boolean {
+  return !MARKETPLACE_TELLS_BUYER.includes(channel);
+}
+
 export const MANUAL_CHANNELS = CHANNELS.filter((c) => c.id !== "site");
 
 export function channelName(id: string): string {

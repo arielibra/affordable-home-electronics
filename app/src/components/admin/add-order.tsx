@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { CARRIERS, MANUAL_CHANNELS, marketplaceRemitsTax } from "../../lib/orders";
+import { CARRIERS, MANUAL_CHANNELS, channelName, marketplaceRemitsTax, shopMayEmailBuyer } from "../../lib/orders";
 import { money } from "../../lib/site";
 import { btnLink, btnPrimary, btnQuiet, card, input, label, textarea } from "./ui";
 
@@ -118,12 +118,20 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
   const [ref, setRef] = useState("");
   const [paidOn, setPaidOn] = useState(new Date().toISOString().slice(0, 10));
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address1, setAddress1] = useState("");
+  const [address2, setAddress2] = useState("");
+  const [city, setCity] = useState("");
+  const [stateCode, setStateCode] = useState("");
+  const [zip, setZip] = useState("");
   const [lines, setLines] = useState<Line[]>([blank()]);
   const [shipping, setShipping] = useState("");
   const [status, setStatus] = useState("paid");
   const [carrier, setCarrier] = useState("ups");
   const [tracking, setTracking] = useState("");
   const [notes, setNotes] = useState("");
+  const tellsBuyerItself = !shopMayEmailBuyer(channel);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
@@ -160,6 +168,13 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           channel_ref: ref,
           paid_on: paidOn,
           name,
+          email,
+          phone,
+          address1,
+          address2,
+          city,
+          state: stateCode,
+          zip,
           notes,
           status,
           carrier: status === "shipped" ? carrier : "",
@@ -249,6 +264,55 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           onChange={(e) => setName(e.currentTarget.value)}
           className={`mt-1.5 ${input}`}
         />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className={label}>Their email</span>
+          <input
+            value={email}
+            inputMode="email"
+            onChange={(e) => setEmail(e.currentTarget.value)}
+            className={`mt-1.5 ${input}`}
+          />
+        </label>
+        <label className="block">
+          <span className={label}>Their phone</span>
+          <input value={phone} onChange={(e) => setPhone(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
+        </label>
+      </div>
+
+      {/* Why the email box is here, and when it does anything. */}
+      <p className="mt-2 max-w-[68ch] text-[12px] leading-[1.5] text-muted">
+        {tellsBuyerItself
+          ? `${channelName(channel)} emails the buyer its own shipping notice, and contacting them directly breaks their rules — so nothing is sent from here whatever you put above. Record it for your own files if you like.`
+          : "If you put a real email here, the buyer is emailed the tracking number when you mark this order shipped. Leave it blank and nothing is sent."}
+      </p>
+
+      <div className="mt-4">
+        <p className={label}>Where it is going</p>
+        <input
+          value={address1}
+          placeholder="Street address"
+          onChange={(e) => setAddress1(e.currentTarget.value)}
+          className={`mt-1.5 ${input}`}
+        />
+        <input
+          value={address2}
+          placeholder="Apartment, suite (optional)"
+          onChange={(e) => setAddress2(e.currentTarget.value)}
+          className={`mt-2 ${input}`}
+        />
+        <div className="mt-2 grid grid-cols-[1fr_80px_110px] gap-2">
+          <input value={city} placeholder="City" onChange={(e) => setCity(e.currentTarget.value)} className={input} />
+          <input
+            value={stateCode}
+            placeholder="State"
+            onChange={(e) => setStateCode(e.currentTarget.value.toUpperCase().slice(0, 2))}
+            className={input}
+          />
+          <input value={zip} placeholder="ZIP" inputMode="numeric" onChange={(e) => setZip(e.currentTarget.value)} className={input} />
+        </div>
       </div>
 
       <div className="mt-5">

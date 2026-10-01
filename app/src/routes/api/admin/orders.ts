@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
-import { CARRIERS, CHANNELS, MANUAL_STATES, type OrderState } from "../../../lib/orders";
+import { CARRIERS, CHANNELS, MANUAL_STATES, channelName, shopMayEmailBuyer, type OrderState } from "../../../lib/orders";
 import { deliverableAddress, sendMail, shippedMessage } from "../../../lib/email.server";
 
 /** Dollars-or-cents from a form field, as whole cents. */
@@ -466,27 +466,38 @@ export const Route = createFileRoute("/api/admin/orders")({
          *
          * A failure here is reported but never fails the save: the parcel is
          * already gone, and refusing to record that would be worse. */
-        let notified: { ok: boolean; error: string } | null = null;
+        let notified: { ok: boolean; error: string; expected: boolean } | null = null;
         const shipping = (await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`)
           .bind(existing.id)
           .first<Order>()) as Order | null;
 
-        if (
-          justShipped &&
-          shipping &&
-          !shipping.shipped_notified_at &&
-          shipping.channel === "site" &&
-          deliverableAddress(shipping.email)
-        ) {
-          const lines = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
-            .bind(existing.id)
-            .all<{ name: string; qty: number }>();
-          const msg = shippedMessage(shipping, lines.results ?? []);
-          notified = await sendMail(shipping.reference, "shipped", { to: shipping.email, ...msg });
-          if (notified.ok) {
-            await DB.prepare("UPDATE orders SET shipped_notified_at = datetime('now') WHERE id = ?1")
+        if (justShipped && shipping && !shipping.shipped_notified_at) {
+          if (!shopMayEmailBuyer(shipping.channel)) {
+            // Not a failure. Saying so out loud beats silence, which reads as
+            // a broken feature.
+            notified = {
+              ok: false,
+              expected: true,
+              error: `${channelName(shipping.channel)} sends its own shipping notice, so nothing was emailed from here.`,
+            };
+          } else if (!deliverableAddress(shipping.email)) {
+            notified = {
+              ok: false,
+              expected: true,
+              error: "No email address on this order, so the customer was not told.",
+            };
+          } else {
+            const lines = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
               .bind(existing.id)
-              .run();
+              .all<{ name: string; qty: number }>();
+            const msg = shippedMessage(shipping, lines.results ?? []);
+            const sent = await sendMail(shipping.reference, "shipped", { to: shipping.email, ...msg });
+            notified = { ...sent, expected: false };
+            if (sent.ok) {
+              await DB.prepare("UPDATE orders SET shipped_notified_at = datetime('now') WHERE id = ?1")
+                .bind(existing.id)
+                .run();
+            }
           }
         }
 

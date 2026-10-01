@@ -61,7 +61,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
   const [hold, setHold] = useState(order.hold_reason);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [mailProblem, setMailProblem] = useState("");
+  const [mailProblem, setMailProblem] = useState<{ text: string; bad: boolean } | null>(null);
 
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -75,7 +75,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
       const data = (await res.json()) as {
         ok: boolean;
         error?: string;
-        notified?: { ok: boolean; error: string } | null;
+        notified?: { ok: boolean; error: string; expected: boolean } | null;
       };
       if (!data.ok) {
         setError(data.error ?? "Could not save.");
@@ -84,9 +84,12 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
       // The order saved either way. If the customer's email did not go, say so
       // here rather than leaving him believing they have been told.
       if (data.notified && !data.notified.ok) {
-        setMailProblem(data.notified.error);
+        // "expected" covers the cases that are correct rather than broken: a
+        // marketplace that tells its own buyers, or an order with no address
+        // on it. Those are stated plainly instead of alarmingly.
+        setMailProblem({ text: data.notified.error, bad: !data.notified.expected });
       } else if (data.notified?.ok) {
-        setMailProblem("");
+        setMailProblem(null);
       }
       onChanged();
     } catch {
@@ -255,8 +258,12 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
             ) : null}
 
             {mailProblem ? (
-              <p className="mt-4 text-[13px] text-[color:var(--admin-bad)]">
-                Saved, but the customer was not emailed: {mailProblem} The parcel is still marked shipped.
+              <p
+                className={`mt-4 text-[13px] ${
+                  mailProblem.bad ? "text-[color:var(--admin-bad)]" : "text-muted"
+                }`}
+              >
+                {mailProblem.bad ? `Saved, but the customer was not emailed: ${mailProblem.text}` : mailProblem.text}
               </p>
             ) : null}
             {order.shipped_notified_at ? (
