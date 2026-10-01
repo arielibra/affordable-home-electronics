@@ -1,6 +1,7 @@
 import { bindings } from "./bindings.server";
 import { cartLines, clearCart, decrementStock } from "./store.server";
 import { recordTaxTransaction } from "./stripe.server";
+import { newOrderMessage, ownerAddress, sendMail } from "./email.server";
 
 export type PaypalAddress = {
   name: string;
@@ -112,6 +113,36 @@ export async function finalizePaypalOrder(paypalOrderId: string): Promise<{ refe
       await decrementStock(lines.map((l) => ({ slug: l.slug, qty: l.qty })));
     }
     await clearCart(cartId);
+  }
+
+  /* ---- tell the shop a sale has landed ----
+   * After the line items are written, so the message lists what sold. Wrapped
+   * because this runs inside the capture path: a mail failure must not undo a
+   * payment that has already been taken. */
+  try {
+    const paid = await DB.prepare(
+      "SELECT reference,name,email,city,state,amount_total_cents,provider FROM orders WHERE id = ?1",
+    )
+      .bind(row.id)
+      .first<{
+        reference: string;
+        name: string;
+        email: string;
+        city: string;
+        state: string;
+        amount_total_cents: number;
+        provider: string;
+      }>();
+    const to = ownerAddress();
+    if (paid && to) {
+      const items = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
+        .bind(row.id)
+        .all<{ name: string; qty: number }>();
+      const msg = newOrderMessage(paid, items.results ?? []);
+      await sendMail(paid.reference, "new_order", { to, ...msg });
+    }
+  } catch {
+    // Never the reason a captured payment looks like a failure.
   }
 
   if (row.tax_calculation_id) await recordTaxTransaction(row.tax_calculation_id, row.reference);

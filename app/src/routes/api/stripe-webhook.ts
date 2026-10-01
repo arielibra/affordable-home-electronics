@@ -4,6 +4,7 @@ import { undeliverableReason } from "../../lib/address";
 import { bindings } from "../../lib/bindings.server";
 import { cartLines, clearCart, decrementStock } from "../../lib/store.server";
 import { verifyStripeSignature, webhookSecret } from "../../lib/stripe.server";
+import { newOrderMessage, ownerAddress, sendMail } from "../../lib/email.server";
 
 type SessionEvent = {
   type: string;
@@ -114,6 +115,37 @@ export const Route = createFileRoute("/api/stripe-webhook")({
             hold,
           )
           .run();
+
+        /* ---- tell the shop a sale has landed ----
+         * Until now nothing did, and the only way to find out was to open the
+         * back office. Wrapped so a mail provider having a bad afternoon can
+         * never make a paid order look unpaid to Stripe: this handler must
+         * return 200 or Stripe retries the whole webhook. */
+        try {
+          const paid = await DB.prepare(
+            "SELECT reference,name,email,city,state,amount_total_cents,provider FROM orders WHERE id = ?1",
+          )
+            .bind(orderId)
+            .first<{
+              reference: string;
+              name: string;
+              email: string;
+              city: string;
+              state: string;
+              amount_total_cents: number;
+              provider: string;
+            }>();
+          const to = ownerAddress();
+          if (paid && to) {
+            const lines = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
+              .bind(orderId)
+              .all<{ name: string; qty: number }>();
+            const msg = newOrderMessage(paid, lines.results ?? []);
+            await sendMail(paid.reference, "new_order", { to, ...msg });
+          }
+        } catch {
+          // Never the reason a webhook fails.
+        }
 
         // Snapshot what was bought, then empty the basket.
         if (cartId) {

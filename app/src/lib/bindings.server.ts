@@ -22,6 +22,12 @@ type AppEnv = {
   // the manifest. Reach an instance with env.CONTAINER.getByName(id), then
   // .fetch(). See skills/containers.md.
   CONTAINER?: DurableObjectNamespace;
+  // Set in the dashboard as Secrets. Absent until the shop has a mail
+  // provider, which is what keeps the notifications dormant rather than
+  // erroring on every order.
+  RESEND_API_KEY?: string;
+  MAIL_FROM?: string;
+  OWNER_EMAIL?: string;
   HF_ENV?: string;
   APP_SLUG?: string;
 };

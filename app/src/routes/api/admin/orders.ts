@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
 import { CARRIERS, CHANNELS, MANUAL_STATES, type OrderState } from "../../../lib/orders";
+import { deliverableAddress, sendMail, shippedMessage } from "../../../lib/email.server";
 
 /** Dollars-or-cents from a form field, as whole cents. */
 function money(v: unknown): number | null {
@@ -36,13 +37,14 @@ type Order = {
   created_at: string;
   paid_at: string | null;
   shipped_at: string | null;
+  shipped_notified_at: string | null;
   channel: string;
   channel_ref: string;
 };
 
 const COLUMNS = `id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,
   subtotal_cents,shipping_cents,tax_cents,amount_total_cents,status,provider,
-  carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at,channel,channel_ref`;
+  carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at,shipped_notified_at,channel,channel_ref`;
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -377,6 +379,7 @@ export const Route = createFileRoute("/api/admin/orders")({
         if ("tracking_number" in body) put("tracking_number", str(body.tracking_number, 80));
         if ("hold_reason" in body) put("hold_reason", str(body.hold_reason, 300));
 
+        let justShipped = false;
         if ("status" in body) {
           const next = str(body.status, 30) as OrderState;
           if (!MANUAL_STATES.includes(next)) {
@@ -396,6 +399,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             }
             if (existing.status !== "shipped") {
               put("shipped_at", new Date().toISOString().slice(0, 19).replace("T", " "));
+              justShipped = true;
             }
           }
           put("status", next);
@@ -446,8 +450,48 @@ export const Route = createFileRoute("/api/admin/orders")({
         }
         await logAdmin("order_update", reference, note.join(" | "));
 
+        /* ---- tell the customer, once, and only on the way in ----
+         *
+         * Four things have to be true, and each one is a way this would
+         * otherwise go wrong:
+         *   - the order moved INTO shipped on this save. Every field is
+         *     editable now, so a shipped order gets saved repeatedly.
+         *   - it has not been told already (shipped_notified_at), which also
+         *     covers moving an order out of shipped and back in.
+         *   - it came through this site. Amazon and eBay send their own
+         *     shipping notices and forbid contacting a buyer directly; their
+         *     addresses are proxies anyway, and the 93 imported marketplace
+         *     orders have no address at all.
+         *   - there is an address worth trying.
+         *
+         * A failure here is reported but never fails the save: the parcel is
+         * already gone, and refusing to record that would be worse. */
+        let notified: { ok: boolean; error: string } | null = null;
+        const shipping = (await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`)
+          .bind(existing.id)
+          .first<Order>()) as Order | null;
+
+        if (
+          justShipped &&
+          shipping &&
+          !shipping.shipped_notified_at &&
+          shipping.channel === "site" &&
+          deliverableAddress(shipping.email)
+        ) {
+          const lines = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
+            .bind(existing.id)
+            .all<{ name: string; qty: number }>();
+          const msg = shippedMessage(shipping, lines.results ?? []);
+          notified = await sendMail(shipping.reference, "shipped", { to: shipping.email, ...msg });
+          if (notified.ok) {
+            await DB.prepare("UPDATE orders SET shipped_notified_at = datetime('now') WHERE id = ?1")
+              .bind(existing.id)
+              .run();
+          }
+        }
+
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`).bind(existing.id).first<Order>();
-        return Response.json({ ok: true, order: row });
+        return Response.json({ ok: true, order: row, notified });
       },
     },
   },
