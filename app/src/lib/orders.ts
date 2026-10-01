@@ -63,14 +63,12 @@ export function trackingUrl(carrier: string, tracking: string): string {
  * Sales channels
  * ------------------------------------------------------------------ */
 
-export type ChannelId = "site" | "amazon" | "ebay" | "walmart" | "etsy" | "facebook" | "other";
+export type ChannelId = "site" | "amazon" | "walmart" | "facebook" | "other";
 
 export const CHANNELS: { id: ChannelId; name: string; remitsTax: boolean }[] = [
   { id: "site", name: "This site", remitsTax: false },
   { id: "amazon", name: "Amazon", remitsTax: true },
-  { id: "ebay", name: "eBay", remitsTax: true },
   { id: "walmart", name: "Walmart", remitsTax: true },
-  { id: "etsy", name: "Etsy", remitsTax: true },
   { id: "facebook", name: "Facebook Marketplace", remitsTax: true },
   { id: "other", name: "Somewhere else", remitsTax: false },
 ];
@@ -89,13 +87,24 @@ export const CHANNELS: { id: ChannelId; name: string; remitsTax: boolean }[] = [
  * seller of record and the buyer expects to hear from him, so those notify
  * whenever a real email address is on the order.
  */
-export const MARKETPLACE_TELLS_BUYER = ["amazon", "ebay", "walmart", "etsy"];
+export const MARKETPLACE_TELLS_BUYER = ["amazon", "walmart"];
 
 export function shopMayEmailBuyer(channel: string): boolean {
   return !MARKETPLACE_TELLS_BUYER.includes(channel);
 }
 
-export const MANUAL_CHANNELS = CHANNELS.filter((c) => c.id !== "site");
+/**
+ * What he can pick when typing an order in by hand, ordered by how often he
+ * needs it — Amazon first, because that is most of them.
+ *
+ * "This site" is selectable even though checkout creates those on its own: a
+ * phone or email order he takes himself is his own sale, taxed as his own, with
+ * the buyer expecting to hear from him. Hand-entered orders still carry
+ * provider = 'manual', so they remain distinguishable from real checkouts.
+ */
+export const MANUAL_CHANNEL_IDS: ChannelId[] = ["amazon", "walmart", "facebook", "site", "other"];
+
+export const MANUAL_CHANNELS = MANUAL_CHANNEL_IDS.map((id) => CHANNELS.find((c) => c.id === id)!);
 
 export function channelName(id: string): string {
   return CHANNELS.find((c) => c.id === id)?.name ?? id;
