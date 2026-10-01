@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { renderRichText } from "../../lib/rich-text";
+import { cleanPastedText, renderRichText } from "../../lib/rich-text";
 import { btnTiny, textarea as textareaStyle } from "./ui";
 
 /**
@@ -86,6 +86,17 @@ export function RichTextArea({
         value={value}
         rows={rows}
         onChange={(e) => onChange(e.currentTarget.value)}
+        onPaste={(e) => {
+          const raw = e.clipboardData.getData("text/plain");
+          if (!raw) return;
+          const text = cleanPastedText(raw);
+          e.preventDefault();
+          const el = e.currentTarget;
+          const from = el.selectionStart;
+          const to = el.selectionEnd;
+          const caret = from + text.length;
+          replaceRange(el, from, to, text, caret, caret);
+        }}
         onKeyDown={(e) => {
           if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
           const k = e.key.toLowerCase();

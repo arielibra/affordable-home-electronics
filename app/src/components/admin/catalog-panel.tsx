@@ -15,6 +15,7 @@ export type CatalogProduct = {
   msrp_cents: number | null;
   cost_cents: number | null;
   blurb: string;
+  specs: string;
   image: string;
   images?: string[];
   featured: number;
@@ -96,6 +97,7 @@ function Editor({
   // their columns and this is not one of them.
   const [cost, setCost] = useState(dollars(src?.cost_cents ?? null));
   const [blurb, setBlurb] = useState(src?.blurb ?? "");
+  const [specs, setSpecs] = useState(src?.specs ?? "");
   // A copy takes the original's whole gallery, not just its main photo.
   const [images, setImages] = useState<string[]>(
     src?.images && src.images.length > 0 ? [...src.images] : src?.image ? [src.image] : [],
@@ -126,6 +128,7 @@ function Editor({
       msrp_cents: msrp.trim() === "" ? null : toCents(msrp),
       cost_cents: cost.trim() === "" ? null : toCents(cost),
       blurb,
+      specs,
       images,
       featured,
       stock: Number(stock) || 0,
@@ -247,6 +250,14 @@ function Editor({
         <RichTextArea value={blurb} onChange={setBlurb} />
       </label>
 
+      <label className="mt-4 block">
+        <span className="text-[13px] font-medium text-muted">Specifications</span>
+        <p className="mt-1 text-[12px] leading-[1.5] text-muted">
+          The manufacturer&rsquo;s numbers. Shown under the description on the product page, in its own section.
+        </p>
+        <RichTextArea value={specs} onChange={setSpecs} />
+      </label>
+
       <div className="mt-5">
         <GalleryField value={images} onChange={setImages} />
       </div>
@@ -295,6 +306,82 @@ function Editor({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Two clicks, because this cannot be undone and it sits next to Edit. The
+ * second click is also where the server gets to object: a product with sales
+ * behind it comes back with a count and asks once more rather than going
+ * quietly.
+ */
+function DeleteProduct({ product, onDone }: { product: { slug: string; name: string }; onDone: () => void }) {
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [warning, setWarning] = useState("");
+
+  async function go(force: boolean) {
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `/api/admin/products?slug=${encodeURIComponent(product.slug)}${force ? "&force=1" : ""}`,
+        { method: "DELETE" },
+      );
+      const data = (await res.json()) as { ok: boolean; error?: string; needsConfirm?: boolean };
+      if (!data.ok) {
+        if (data.needsConfirm) setWarning(data.error ?? "This product has sales behind it.");
+        else {
+          setWarning(data.error ?? "Could not remove that.");
+          setArmed(false);
+        }
+        return;
+      }
+      onDone();
+    } catch {
+      setWarning("Could not reach the site.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (warning) {
+    return (
+      <span className="flex items-center gap-2 text-right">
+        <span className="max-w-[26ch] text-[12px] leading-[1.4] text-[color:var(--admin-bad)]">{warning}</span>
+        <button type="button" disabled={busy} onClick={() => void go(true)} className={`${btnLink} text-[color:var(--admin-bad)]`}>
+          Delete anyway
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setWarning("");
+            setArmed(false);
+          }}
+          className={`${btnLink} text-muted`}
+        >
+          Keep
+        </button>
+      </span>
+    );
+  }
+
+  if (!armed) {
+    return (
+      <button type="button" onClick={() => setArmed(true)} title={`Delete ${product.name}`} className={`${btnLink} text-muted`}>
+        Delete
+      </button>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-2">
+      <button type="button" disabled={busy} onClick={() => void go(false)} className={`${btnLink} text-[color:var(--admin-bad)]`}>
+        {busy ? "Deleting." : "Really delete?"}
+      </button>
+      <button type="button" onClick={() => setArmed(false)} className={`${btnLink} text-muted`}>
+        No
+      </button>
+    </span>
   );
 }
 
@@ -424,6 +511,7 @@ export function CatalogPanel() {
               >
                 Copy
               </button>
+              <DeleteProduct product={p} onDone={load} />
             </div>
           </div>
         ))}

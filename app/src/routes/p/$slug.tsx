@@ -103,6 +103,12 @@ function ProductPage() {
           {product.blurb ? (
             <div className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
           ) : null}
+          {product.specs ? (
+            <div className="mt-7 max-w-[58ch]">
+              <h2 className="text-sm font-semibold tracking-tight text-ink">Specifications</h2>
+              <div className="mt-2 text-base leading-relaxed text-muted">{renderRichText(product.specs)}</div>
+            </div>
+          ) : null}
 
           <div className="mt-8 flex flex-wrap items-end gap-4 border-t border-line pt-6">
             <span className="font-mono text-4xl leading-none tracking-tighter text-ink">{money(product.price_cents)}</span>

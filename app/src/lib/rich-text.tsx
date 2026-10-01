@@ -72,3 +72,30 @@ export function plainText(text: string | undefined): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+/**
+ * Text copied out of a web page carries the page's layout with it: a run of
+ * empty lines for every empty div, indentation from the source markup, no-break
+ * spaces, and the odd zero-width character. Pasted raw, a four-line feature
+ * list arrives with a dozen blank lines running through it.
+ *
+ * This keeps the structure that was really there — the line breaks and the
+ * paragraph breaks — and drops the rest. One blank line is the most that
+ * survives, because one blank line is all the renderer treats as a new
+ * paragraph anyway.
+ */
+export function cleanPastedText(raw: string): string {
+  return raw
+    .replace(/\r\n?/g, "\n")
+    // no-break and typographic spaces: they read as spaces but do not collapse
+    .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ")
+    // zero-width characters: invisible, and they break search and word wrap
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .split("\n")
+    // indentation from the source markup, and runs of spaces holding a layout up
+    .map((line) => line.replace(/[ \t]+/g, " ").trim())
+    .join("\n")
+    // a blank line between paragraphs is meaningful; six of them are not
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

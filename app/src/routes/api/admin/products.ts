@@ -23,7 +23,7 @@ type Row = {
 };
 
 const COLUMNS =
-  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,image,featured,stock,stock_tracked,active";
+  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,image,featured,stock,stock_tracked,active";
 
 /** At most twenty, no blanks, no duplicates, order preserved. */
 function cleanImages(v: unknown): string[] | null {
@@ -196,8 +196,8 @@ export const Route = createFileRoute("/api/admin/products")({
         const stock = clampInt(body.stock, 0, 100000) ?? 0;
 
         await DB.prepare(
-          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,image,featured,stock,stock_tracked,active)
-           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)`,
+          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,image,featured,stock,stock_tracked,active)
+           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)`,
         )
           .bind(
             slug,
@@ -209,6 +209,7 @@ export const Route = createFileRoute("/api/admin/products")({
             msrp,
             cost,
             str(body.blurb, BLURB_MAX),
+            str(body.specs, BLURB_MAX),
             // Filled in properly by writeImages below; this keeps the insert
             // valid for a product saved without any pictures at all.
             "",
@@ -287,6 +288,7 @@ export const Route = createFileRoute("/api/admin/products")({
           put("name", v);
         }
         if ("blurb" in body) put("blurb", str(body.blurb, BLURB_MAX));
+        if ("specs" in body) put("specs", str(body.specs, BLURB_MAX));
         // The gallery is authoritative when it is sent; the single column is
         // kept in step by writeImages rather than set here.
         const nextImages = "images" in body ? cleanImages(body.images) : null;
@@ -331,6 +333,55 @@ export const Route = createFileRoute("/api/admin/products")({
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM products WHERE slug = ?1`).bind(slug).first<Row>();
         const gallery = await readImages(DB, [slug]);
         return Response.json({ ok: true, product: { ...row, images: gallery[slug] ?? [] } });
+      },
+
+      // Remove one for good. Order history survives: order_items keeps its own
+      // copy of the name and the price it sold at, so a past order still reads
+      // correctly once the product is gone. What breaks is the link from that
+      // order to the product page, which is why a product with sales behind it
+      // asks a second time instead of going quietly.
+      DELETE: async ({ request }) => {
+        if (!(await isSignedIn(request))) return denied();
+        const DB = bindings().DB;
+        if (!DB) return Response.json({ ok: false, error: "No database." }, { status: 503 });
+
+        const url = new URL(request.url);
+        const slug = (url.searchParams.get("slug") ?? "").trim().slice(0, 120);
+        if (!slug) return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
+
+        const product = await DB.prepare("SELECT name FROM products WHERE slug = ?1")
+          .bind(slug)
+          .first<{ name: string }>();
+        if (!product) return Response.json({ ok: false, error: "That product is already gone." }, { status: 404 });
+
+        const sold = await DB.prepare("SELECT COUNT(DISTINCT order_id) AS n FROM order_items WHERE product_slug = ?1")
+          .bind(slug)
+          .first<{ n: number }>();
+        const orders = sold?.n ?? 0;
+
+        if (orders > 0 && url.searchParams.get("force") !== "1") {
+          return Response.json(
+            {
+              ok: false,
+              needsConfirm: true,
+              orders,
+              error: `On ${orders} past order${orders === 1 ? "" : "s"}. Those keep their own record and still read correctly, but their link to this page will stop working.`,
+            },
+            { status: 409 },
+          );
+        }
+
+        // Anything that exists only to point at this product goes with it.
+        await DB.prepare("DELETE FROM product_images WHERE product_slug = ?1").bind(slug).run();
+        await DB.prepare("DELETE FROM cart_items WHERE product_slug = ?1").bind(slug).run();
+        await DB.prepare("DELETE FROM products WHERE slug = ?1").bind(slug).run();
+        await logAdmin(
+          "product_delete",
+          slug,
+          `${product.name}${orders > 0 ? ` (was on ${orders} order${orders === 1 ? "" : "s"})` : ""}`,
+        );
+
+        return Response.json({ ok: true });
       },
     },
   },

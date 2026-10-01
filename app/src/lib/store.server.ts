@@ -11,6 +11,8 @@ export type Product = {
   msrp_cents: number | null;
   /** Only the single-product query selects this; listings do not carry it. */
   blurb?: string;
+  /** Same as blurb: only the single-product query selects it. */
+  specs?: string;
   image: string;
   featured: number;
   stock: number;
@@ -100,7 +102,7 @@ export async function searchProducts(q: string, limit = 60): Promise<Product[]> 
 
 export async function getProduct(slug: string): Promise<Product | null> {
   return await db()
-    .prepare(`SELECT ${PUBLIC}, blurb FROM products WHERE slug = ?1 AND active = 1`)
+    .prepare(`SELECT ${PUBLIC}, blurb, specs FROM products WHERE slug = ?1 AND active = 1`)
     .bind(slug)
     .first<Product>();
 }
