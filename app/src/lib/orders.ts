@@ -76,16 +76,16 @@ export const CHANNELS: { id: ChannelId; name: string; remitsTax: boolean }[] = [
 /** The channels an order can be typed in against. Orders on this site arrive
  *  through checkout and are never entered by hand. */
 /**
- * Marketplaces that tell the buyer themselves.
+ * Marketplaces that tell the buyer themselves, and must not be emailed.
  *
- * Amazon and Walmart both send their own shipping notice and treat
- * contacting a buyer directly as a policy breach; the address on the order is
- * usually a relay anyway. Emailing those buyers risks his seller account, so
- * the shop never does it regardless of what is typed in the email box.
+ * Amazon and Walmart both send their own shipping notice and both treat
+ * contacting a buyer outside their messaging system as a policy breach — the
+ * kind sellers get suspended over. A duplicate tracking email is not worth his
+ * dad's Amazon account, so those two never send, whatever address is typed in.
  *
- * Facebook Marketplace and "Somewhere else" are different: there he IS the
- * seller of record and the buyer expects to hear from him, so those notify
- * whenever a real email address is on the order.
+ * This site, Facebook Marketplace and "Somewhere else" are his own sales: he
+ * is the seller the buyer is dealing with, and nobody else is going to tell
+ * them the parcel has gone.
  */
 export const MARKETPLACE_TELLS_BUYER = ["amazon", "walmart"];
 
@@ -93,15 +93,6 @@ export function shopMayEmailBuyer(channel: string): boolean {
   return !MARKETPLACE_TELLS_BUYER.includes(channel);
 }
 
-/**
- * What he can pick when typing an order in by hand, ordered by how often he
- * needs it — Amazon first, because that is most of them.
- *
- * "This site" is selectable even though checkout creates those on its own: a
- * phone or email order he takes himself is his own sale, taxed as his own, with
- * the buyer expecting to hear from him. Hand-entered orders still carry
- * provider = 'manual', so they remain distinguishable from real checkouts.
- */
 export const MANUAL_CHANNEL_IDS: ChannelId[] = ["amazon", "walmart", "facebook", "site", "other"];
 
 export const MANUAL_CHANNELS = MANUAL_CHANNEL_IDS.map((id) => CHANNELS.find((c) => c.id === id)!);

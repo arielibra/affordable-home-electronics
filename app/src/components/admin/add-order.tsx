@@ -285,8 +285,8 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
       {/* Why the email box is here, and when it does anything. */}
       <p className="mt-2 max-w-[68ch] text-[12px] leading-[1.5] text-muted">
         {tellsBuyerItself
-          ? `${channelName(channel)} emails the buyer its own shipping notice, and contacting them directly breaks their rules — so nothing is sent from here whatever you put above. Record it for your own files if you like.`
-          : "If you put a real email here, the buyer is emailed the tracking number when you mark this order shipped. Leave it blank and nothing is sent."}
+          ? `${channelName(channel)} sends the buyer its own shipping notice, and contacting them directly breaks their seller rules — so nothing is emailed from here whatever you put above. Record it for your own files if you like.`
+          : "Put a real email here and the buyer gets the tracking number — either the moment you save this as shipped, or later when you mark it shipped. Leave it blank and nothing is sent."}
       </p>
 
       <div className="mt-4">

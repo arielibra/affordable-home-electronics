@@ -282,8 +282,44 @@ export const Route = createFileRoute("/api/admin/orders")({
 
         await logAdmin("order_manual_add", reference, `${channel} ${channelRef} ${total}`);
 
+        /* ---- an order typed straight in as shipped still tells the buyer ----
+         *
+         * The notice on the update path fires when an order MOVES into
+         * shipped. An order created already shipped never moves, so without
+         * this it would quietly tell nobody — which is exactly the case when
+         * he records a sale he has already posted.
+         *
+         * Sent after the line items are written so the message lists them, and
+         * stamped the same way so it can never go twice. */
+        let notified: { ok: boolean; error: string; expected: boolean } | null = null;
+        if (status === "shipped" && !shopMayEmailBuyer(channel)) {
+          notified = {
+            ok: false,
+            expected: true,
+            error: `${channelName(channel)} sends its own notice and does not allow contacting buyers directly, so nothing was emailed from here.`,
+          };
+        } else if (status === "shipped" && tracking && deliverableAddress(str(body.email, 160))) {
+          const fresh = (await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`)
+            .bind(id)
+            .first<Order>()) as Order | null;
+          if (fresh) {
+            const sent = await sendMail(fresh.reference, "shipped", {
+              to: fresh.email,
+              ...shippedMessage(fresh, items.map((i) => ({ name: i.name, qty: i.qty }))),
+            });
+            notified = { ...sent, expected: false };
+            if (sent.ok) {
+              await DB.prepare("UPDATE orders SET shipped_notified_at = datetime('now') WHERE id = ?1")
+                .bind(id)
+                .run();
+            }
+          }
+        } else if (status === "shipped" && !deliverableAddress(str(body.email, 160))) {
+          notified = { ok: false, expected: true, error: "No email address on this order, so the buyer was not told." };
+        }
+
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`).bind(id).first<Order>();
-        return Response.json({ ok: true, order: row });
+        return Response.json({ ok: true, order: row, notified });
       },
 
       POST: async ({ request }) => {
@@ -473,12 +509,11 @@ export const Route = createFileRoute("/api/admin/orders")({
 
         if (justShipped && shipping && !shipping.shipped_notified_at) {
           if (!shopMayEmailBuyer(shipping.channel)) {
-            // Not a failure. Saying so out loud beats silence, which reads as
-            // a broken feature.
+            // Correct, not broken — so it is stated plainly rather than in red.
             notified = {
               ok: false,
               expected: true,
-              error: `${channelName(shipping.channel)} sends its own shipping notice, so nothing was emailed from here.`,
+              error: `${channelName(shipping.channel)} sends its own notice and does not allow contacting buyers directly, so nothing was emailed from here.`,
             };
           } else if (!deliverableAddress(shipping.email)) {
             notified = {
