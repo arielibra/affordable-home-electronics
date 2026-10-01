@@ -38,6 +38,7 @@ import { Route as ApiPaypalCreateRouteImport } from './routes/api/paypal/create'
 import { Route as ApiPaypalCaptureRouteImport } from './routes/api/paypal/capture'
 import { Route as ApiAdminZipRouteImport } from './routes/api/admin/zip'
 import { Route as ApiAdminUploadRouteImport } from './routes/api/admin/upload'
+import { Route as ApiAdminTestEmailRouteImport } from './routes/api/admin/test-email'
 import { Route as ApiAdminTaxonomyRouteImport } from './routes/api/admin/taxonomy'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
 import { Route as ApiAdminReportRouteImport } from './routes/api/admin/report'
@@ -194,6 +195,11 @@ const ApiAdminUploadRoute = ApiAdminUploadRouteImport.update({
   path: '/api/admin/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminTestEmailRoute = ApiAdminTestEmailRouteImport.update({
+  id: '/api/admin/test-email',
+  path: '/api/admin/test-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminTaxonomyRoute = ApiAdminTaxonomyRouteImport.update({
   id: '/api/admin/taxonomy',
   path: '/api/admin/taxonomy',
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
+  '/api/admin/test-email': typeof ApiAdminTestEmailRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
   '/api/admin/zip': typeof ApiAdminZipRoute
   '/api/paypal/capture': typeof ApiPaypalCaptureRoute
@@ -322,6 +329,7 @@ export interface FileRoutesByTo {
   '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
+  '/api/admin/test-email': typeof ApiAdminTestEmailRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
   '/api/admin/zip': typeof ApiAdminZipRoute
   '/api/paypal/capture': typeof ApiPaypalCaptureRoute
@@ -364,6 +372,7 @@ export interface FileRoutesById {
   '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
+  '/api/admin/test-email': typeof ApiAdminTestEmailRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
   '/api/admin/zip': typeof ApiAdminZipRoute
   '/api/paypal/capture': typeof ApiPaypalCaptureRoute
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/api/admin/report'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
+    | '/api/admin/test-email'
     | '/api/admin/upload'
     | '/api/admin/zip'
     | '/api/paypal/capture'
@@ -448,6 +458,7 @@ export interface FileRouteTypes {
     | '/api/admin/report'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
+    | '/api/admin/test-email'
     | '/api/admin/upload'
     | '/api/admin/zip'
     | '/api/paypal/capture'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/api/admin/report'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
+    | '/api/admin/test-email'
     | '/api/admin/upload'
     | '/api/admin/zip'
     | '/api/paypal/capture'
@@ -531,6 +543,7 @@ export interface RootRouteChildren {
   ApiAdminReportRoute: typeof ApiAdminReportRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
   ApiAdminTaxonomyRoute: typeof ApiAdminTaxonomyRoute
+  ApiAdminTestEmailRoute: typeof ApiAdminTestEmailRoute
   ApiAdminUploadRoute: typeof ApiAdminUploadRoute
   ApiAdminZipRoute: typeof ApiAdminZipRoute
   ApiPaypalCaptureRoute: typeof ApiPaypalCaptureRoute
@@ -742,6 +755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/test-email': {
+      id: '/api/admin/test-email'
+      path: '/api/admin/test-email'
+      fullPath: '/api/admin/test-email'
+      preLoaderRoute: typeof ApiAdminTestEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/taxonomy': {
       id: '/api/admin/taxonomy'
       path: '/api/admin/taxonomy'
@@ -851,6 +871,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminReportRoute: ApiAdminReportRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
   ApiAdminTaxonomyRoute: ApiAdminTaxonomyRoute,
+  ApiAdminTestEmailRoute: ApiAdminTestEmailRoute,
   ApiAdminUploadRoute: ApiAdminUploadRoute,
   ApiAdminZipRoute: ApiAdminZipRoute,
   ApiPaypalCaptureRoute: ApiPaypalCaptureRoute,

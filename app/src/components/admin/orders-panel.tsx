@@ -4,7 +4,7 @@ import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, trackingUrl,
 import { AddOrder } from "./add-order";
 import { OrderEditor } from "./order-editor";
 import { money } from "../../lib/site";
-import { btnPrimary, card, input, label, orderCard, pillInk, pillQuiet } from "./ui";
+import { btnLink, btnPrimary, card, input, label, orderCard, pillInk, pillQuiet } from "./ui";
 
 type Item = { name: string; qty: number; price_cents: number };
 
@@ -405,6 +405,47 @@ function YearView({ years }: { years: string[] }) {
   );
 }
 
+/**
+ * Checking that email works should not require involving a customer. This
+ * sends one message to the shop's own address and says exactly what came
+ * back, so a wrong key or an unverified domain shows up here.
+ */
+function EmailCheck() {
+  const [state, setState] = useState<{ kind: "idle" | "busy" | "ok" | "bad"; detail: string }>({
+    kind: "idle",
+    detail: "",
+  });
+
+  async function run() {
+    setState({ kind: "busy", detail: "" });
+    try {
+      const res = await fetch("/api/admin/test-email", { method: "POST" });
+      const data = (await res.json()) as { ok: boolean; error?: string; sent_to?: string };
+      setState(
+        data.ok
+          ? { kind: "ok", detail: data.sent_to ?? "" }
+          : { kind: "bad", detail: data.error ?? "It did not go." },
+      );
+    } catch {
+      setState({ kind: "bad", detail: "Could not reach the site." });
+    }
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <button type="button" onClick={() => void run()} disabled={state.kind === "busy"} className={btnLink}>
+        {state.kind === "busy" ? "Sending." : "Send me a test email"}
+      </button>
+      {state.kind === "ok" ? (
+        <span className="text-[13px] text-muted">Sent to {state.detail}. Check that inbox.</span>
+      ) : null}
+      {state.kind === "bad" ? (
+        <span className="text-[13px] text-[color:var(--admin-bad)]">{state.detail}</span>
+      ) : null}
+    </div>
+  );
+}
+
 export function OrdersPanel() {
   const [tab, setTab] = useState<Tab>("paid");
   const [channel, setChannel] = useState("all");
@@ -436,7 +477,8 @@ export function OrdersPanel() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-1 border-b border-[color:var(--admin-hairline)]">
+      <EmailCheck />
+      <div className="mt-4 flex flex-wrap gap-1 border-b border-[color:var(--admin-hairline)]">
         {TABS.map((t) => (
           <button
             key={t.key}
