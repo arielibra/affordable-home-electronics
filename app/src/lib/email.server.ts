@@ -149,7 +149,7 @@ export function shippedMessage(
     ``,
     `Tracking can take a few hours to show its first scan after the parcel is collected.`,
     ``,
-    `Any questions, just reply to this email.`,
+    `Any questions, email us at ${SITE.email} and we will come straight back to you.`,
     ``,
     SITE.name,
     ORIGIN,
@@ -165,7 +165,7 @@ Tracking number: <strong>${esc(order.tracking_number)}</strong>
 ${link ? `<br><a href="${esc(link)}" style="color:#1668c1">Track your parcel</a>` : ""}
 </p>
 <p style="color:#5b7696;font-size:13px">Tracking can take a few hours to show its first scan after the parcel is collected.</p>
-<p>Any questions, just reply to this email.</p>
+<p>Any questions, email us at <a href="${SITE.emailHref}" style="color:#1668c1">${esc(SITE.email)}</a> and we will come straight back to you.</p>
 <p style="color:#5b7696;font-size:13px">${esc(SITE.name)}<br><a href="${esc(ORIGIN)}" style="color:#1668c1">${esc(ORIGIN)}</a></p>
 </div>`;
 
