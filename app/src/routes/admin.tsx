@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { BrandsPanel } from "../components/admin/brands-panel";
 import { CatalogPanel } from "../components/admin/catalog-panel";
@@ -11,6 +11,7 @@ import { Field, Notice, TextInput } from "../components/site/form";
 import { Mark } from "../components/site/mark";
 import { Shell } from "../components/site/section";
 import { SITE } from "../lib/site";
+import { btnQuiet, card, h1, h2, lede, small } from "../components/admin/ui";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -41,13 +42,67 @@ type Security = {
  * would be ignored within a week, so a single address under the lockout
  * threshold says nothing at all.
  */
+const TABS: [Tab, string][] = [
+  ["catalog", "Products"],
+  ["stock", "Prices and stock"],
+  ["categories", "Categories"],
+  ["brands", "Brands"],
+  ["orders", "Orders"],
+  ["messages", "Messages"],
+];
+
+/**
+ * One track, one pill, and the pill moves. Measured from the live buttons
+ * rather than guessed, because the labels are different widths and anything
+ * hard-coded drifts the moment one of them is renamed.
+ */
+function Tabs({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
+  const wrap = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState({ left: 0, width: 0 });
+
+  useLayoutEffect(() => {
+    const host = wrap.current;
+    if (!host) return;
+    const measure = () => {
+      const active = host.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (active) setPill({ left: active.offsetLeft, width: active.offsetWidth });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, [tab]);
+
+  return (
+    <div ref={wrap} role="tablist" className="ahe-tabs relative mt-8 overflow-x-auto">
+      <span
+        aria-hidden
+        className="ahe-tab-pill"
+        style={{ transform: `translateX(${pill.left}px)`, width: pill.width }}
+      />
+      {TABS.map(([key, label]) => (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={tab === key}
+          onClick={() => onPick(key)}
+          className="ahe-tab"
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function SecurityBanner({ s }: { s: Security }) {
   const many = s.addresses24h > 1;
   const noisy = s.fails24h >= 5 || s.lockedNow > 0 || many;
   if (!noisy) return null;
   return (
-    <div className="mt-6 border border-line border-l-[3px] border-l-[color:var(--color-signal)] bg-surface p-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Sign-in attempts</p>
+    <div className="mt-6 border border-[color:var(--admin-hairline)] border-l-[3px] border-l-[color:var(--color-signal)] bg-surface p-4">
+      <p className="text-[13px] font-medium text-muted">Sign-in attempts</p>
       <p className="mt-2 text-sm leading-relaxed text-ink">
         <b>{s.fails24h}</b> failed sign-in{s.fails24h === 1 ? "" : "s"} in the last 24 hours, from{" "}
         <b>{s.addresses24h}</b> address{s.addresses24h === 1 ? "" : "es"}
@@ -59,7 +114,7 @@ function SecurityBanner({ s }: { s: Security }) {
           </>
         ) : null}
       </p>
-      <p className="mt-2 max-w-[74ch] text-xs leading-relaxed text-muted">
+      <p className="mt-2 max-w-[74ch] text-[13px] leading-relaxed text-muted">
         {many
           ? "Several different addresses is the pattern worth noticing — that is someone guessing, not a forgotten password. Each is shut out for 15 minutes after 5 wrong tries, so the password itself is not at risk unless it is an easy one."
           : "Probably just a mistyped password. Worth a glance rather than a worry."}
@@ -113,15 +168,13 @@ function Admin() {
 
   return (
     <Frame wide>
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
+      <header className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-signal">Back office</p>
-          <h1 className="mt-2 text-3xl font-semibold leading-none tracking-tighter text-ink md:text-4xl">
-            Mind the shop.
-          </h1>
+          <h1 className={h1}>Mind the shop.</h1>
+          <p className={`${lede} mt-3`}>Everything about the catalogue and the orders, in one place.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-sm text-muted underline underline-offset-4 hover:text-ink">
+        <div className="flex shrink-0 items-center gap-3">
+          <Link to="/" className={btnQuiet}>
             View the site
           </Link>
           <button
@@ -130,41 +183,18 @@ function Admin() {
               await fetch("/api/admin/logout", { method: "POST" });
               window.location.reload();
             }}
-            className="h-9 border border-line px-4 text-xs font-medium text-ink hover:border-ink"
+            className={btnQuiet}
           >
             Sign out
           </button>
         </div>
-      </div>
+      </header>
 
       {security ? <SecurityBanner s={security} /> : null}
 
-      <div className="mt-6 flex flex-wrap gap-1 border-b border-line">
-        {(
-          [
-            ["catalog", "Products"],
-            ["stock", "Prices and stock"],
-            ["categories", "Categories"],
-            ["brands", "Brands"],
-            ["orders", "Orders"],
-            ["messages", "Messages"],
-          ] as [Tab, string][]
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            aria-current={tab === key}
-            className={`-mb-px border-b-2 px-4 py-2.5 text-sm transition-colors ${
-              tab === key ? "border-signal text-ink" : "border-transparent text-muted hover:text-ink"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs tab={tab} onPick={setTab} />
 
-      <div className="py-8">
+      <div key={tab} className="ahe-panel pt-9">
         {tab === "catalog" ? (
           <CatalogPanel />
         ) : tab === "stock" ? (
@@ -243,8 +273,8 @@ function SignIn({ onIn }: { onIn: () => void }) {
 
 function Frame({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className="min-h-dvh bg-ground">
-      <Shell className={wide ? "py-10" : "py-16"}>{children}</Shell>
+    <div className="ahe-admin min-h-dvh bg-ground">
+      <Shell className={wide ? "py-10 md:py-14" : "py-16"}>{children}</Shell>
     </div>
   );
 }

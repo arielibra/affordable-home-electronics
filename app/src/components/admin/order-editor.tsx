@@ -3,11 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { CHANNELS } from "../../lib/orders";
 import { money as fmt } from "../../lib/site";
 import type { AdminOrder } from "./orders-panel";
+import { btnLink, btnPrimary, card, input, label, textarea } from "./ui";
 
 type Line = { key: string; slug: string; name: string; qty: number; price: string };
-
-const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
-const label = "font-mono text-[10px] uppercase tracking-[0.14em] text-muted";
 
 const dollars = (c: number | null | undefined) => ((c ?? 0) / 100).toFixed(2);
 const cents = (v: string) => {
@@ -174,7 +172,7 @@ export function OrderEditor({
       <h4 className="text-sm font-semibold text-ink">Editing {order.reference}</h4>
 
       {fromProcessor ? (
-        <p className="mt-2 max-w-[74ch] border-l-2 border-[color:var(--color-signal)] pl-3 text-xs leading-relaxed text-muted">
+        <p className="mt-2 max-w-[74ch] border-l-2 border-[color:var(--color-signal)] pl-3 text-[13px] leading-[1.55] text-muted">
           This one was paid by {order.provider === "paypal" ? "PayPal" : "card through Stripe"}. Changing the amounts
           here changes <b>your records only</b> &mdash; it does not move any money, and it will no longer agree with what
           the processor actually charged. Fine for fixing an address or a product name; for the money, correct it in{" "}
@@ -182,7 +180,7 @@ export function OrderEditor({
         </p>
       ) : null}
 
-      <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Customer</p>
+      <p className="mt-4 text-[15px] font-semibold tracking-[-0.01em] text-ink">Customer</p>
       <div className="mt-2 grid gap-3 sm:grid-cols-2">
         <Text label="Name" value={name} onChange={setName} />
         <Text label="Company" value={company} onChange={setCompany} />
@@ -190,7 +188,7 @@ export function OrderEditor({
         <Text label="Phone" value={phone} onChange={setPhone} />
       </div>
 
-      <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Ships to</p>
+      <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">Ships to</p>
       <div className="mt-2 grid gap-3 sm:grid-cols-2">
         <Text label="Address" value={a1} onChange={setA1} />
         <Text label="Address line 2" value={a2} onChange={setA2} />
@@ -212,11 +210,11 @@ export function OrderEditor({
               />
             </div>
           </div>
-          {zipNote ? <p className="mt-1.5 text-[11px] leading-relaxed text-muted">{zipNote}</p> : null}
+          {zipNote ? <p className="mt-1.5 text-[13px] leading-[1.55] text-muted">{zipNote}</p> : null}
         </div>
       </div>
 
-      <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Where it came from</p>
+      <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">Where it came from</p>
       <div className="mt-2 grid gap-3 sm:grid-cols-3">
         <div>
           <p className={label}>Sold on</p>
@@ -232,11 +230,11 @@ export function OrderEditor({
         <div>
           <p className={label}>Date paid</p>
           <input type="date" value={paidOn} onChange={(e) => setPaidOn(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
-          <p className="mt-1 text-[11px] leading-relaxed text-muted">Decides which year it counts in.</p>
+          <p className="mt-1 text-[13px] leading-[1.55] text-muted">Decides which year it counts in.</p>
         </div>
       </div>
 
-      <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">What was on it</p>
+      <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">What was on it</p>
       <div className="mt-2 grid grid-cols-[1fr_60px_96px_32px] gap-2">
         <p className={label}>Item</p>
         <p className={`${label} text-center`}>Qty</p>
@@ -274,7 +272,7 @@ export function OrderEditor({
               disabled={lines.length <= 1}
               onClick={() => setLines(lines.filter((_, j) => j !== i))}
               aria-label="Remove this line"
-              className="h-9 border border-line text-xs text-muted hover:border-ink hover:text-ink disabled:opacity-30"
+              className="h-9 border border-[color:var(--admin-hairline)] text-[13px] text-muted hover:border-ink hover:text-ink disabled:opacity-30"
             >
               &times;
             </button>
@@ -286,12 +284,12 @@ export function OrderEditor({
         onClick={() =>
           setLines([...lines, { key: crypto.randomUUID(), slug: "", name: "", qty: 1, price: "" }])
         }
-        className="mt-2 text-xs text-ink underline underline-offset-4"
+        className={`${btnLink} mt-3 inline-block`}
       >
         Add a line
       </button>
 
-      <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">The money</p>
+      <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">The money</p>
       <div className="mt-2 grid gap-3 sm:grid-cols-4">
         <Text label="Goods" value={sub} onChange={setSub} mono />
         <Text label="Shipping" value={ship} onChange={setShip} mono />
@@ -303,8 +301,8 @@ export function OrderEditor({
           how a total ends up different from what he meant; saying it does not
           add up and offering to fix it keeps him in charge. */}
       {linesOutOfStep || outOfStep ? (
-        <div className="mt-3 border border-line bg-ground p-3">
-          <p className="text-xs leading-relaxed text-ink">
+        <div className="mt-3 border border-[color:var(--admin-hairline)] bg-ground p-3">
+          <p className="text-[13px] leading-relaxed text-ink">
             {linesOutOfStep ? (
               <>
                 The lines come to <b>{fmt(lineSum)}</b> but goods says <b>{fmt(cents(sub))}</b>.{" "}
@@ -324,11 +322,11 @@ export function OrderEditor({
               setSub((s / 100).toFixed(2));
               setTotal(((s + cents(ship) + cents(tax)) / 100).toFixed(2));
             }}
-            className="mt-2 h-8 border border-line px-3 text-xs text-ink hover:border-ink"
+            className="mt-2 h-8 border border-[color:var(--admin-hairline)] px-3 text-[13px] text-ink hover:border-ink"
           >
             Add it up for me
           </button>
-          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+          <p className="mt-2 text-[13px] leading-[1.55] text-muted">
             Leave it alone if the order really was like that &mdash; some of the imported ones do not add up either.
           </p>
         </div>
@@ -340,7 +338,7 @@ export function OrderEditor({
           value={notes}
           rows={2}
           onChange={(e) => setNotes(e.currentTarget.value)}
-          className="mt-1.5 w-full border border-line bg-surface px-2 py-1.5 text-sm text-ink focus:border-ink focus:outline-none"
+          className="mt-1.5 w-full border border-[color:var(--admin-hairline)] bg-surface px-2 py-1.5 text-sm text-ink focus:border-ink focus:outline-none"
         />
       </div>
 
@@ -351,14 +349,14 @@ export function OrderEditor({
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface disabled:opacity-50"
+          className={btnPrimary}
         >
           {busy ? "Saving" : "Save changes"}
         </button>
-        <button type="button" onClick={onCancel} className="text-xs text-muted hover:text-ink">
+        <button type="button" onClick={onCancel} className={`${btnLink} text-muted`}>
           Cancel
         </button>
-        <span className="text-[11px] text-muted">Every change is written to the admin log.</span>
+        <span className="text-[13px] text-muted">Every change is written to the admin log.</span>
       </div>
     </div>
   );

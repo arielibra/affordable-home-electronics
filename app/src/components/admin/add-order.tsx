@@ -2,12 +2,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { CARRIERS, MANUAL_CHANNELS, marketplaceRemitsTax } from "../../lib/orders";
 import { money } from "../../lib/site";
+import { btnLink, btnPrimary, btnQuiet, card, input, label, textarea } from "./ui";
 
 type Line = { key: string; slug: string; name: string; qty: number; price: string };
 type Hit = { slug: string; name: string; price_cents: number };
-
-const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
-const label = "font-mono text-[10px] uppercase tracking-[0.14em] text-muted";
 
 const blank = (): Line => ({ key: crypto.randomUUID(), slug: "", name: "", qty: 1, price: "" });
 
@@ -78,7 +76,7 @@ function ItemRow({
                     setHits([]);
                     setOpen(false);
                   }}
-                  className="flex w-full items-center justify-between gap-3 px-2 py-2 text-left text-xs hover:bg-ground"
+                  className="flex w-full items-center justify-between gap-3 px-2 py-2 text-left text-[13px] hover:bg-ground"
                 >
                   <span className="min-w-0 flex-1 truncate text-ink">{h.name}</span>
                   <span className="shrink-0 font-mono text-muted">{money(h.price_cents)}</span>
@@ -106,7 +104,7 @@ function ItemRow({
         disabled={!canRemove}
         onClick={onRemove}
         aria-label="Remove this line"
-        className="h-9 border border-line text-xs text-muted hover:border-ink hover:text-ink disabled:opacity-30"
+        className="h-9 border border-[color:var(--admin-hairline)] text-[13px] text-muted hover:border-ink hover:text-ink disabled:opacity-30"
       >
         &times;
       </button>
@@ -193,26 +191,26 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex h-10 items-center border border-line px-4 text-sm font-medium text-ink hover:border-ink"
+          className={btnQuiet}
         >
           Add an order from somewhere else
         </button>
-        {done ? <span className="text-xs text-muted">{done}</span> : null}
+        {done ? <span className="text-[13px] text-muted">{done}</span> : null}
       </div>
     );
   }
 
   return (
-    <div className="mb-6 border border-line bg-surface p-5">
+    <div className={`${card} mb-7`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-base font-semibold tracking-tight text-ink">Add an order from somewhere else</h3>
-          <p className="mt-1 max-w-[68ch] text-xs leading-relaxed text-muted">
+          <p className="mt-1 max-w-[68ch] text-[13px] leading-[1.55] text-muted">
             For sales made on Amazon, eBay and the rest. Once it is in, it moves through Paid, Ready to ship and Shipped
             exactly like an order from this site, and appears in the year report.
           </p>
         </div>
-        <button type="button" onClick={() => setOpen(false)} className="text-xs text-muted hover:text-ink">
+        <button type="button" onClick={() => setOpen(false)} className={`${btnLink} text-muted`}>
           Close
         </button>
       </div>
@@ -274,7 +272,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
         <button
           type="button"
           onClick={() => setLines([...lines, blank()])}
-          className="mt-2 text-xs text-ink underline underline-offset-4"
+          className={`${btnLink} mt-3 inline-block`}
         >
           Add another line
         </button>
@@ -297,7 +295,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
               <dt className="text-muted">Goods</dt>
               <dd className="font-mono text-ink">{money(subtotal)}</dd>
             </div>
-            <div className="flex justify-between border-t border-line pt-1">
+            <div className="flex justify-between border-t border-[color:var(--admin-hairline)] pt-1">
               <dt className="text-ink">Order total</dt>
               <dd className="font-mono text-ink">{money(total)}</dd>
             </div>
@@ -306,7 +304,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
       </div>
 
       {marketplaceRemitsTax(channel) ? (
-        <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-xs leading-relaxed text-muted">
+        <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-[13px] leading-[1.55] text-muted">
           No sales tax box, on purpose. {chanName} collects and remits the sales tax on this sale itself, so it is not
           yours to file &mdash; and counting it here would mean New York gets paid twice. The year report keeps these
           separate from your own orders for exactly that reason.
@@ -350,7 +348,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           rows={2}
           placeholder="Anything worth remembering about this one"
           onChange={(e) => setNotes(e.currentTarget.value)}
-          className="mt-1.5 w-full border border-line bg-surface px-2 py-1.5 text-sm text-ink focus:border-ink focus:outline-none"
+          className="mt-1.5 w-full border border-[color:var(--admin-hairline)] bg-surface px-2 py-1.5 text-sm text-ink focus:border-ink focus:outline-none"
         />
       </div>
 
@@ -361,14 +359,14 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface disabled:opacity-50"
+          className={btnPrimary}
         >
           {busy ? "Saving" : "Save this order"}
         </button>
-        <button type="button" onClick={reset} className="text-xs text-muted hover:text-ink">
+        <button type="button" onClick={reset} className={`${btnLink} text-muted`}>
           Clear the form
         </button>
-        {done ? <span className="text-xs text-muted">{done}</span> : null}
+        {done ? <span className="text-[13px] text-muted">{done}</span> : null}
       </div>
     </div>
   );

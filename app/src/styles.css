@@ -187,3 +187,119 @@ html.ahe :focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .ahe-onblue::after { transition: none; }
 }
+
+
+/* ===================================================================
+ * The back office.
+ *
+ * Scoped entirely under .ahe-admin so none of it can reach the shop.
+ * The storefront keeps its hairlines and sharp corners; this is the one
+ * screen somebody uses for an hour at a time, so it gets room to breathe,
+ * bigger type and softer edges.
+ * =================================================================== */
+
+.ahe-admin {
+  --admin-sunken: #eef4fb;      /* a recessed panel, instead of a border */
+  --admin-hairline: #e1ebf6;    /* only where a line genuinely helps */
+  --admin-faint: #8ba3bf;       /* placeholder text */
+  --admin-bad: #b3261e;
+  --admin-bad-bg: #fdecea;
+  --admin-ring: color-mix(in srgb, var(--color-signal) 28%, transparent);
+
+  font-size: 16px;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Cards sit on the page rather than being boxed in by it: a barely-there
+ * edge plus two soft shadows, one tight for the lift and one wide and
+ * diffuse so it looks like it is resting on the background. */
+.ahe-admin .ahe-card {
+  border: 1px solid var(--admin-hairline);
+  box-shadow:
+    0 1px 2px rgba(20, 48, 78, 0.04),
+    0 10px 30px -16px rgba(20, 48, 78, 0.16);
+}
+
+/* Rows light up rather than being divided by rules. */
+.ahe-admin .ahe-row {
+  border-radius: 14px;
+  padding: 0.7rem 0.85rem;
+  transition: background-color 180ms ease;
+}
+.ahe-admin .ahe-row:hover { background: var(--admin-sunken); }
+
+.ahe-admin .ahe-input {
+  border: 1px solid var(--admin-hairline);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+.ahe-admin .ahe-input:hover { border-color: #cfdcec; }
+.ahe-admin .ahe-input:focus,
+.ahe-admin .ahe-input:focus-visible {
+  outline: none;
+  border-color: var(--color-signal);
+  box-shadow: 0 0 0 4px var(--admin-ring);
+}
+
+/* Buttons: the press is the whole feedback. No colour change, no border
+ * flash — it just gives slightly, the way a physical key does. */
+.ahe-admin .ahe-btn {
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), opacity 140ms ease,
+    background-color 160ms ease, box-shadow 160ms ease;
+  will-change: transform;
+}
+.ahe-admin .ahe-btn:hover { opacity: 0.92; }
+.ahe-admin .ahe-btn:active { transform: scale(0.97); }
+.ahe-admin .ahe-btn:disabled { opacity: 0.4; transform: none; }
+.ahe-admin .ahe-btn-quiet:hover { background: #e3ecf7; opacity: 1; }
+
+.ahe-admin .ahe-link { transition: opacity 140ms ease; }
+.ahe-admin .ahe-link:hover { opacity: 0.6; }
+
+/* The tab bar is one track with a single pill that slides between the
+ * options, so moving between sections reads as one object moving rather
+ * than two things blinking. */
+.ahe-admin .ahe-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--admin-sunken);
+}
+.ahe-admin .ahe-tab {
+  position: relative;
+  z-index: 1;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+  transition: color 180ms ease;
+}
+.ahe-admin .ahe-tab:hover { color: var(--color-ink); }
+.ahe-admin .ahe-tab[aria-selected="true"] { color: var(--color-ink); }
+.ahe-admin .ahe-tab-pill {
+  position: absolute;
+  inset: 4px auto 4px 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(20, 48, 78, 0.12);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Panels fade up as they arrive, which keeps a tab change from feeling
+ * like the page was replaced underneath him. */
+.ahe-admin .ahe-panel { animation: ahe-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes ahe-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ahe-admin .ahe-panel { animation: none; }
+  .ahe-admin .ahe-tab-pill,
+  .ahe-admin .ahe-btn { transition: none; }
+}

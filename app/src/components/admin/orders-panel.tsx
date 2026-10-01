@@ -4,6 +4,7 @@ import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, trackingUrl,
 import { AddOrder } from "./add-order";
 import { OrderEditor } from "./order-editor";
 import { money } from "../../lib/site";
+import { btnPrimary, card, input, label, pillInk, pillQuiet } from "./ui";
 
 type Item = { name: string; qty: number; price_cents: number };
 
@@ -48,7 +49,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "year", label: "By year" },
 ];
 
-const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+
 const when = (s: string | null) => (s ? s.replace("T", " ").slice(0, 16) : "");
 
 function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }) {
@@ -85,16 +86,16 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
   const link = trackingUrl(order.carrier, order.tracking_number);
 
   return (
-    <div className="border-b border-line py-4">
+    <div className="ahe-row !rounded-[16px] px-4 py-4">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-4 text-left">
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-sm text-ink">{order.reference}</span>
-            <span className="border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <span className={pillQuiet}>
               {STATE_LABEL[order.status as OrderState] ?? order.status}
             </span>
             {order.channel && order.channel !== "site" ? (
-              <span className="border border-ink px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink">
+              <span className={pillInk}>
                 {channelName(order.channel)}
               </span>
             ) : null}
@@ -114,8 +115,8 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
       {open ? (
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_320px]">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">In this order</p>
-            <ul className="mt-2 divide-y divide-line border-y border-line">
+            <p className="text-[13px] font-medium text-muted">In this order</p>
+            <ul className="mt-3 space-y-1">
               {order.items.length === 0 ? (
                 <li className="py-2 text-sm text-muted">No line items recorded.</li>
               ) : (
@@ -123,7 +124,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
                   <li key={i} className="flex justify-between gap-4 py-2 text-sm">
                     <span className="text-ink">
                       {it.name}
-                      <span className="ml-2 font-mono text-[11px] text-muted">x{it.qty}</span>
+                      <span className="ml-2 font-mono text-[13px] text-muted">x{it.qty}</span>
                     </span>
                     <span className="shrink-0 font-mono text-ink">{money(it.price_cents * it.qty)}</span>
                   </li>
@@ -152,7 +153,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
               </p>
             ) : null}
 
-            <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Ships to</p>
+            <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">Ships to</p>
             <p className="mt-1.5 text-sm leading-relaxed text-ink">
               {order.name}
               {order.address1 ? (
@@ -170,12 +171,12 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
               {order.phone ? ` · ${order.phone}` : ""}
             </p>
             {order.notes ? (
-              <p className="mt-3 border-l-2 border-line pl-3 text-sm leading-relaxed text-muted">{order.notes}</p>
+              <p className="mt-3 border-l-2 border-line pl-3 text-[15px] leading-[1.55] text-muted">{order.notes}</p>
             ) : null}
           </div>
 
-          <div className="border border-line bg-surface p-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Tracking</p>
+          <div className={card}>
+            <p className="text-[13px] font-medium text-muted">Tracking</p>
             <div className="mt-2 space-y-2">
               <select value={carrier} onChange={(e) => setCarrier(e.currentTarget.value)} className={input}>
                 {CARRIERS.map((c) => (
@@ -194,7 +195,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
                 type="button"
                 disabled={busy}
                 onClick={() => patch({ carrier, tracking_number: tracking })}
-                className="h-9 w-full border border-line text-xs font-medium text-ink hover:border-ink disabled:text-muted"
+                className="h-9 w-full border border-[color:var(--admin-hairline)] text-[13px] font-medium text-ink hover:border-ink disabled:text-muted"
               >
                 Save tracking
               </button>
@@ -203,14 +204,14 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
                   href={link}
                   target="_blank"
                   rel="noreferrer"
-                  className="block text-xs text-ink underline underline-offset-4"
+                  className="block text-[13px] text-ink underline underline-offset-4"
                 >
                   Track this parcel
                 </a>
               ) : null}
             </div>
 
-            <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Move to</p>
+            <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">Move to</p>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               {(["paid", "ready_to_ship", "shipped", "on_hold"] as OrderState[]).map((s) => (
                 <button
@@ -218,7 +219,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
                   type="button"
                   disabled={busy || order.status === s}
                   onClick={() => patch(s === "shipped" ? { status: s, carrier, tracking_number: tracking } : { status: s })}
-                  className={`h-9 border px-2 text-xs ${
+                  className={`h-9 border px-2 text-[13px] ${
                     order.status === s ? "border-ink bg-ground text-muted" : "border-line text-ink hover:border-ink"
                   }`}
                 >
@@ -229,7 +230,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
 
             {order.status === "on_hold" || hold ? (
               <div className="mt-4">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Why it is on hold</p>
+                <p className="text-[13px] font-medium text-muted">Why it is on hold</p>
                 <input
                   value={hold}
                   placeholder="Waiting on stock, customer to confirm…"
@@ -241,18 +242,18 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
             ) : null}
 
             {order.shipped_at ? (
-              <p className="mt-4 text-xs text-muted">Handed to the carrier {when(order.shipped_at)}.</p>
+              <p className="mt-4 text-[13px] text-muted">Handed to the carrier {when(order.shipped_at)}.</p>
             ) : null}
 
             <button
               type="button"
               onClick={() => setEditing((v) => !v)}
-              className="mt-5 h-9 w-full border border-line text-xs font-medium text-ink hover:border-ink"
+              className="mt-5 h-9 w-full border border-[color:var(--admin-hairline)] text-[13px] font-medium text-ink hover:border-ink"
             >
               {editing ? "Close the editor" : "Edit everything on this order"}
             </button>
 
-            {error ? <p className="mt-3 text-xs text-[color:var(--color-signal)]">{error}</p> : null}
+            {error ? <p className="mt-3 text-[13px] text-[color:var(--color-signal)]">{error}</p> : null}
           </div>
         </div>
       ) : null}
@@ -296,7 +297,7 @@ function YearView({ years }: { years: string[] }) {
         <select
           value={year}
           onChange={(e) => setYear(e.currentTarget.value)}
-          className="h-10 border border-line bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
+          className="h-10 border border-[color:var(--admin-hairline)] bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
         >
           {(years.length ? years : [year]).map((y) => (
             <option key={y} value={y}>
@@ -306,7 +307,7 @@ function YearView({ years }: { years: string[] }) {
         </select>
         <a
           href={`/api/admin/report?year=${year}&format=csv`}
-          className="inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface"
+          className={btnPrimary}
         >
           Download {year} as a spreadsheet
         </a>
@@ -316,7 +317,7 @@ function YearView({ years }: { years: string[] }) {
         <p className="mt-6 text-sm text-muted">Adding it up.</p>
       ) : (
         <>
-          <div className="mt-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-6 grid gap-px border border-[color:var(--admin-hairline)] bg-line sm:grid-cols-2 lg:grid-cols-5">
             {[
               ["Orders paid", String(data.totals.orders)],
               ["Goods", money(data.totals.subtotal)],
@@ -326,32 +327,32 @@ function YearView({ years }: { years: string[] }) {
             ].map(([label, value]) => (
               <div key={label} className="bg-surface p-4">
                 <p className="font-mono text-[26px] leading-none tracking-tight text-ink">{value}</p>
-                <p className="mt-2 text-xs text-muted">{label}</p>
+                <p className="mt-2 text-[13px] text-muted">{label}</p>
               </div>
             ))}
           </div>
 
           {data.marketplace.orders > 0 ? (
-            <div className="mt-6 grid gap-px border border-line bg-line sm:grid-cols-2">
+            <div className="mt-6 grid gap-px border border-[color:var(--admin-hairline)] bg-line sm:grid-cols-2">
               <div className="bg-surface p-4">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                <p className="text-[13px] font-medium text-muted">
                   Your own sales — the tax you file
                 </p>
                 <p className="mt-3 font-mono text-[22px] leading-none tracking-tight text-ink">
                   {money(data.own.total)}
                 </p>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-[13px] text-muted">
                   {data.own.orders} order{data.own.orders === 1 ? "" : "s"} · {money(data.own.tax)} sales tax collected
                 </p>
               </div>
               <div className="bg-surface p-4">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                <p className="text-[13px] font-medium text-muted">
                   Marketplace sales — tax already remitted
                 </p>
                 <p className="mt-3 font-mono text-[22px] leading-none tracking-tight text-ink">
                   {money(data.marketplace.total)}
                 </p>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-[13px] text-muted">
                   {data.marketplace.orders} order{data.marketplace.orders === 1 ? "" : "s"} ·{" "}
                   {data.byChannel
                     .filter((c) => c.id !== "site" && c.orders > 0)
@@ -362,7 +363,7 @@ function YearView({ years }: { years: string[] }) {
             </div>
           ) : null}
 
-          <p className="mt-4 max-w-[70ch] text-xs leading-relaxed text-muted">
+          <p className="mt-4 max-w-[70ch] text-[13px] leading-[1.55] text-muted">
             Counts money actually taken, by the date it was paid — so an order placed in December and paid in January
             lands in January. {data.unpaid > 0
               ? `${data.unpaid} order${data.unpaid === 1 ? " was" : "s were"} raised in ${year} and never paid; ${data.unpaid === 1 ? "it is" : "they are"} not in these figures.`
@@ -370,7 +371,7 @@ function YearView({ years }: { years: string[] }) {
           </p>
 
           {data.marketplace.orders > 0 ? (
-            <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-xs leading-relaxed text-muted">
+            <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-[13px] leading-[1.55] text-muted">
               The two boxes above are split because they are filed differently. Amazon, eBay, Walmart and Etsy are
               required to collect sales tax on your behalf and pay it to the state themselves, so the only sales tax
               you owe New York is the amount on the left. Give your accountant the spreadsheet rather than the headline
@@ -414,7 +415,7 @@ export function OrdersPanel() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-1 border-b border-line">
+      <div className="flex flex-wrap gap-1 border-b border-[color:var(--admin-hairline)]">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -426,7 +427,7 @@ export function OrdersPanel() {
           >
             {t.label}
             {t.key !== "all" && t.key !== "year" && counts[t.key] ? (
-              <span className="ml-1.5 font-mono text-[11px] text-muted">{counts[t.key]}</span>
+              <span className="ml-1.5 font-mono text-[13px] text-muted">{counts[t.key]}</span>
             ) : null}
           </button>
         ))}
@@ -438,13 +439,13 @@ export function OrdersPanel() {
             <AddOrder onAdded={() => void load()} />
             {Object.keys(chanCounts).filter((c) => c !== "site").length > 0 ? (
               <div className="mb-5 flex flex-wrap items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Where from</span>
+                <span className="text-[13px] font-medium text-muted">Where from</span>
                 {["all", ...CHANNELS.map((c) => c.id).filter((c) => chanCounts[c])].map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => setChannel(c)}
-                    className={`border px-2 py-1 text-xs ${
+                    className={`border px-2 py-1 text-[13px] ${
                       channel === c ? "border-ink text-ink" : "border-line text-muted hover:border-ink hover:text-ink"
                     }`}
                   >
@@ -474,7 +475,7 @@ export function OrdersPanel() {
                     : "No orders yet."}
           </p>
         ) : (
-          <div className="border-t border-line">
+          <div className="border-t border-[color:var(--admin-hairline)]">
             {orders.map((o) => (
               <Card key={o.id} order={o} onChanged={load} />
             ))}

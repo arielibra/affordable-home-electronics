@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { input, label } from "./ui";
 
 const MAX = 20;
 
@@ -103,13 +104,13 @@ export function GalleryField({
     onChange(next);
   }
 
-  const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+  
 
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{label}</p>
-        <p className="font-mono text-[11px] text-muted">
+        <p className="text-[13px] font-medium text-muted">{label}</p>
+        <p className="font-mono text-[13px] text-muted">
           {value.length} of {MAX}
         </p>
       </div>
@@ -119,7 +120,7 @@ export function GalleryField({
           {value.map((src, i) => (
             <li key={src} className="w-[88px]">
               <div
-                className={`relative flex h-[88px] w-[88px] items-center justify-center border bg-white ${
+                className={`relative flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-[14px] border bg-white ${
                   i === 0 ? "border-ink" : "border-line"
                 }`}
               >
@@ -136,7 +137,7 @@ export function GalleryField({
                   disabled={i === 0}
                   onClick={() => move(i, i - 1)}
                   aria-label="Move earlier"
-                  className="h-6 w-6 border border-line text-[11px] text-ink hover:border-ink disabled:opacity-25"
+                  className="h-6 w-6 border border-[color:var(--admin-hairline)] text-[13px] text-ink hover:border-ink disabled:opacity-25"
                 >
                   &larr;
                 </button>
@@ -145,7 +146,7 @@ export function GalleryField({
                   disabled={i === value.length - 1}
                   onClick={() => move(i, i + 1)}
                   aria-label="Move later"
-                  className="h-6 w-6 border border-line text-[11px] text-ink hover:border-ink disabled:opacity-25"
+                  className="h-6 w-6 border border-[color:var(--admin-hairline)] text-[13px] text-ink hover:border-ink disabled:opacity-25"
                 >
                   &rarr;
                 </button>
@@ -153,7 +154,7 @@ export function GalleryField({
                   type="button"
                   onClick={() => onChange(value.filter((_, j) => j !== i))}
                   aria-label="Remove this photo"
-                  className="h-6 w-6 border border-line text-[11px] text-muted hover:border-ink hover:text-ink"
+                  className="h-6 w-6 border border-[color:var(--admin-hairline)] text-[13px] text-muted hover:border-ink hover:text-ink"
                 >
                   &times;
                 </button>
@@ -162,7 +163,7 @@ export function GalleryField({
           ))}
         </ul>
       ) : (
-        <p className="mt-3 border border-line bg-ground px-3 py-6 text-center text-xs text-muted">
+        <p className="mt-3 border border-[color:var(--admin-hairline)] bg-ground px-3 py-6 text-center text-[13px] text-muted">
           No photos yet. The first one you add becomes the main one.
         </p>
       )}
@@ -178,7 +179,7 @@ export function GalleryField({
             const files = Array.from(e.currentTarget.files ?? []);
             if (files.length) void sendFiles(files);
           }}
-          className="block w-full text-xs text-muted file:mr-3 file:h-8 file:border file:border-line file:bg-surface file:px-3 file:text-xs file:text-ink hover:file:border-ink disabled:opacity-50"
+          className="block w-full text-[13px] text-muted file:mr-3 file:h-8 file:border file:border-line file:bg-surface file:px-3 file:text-[13px] file:text-ink hover:file:border-ink disabled:opacity-50"
         />
 
         <div className="flex gap-2">
@@ -199,19 +200,19 @@ export function GalleryField({
             type="button"
             disabled={busy !== "" || !link.trim() || room <= 0}
             onClick={() => void sendLink()}
-            className="h-9 shrink-0 border border-line px-3 text-xs font-medium text-ink hover:border-ink disabled:text-muted"
+            className="h-9 shrink-0 border border-[color:var(--admin-hairline)] px-3 text-[13px] font-medium text-ink hover:border-ink disabled:text-muted"
           >
             {busy === "link" ? "Saving" : "Save copy"}
           </button>
         </div>
 
-        {busy === "file" ? <p className="text-xs text-muted">Uploading. Leave this open until it finishes.</p> : null}
+        {busy === "file" ? <p className="text-[13px] text-muted">Uploading. Leave this open until it finishes.</p> : null}
         {room <= 0 ? (
-          <p className="text-xs text-muted">That is twenty. Remove one to add another.</p>
+          <p className="text-[13px] text-muted">That is twenty. Remove one to add another.</p>
         ) : null}
-        {done ? <p className="text-xs text-muted">{done}</p> : null}
-        {error ? <p className="text-xs text-[color:var(--color-signal)]">{error}</p> : null}
-        <p className="text-[11px] leading-snug text-muted">
+        {done ? <p className="text-[13px] text-muted">{done}</p> : null}
+        {error ? <p className="text-[13px] text-[color:var(--color-signal)]">{error}</p> : null}
+        <p className="text-[13px] leading-[1.5] text-muted">
           You can pick several files at once. Pasting a link saves our own copy, so it keeps working if the
           manufacturer moves theirs. The first photo is the one shown in the shop, the cart and on social links &mdash;
           use the arrows to change which that is.

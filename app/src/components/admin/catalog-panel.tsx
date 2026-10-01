@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { money } from "../../lib/site";
 import { GalleryField } from "./gallery-field";
+import { btnLink, card, cardQuiet, input, label, textarea } from "./ui";
 
 export type CatalogProduct = {
   slug: string;
@@ -30,7 +31,7 @@ type EditTarget =
   | { kind: "edit"; product: CatalogProduct }
   | { kind: "clone"; product: CatalogProduct };
 
-const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+
 const dollars = (cents: number | null) => (cents === null ? "" : (cents / 100).toFixed(2));
 const toCents = (v: string) => Math.round(Number(v.replace(/[^0-9.]/g, "")) * 100);
 
@@ -153,12 +154,12 @@ function Editor({
   }
 
   return (
-    <div className="border border-ink bg-surface p-5">
+    <div className={card}>
       <h3 className="text-sm font-semibold text-ink">
         {product ? `Editing ${product.name}` : cloneOf ? `Copy of ${cloneOf.name}` : "New product"}
       </h3>
       {cloneOf ? (
-        <p className="mt-2 max-w-[70ch] text-xs leading-relaxed text-muted">
+        <p className="mt-2 max-w-[70ch] text-[13px] leading-[1.55] text-muted">
           Everything has been copied across except the stock count and the front-page flag. It is{" "}
           <b>not listed in the shop yet</b> &mdash; change what needs changing, give it its own part number, then tick
           Listed when it is ready. The original is untouched.
@@ -167,13 +168,13 @@ function Editor({
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Name</span>
+          <span className="text-[13px] font-medium text-muted">Name</span>
           <input value={name} onChange={(e) => setName(e.currentTarget.value)} className={`mt-1.5 ${input}`} autoFocus />
         </label>
 
         {!product ? (
           <label className="block sm:col-span-2">
-            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+            <span className="text-[13px] font-medium text-muted">
               Web address <span className="normal-case tracking-normal">— optional, part number works well</span>
             </span>
             <input
@@ -186,7 +187,7 @@ function Editor({
         ) : null}
 
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Brand</span>
+          <span className="text-[13px] font-medium text-muted">Brand</span>
           <select value={brand} onChange={(e) => setBrand(e.currentTarget.value)} className={`mt-1.5 ${input}`}>
             <option value="">No brand</option>
             {brands.map((b) => (
@@ -198,7 +199,7 @@ function Editor({
         </label>
 
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Category</span>
+          <span className="text-[13px] font-medium text-muted">Category</span>
           <select value={category} onChange={(e) => setCategory(e.currentTarget.value)} className={`mt-1.5 ${input}`}>
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
@@ -209,21 +210,21 @@ function Editor({
         </label>
 
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Price</span>
+          <span className="text-[13px] font-medium text-muted">Price</span>
           <input value={price} inputMode="decimal" onChange={(e) => setPrice(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
         </label>
 
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+          <span className="text-[13px] font-medium text-muted">
             List price <span className="normal-case tracking-normal">— shown struck through</span>
           </span>
           <input value={msrp} inputMode="decimal" onChange={(e) => setMsrp(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
         </label>
       </div>
 
-      <div className="mt-4 border border-line bg-ground p-4">
+      <div className={`${cardQuiet} mt-5`}>
         <label className="block">
-          <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-muted">What it cost you</span>
+          <span className="text-[13px] font-medium text-muted">What it cost you</span>
           <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
             <input
               value={cost}
@@ -234,20 +235,20 @@ function Editor({
             <Margin price={price} cost={cost} />
           </span>
         </label>
-        <p className="mt-2.5 max-w-[68ch] text-[11px] leading-relaxed text-muted">
+        <p className="mt-2.5 max-w-[68ch] text-[13px] leading-[1.55] text-muted">
           Only you ever see this. It is never sent to the shop pages, never in the page source, and never in anything a
           customer can open. Leave it blank if you would rather not record it.
         </p>
       </div>
 
       <label className="mt-4 block">
-        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Description</span>
+        <span className="text-[13px] font-medium text-muted">Description</span>
         <textarea
           value={blurb}
           rows={3}
           maxLength={600}
           onChange={(e) => setBlurb(e.currentTarget.value)}
-          className="mt-1.5 w-full border border-line bg-surface p-2 text-sm text-ink focus:border-ink focus:outline-none"
+          className="mt-1.5 w-full border border-[color:var(--admin-hairline)] bg-surface p-2 text-sm text-ink focus:border-ink focus:outline-none"
         />
       </label>
 
@@ -257,7 +258,7 @@ function Editor({
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">How many in stock</span>
+          <span className="text-[13px] font-medium text-muted">How many in stock</span>
           <input value={stock} inputMode="numeric" onChange={(e) => setStock(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
         </label>
         <div className="space-y-2 pt-6">
@@ -277,7 +278,7 @@ function Editor({
       </div>
 
       {!tracked ? (
-        <p className="mt-3 text-xs leading-relaxed text-muted">
+        <p className="mt-3 text-[13px] leading-[1.55] text-muted">
           With counting off, this stays buyable no matter what the number says. Turn it on for anything you can actually
           run out of.
         </p>
@@ -294,7 +295,7 @@ function Editor({
         >
           {saving ? "Saving" : product ? "Save changes" : "Add product"}
         </button>
-        <button type="button" onClick={onCancel} className="h-10 border border-line px-5 text-sm text-ink hover:border-ink">
+        <button type="button" onClick={onCancel} className="h-10 border border-[color:var(--admin-hairline)] px-5 text-sm text-ink hover:border-ink">
           Cancel
         </button>
       </div>
@@ -354,7 +355,7 @@ export function CatalogPanel() {
           value={q}
           placeholder="Search by name, brand or part number"
           onChange={(e) => setQ(e.currentTarget.value)}
-          className="h-10 w-full max-w-[340px] border border-line bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
+          className="h-10 w-full max-w-[340px] border border-[color:var(--admin-hairline)] bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
         />
         {editing === null ? (
           <button
@@ -385,30 +386,30 @@ export function CatalogPanel() {
       ) : null}
 
       {loadError ? (
-        <p className="mt-5 border border-line bg-ground p-3 text-sm text-[color:var(--color-signal)]">{loadError}</p>
+        <p className="mt-5 border border-[color:var(--admin-hairline)] bg-ground p-3 text-sm text-[color:var(--color-signal)]">{loadError}</p>
       ) : null}
 
-      <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+      <p className="mt-6 font-mono text-[13px] uppercase tracking-[0.14em] text-muted">
         {shown.length} of {products.length} products
       </p>
 
-      <div className="mt-3 divide-y divide-line border-y border-line">
+      <div className="mt-4 space-y-1">
         {shown.map((p) => (
-          <div key={p.slug} className={`flex items-center gap-3 py-3 ${p.active ? "" : "opacity-55"}`}>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-line bg-white">
+          <div key={p.slug} className={`ahe-row flex items-center gap-4 ${p.active ? "" : "opacity-55"}`}>
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[12px] border border-[color:var(--admin-hairline)] bg-white">
               {(p.images?.[0] ?? p.image) ? (
                 <img src={p.images?.[0] ?? p.image} alt="" className="h-full w-full object-contain p-1" />
               ) : null}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{p.brand || "No brand"}</p>
+              <p className="text-[13px] font-medium text-muted">{p.brand || "No brand"}</p>
               <p className="mt-0.5 truncate text-sm text-ink" title={p.name}>
                 {p.name}
               </p>
             </div>
             <div className="shrink-0 text-right">
               <p className="font-mono text-sm text-ink">{money(p.price_cents)}</p>
-              <p className="font-mono text-[11px] text-muted">
+              <p className="font-mono text-[13px] text-muted">
                 {p.stock_tracked ? `${p.stock} in stock` : "always available"}
               </p>
             </div>
@@ -416,7 +417,7 @@ export function CatalogPanel() {
               <button
                 type="button"
                 onClick={() => setEditing({ kind: "edit", product: p })}
-                className="text-xs text-ink underline underline-offset-4"
+                className={btnLink}
               >
                 Edit
               </button>
@@ -424,7 +425,7 @@ export function CatalogPanel() {
                 type="button"
                 onClick={() => setEditing({ kind: "clone", product: p })}
                 title={`Start a new product from ${p.name}`}
-                className="text-xs text-muted underline underline-offset-4 hover:text-ink"
+                className={`${btnLink} text-muted`}
               >
                 Copy
               </button>

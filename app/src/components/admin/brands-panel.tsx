@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { ImageField } from "./image-field";
+import { btnLink, card, input, label } from "./ui";
 
 export type AdminBrand = {
   slug: string;
@@ -12,7 +13,7 @@ export type AdminBrand = {
   products: number;
 };
 
-const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+
 
 function Editor({
   brand,
@@ -61,16 +62,16 @@ function Editor({
   }
 
   return (
-    <div className="border border-ink bg-surface p-5">
+    <div className={card}>
       <h3 className="text-sm font-semibold text-ink">{brand ? `Editing ${brand.name}` : "New brand"}</h3>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Name</span>
+          <span className="text-[13px] font-medium text-muted">Name</span>
           <input value={name} onChange={(e) => setName(e.currentTarget.value)} className={`mt-1.5 ${input}`} autoFocus />
         </label>
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Order on the page</span>
+          <span className="text-[13px] font-medium text-muted">Order on the page</span>
           <input
             value={position}
             inputMode="numeric"
@@ -81,7 +82,7 @@ function Editor({
       </div>
 
       <label className="mt-4 block">
-        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+        <span className="text-[13px] font-medium text-muted">
           One line customers read
         </span>
         <input
@@ -103,7 +104,7 @@ function Editor({
 
       {error ? <p className="mt-4 text-sm text-[color:var(--color-signal)]">{error}</p> : null}
       {brand ? (
-        <p className="mt-4 text-xs leading-relaxed text-muted">
+        <p className="mt-4 text-[13px] leading-[1.55] text-muted">
           Renaming updates all {brand.products} product{brand.products === 1 ? "" : "s"} using this brand. The web
           address stays <code className="font-mono">{brand.slug}</code>, so existing links keep working.
         </p>
@@ -118,7 +119,7 @@ function Editor({
         >
           {saving ? "Saving" : brand ? "Save changes" : "Add brand"}
         </button>
-        <button type="button" onClick={onCancel} className="h-10 border border-line px-5 text-sm text-ink hover:border-ink">
+        <button type="button" onClick={onCancel} className="h-10 border border-[color:var(--admin-hairline)] px-5 text-sm text-ink hover:border-ink">
           Cancel
         </button>
       </div>
@@ -192,9 +193,9 @@ export function BrandsPanel() {
       <div className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[620px] text-left">
           <thead>
-            <tr className="border-b border-line">
+            <tr className="border-b border-[color:var(--admin-hairline)]">
               {["Brand", "Products", "Order", "Shown", ""].map((h) => (
-                <th key={h} className="pb-2.5 font-mono text-[10px] uppercase tracking-[0.14em] font-medium text-muted">
+                <th key={h} className="pb-3 text-[13px] font-medium text-muted">
                   {h}
                 </th>
               ))}
@@ -202,15 +203,15 @@ export function BrandsPanel() {
           </thead>
           <tbody>
             {brands.map((b) => (
-              <tr key={b.slug} className={`border-b border-line ${b.active ? "" : "opacity-55"}`}>
+              <tr key={b.slug} className={`border-b border-[color:var(--admin-hairline)] ${b.active ? "" : "opacity-55"}`}>
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-line bg-white">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-[color:var(--admin-hairline)] bg-white">
                       {b.logo ? <img src={b.logo} alt="" className="h-full w-full object-contain p-1" /> : null}
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm text-ink">{b.name}</p>
-                      {b.blurb ? <p className="max-w-[40ch] truncate text-xs text-muted">{b.blurb}</p> : null}
+                      {b.blurb ? <p className="max-w-[40ch] truncate text-[13px] text-muted">{b.blurb}</p> : null}
                     </div>
                   </div>
                 </td>
@@ -221,7 +222,7 @@ export function BrandsPanel() {
                   <button
                     type="button"
                     onClick={() => setEditing(b)}
-                    className="text-xs text-ink underline underline-offset-4"
+                    className={btnLink}
                   >
                     Edit
                   </button>
@@ -229,7 +230,7 @@ export function BrandsPanel() {
                     <button
                       type="button"
                       onClick={() => remove(b)}
-                      className="ml-4 text-xs text-muted underline underline-offset-4 hover:text-ink"
+                      className="ml-4 text-[13px] text-muted underline underline-offset-4 hover:text-ink"
                     >
                       Remove
                     </button>

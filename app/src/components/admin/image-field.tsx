@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { btnLink, input, label } from "./ui";
 
 /**
  * A picture, got two ways.
@@ -42,14 +43,14 @@ export function ImageField({
     }
   }
 
-  const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+  
 
   return (
     <div>
-      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{label}</p>
+      <p className="text-[13px] font-medium text-muted">{label}</p>
 
       <div className="mt-3 flex items-start gap-4">
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center border border-line bg-white">
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[14px] border border-[color:var(--admin-hairline)] bg-white">
           {value ? (
             <img src={value} alt="" className="h-full w-full object-contain p-1.5" />
           ) : (
@@ -71,7 +72,7 @@ export function ImageField({
                 body.append("file", file);
                 void send({ body }, "file");
               }}
-              className="block w-full text-xs text-muted file:mr-3 file:h-8 file:border file:border-line file:bg-surface file:px-3 file:text-xs file:text-ink hover:file:border-ink"
+              className="block w-full text-[13px] text-muted file:mr-3 file:h-8 file:border file:border-line file:bg-surface file:px-3 file:text-[13px] file:text-ink hover:file:border-ink"
             />
           </div>
 
@@ -101,24 +102,24 @@ export function ImageField({
                   "link",
                 )
               }
-              className="h-9 shrink-0 border border-line px-3 text-xs font-medium text-ink hover:border-ink disabled:text-muted"
+              className="h-9 shrink-0 border border-[color:var(--admin-hairline)] px-3 text-[13px] font-medium text-ink hover:border-ink disabled:text-muted"
             >
               {busy === "link" ? "Saving" : "Save copy"}
             </button>
           </div>
 
-          {busy === "file" ? <p className="text-xs text-muted">Uploading.</p> : null}
-          {error ? <p className="text-xs text-[color:var(--color-signal)]">{error}</p> : null}
+          {busy === "file" ? <p className="text-[13px] text-muted">Uploading.</p> : null}
+          {error ? <p className="text-[13px] text-[color:var(--color-signal)]">{error}</p> : null}
           {value ? (
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-xs text-muted underline underline-offset-4 hover:text-ink"
+              className={`${btnLink} text-muted`}
             >
               Remove photo
             </button>
           ) : (
-            <p className="text-[11px] leading-snug text-muted">
+            <p className="text-[13px] leading-[1.5] text-muted">
               Pasting a link saves our own copy, so it keeps working if the manufacturer moves theirs.
             </p>
           )}

@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { btnLink, btnPrimary, btnQuiet, card, input, label } from "./ui";
 
 type Category = { slug: string; name: string; blurb: string; position: number; products: number };
-
-const input = "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
-const label = "block font-mono text-[10px] uppercase tracking-[0.14em] text-muted";
 
 function Editor({
   category,
@@ -49,7 +47,7 @@ function Editor({
   }
 
   return (
-    <div className="border border-ink bg-surface p-5">
+    <div className={card}>
       <h3 className="text-sm font-semibold text-ink">
         {category ? `Editing ${category.name}` : "New category"}
       </h3>
@@ -81,13 +79,13 @@ function Editor({
       </label>
 
       {category ? (
-        <p className="mt-3 text-[11px] leading-relaxed text-muted">
+        <p className="mt-3 text-[13px] leading-[1.55] text-muted">
           Its web address stays <span className="font-mono text-ink">/shop/{category.slug}</span> whatever you rename it
           to. That is deliberate &mdash; changing it would break every link to this page and lose its place in search
           results.
         </p>
       ) : (
-        <p className="mt-3 text-[11px] leading-relaxed text-muted">
+        <p className="mt-3 text-[13px] leading-[1.55] text-muted">
           The web address is made from the name, and then never changes. Pick the name you want to keep.
         </p>
       )}
@@ -99,11 +97,11 @@ function Editor({
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface disabled:opacity-50"
+          className={btnPrimary}
         >
           {busy ? "Saving" : category ? "Save changes" : "Add category"}
         </button>
-        <button type="button" onClick={onCancel} className="text-xs text-muted hover:text-ink">
+        <button type="button" onClick={onCancel} className={`${btnLink} text-muted`}>
           Cancel
         </button>
       </div>
@@ -152,14 +150,14 @@ export function CategoriesPanel() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-[70ch] text-sm leading-relaxed text-muted">
+        <p className="max-w-[70ch] text-[15px] leading-[1.55] text-muted">
           The sections customers browse by. Each one is a page on the shop, and every product sits in exactly one.
         </p>
         {editing === null ? (
           <button
             type="button"
             onClick={() => setEditing("new")}
-            className="inline-flex h-10 shrink-0 items-center border border-line px-4 text-sm font-medium text-ink hover:border-ink"
+            className={`${btnQuiet} shrink-0`}
           >
             Add a category
           </button>
@@ -181,25 +179,25 @@ export function CategoriesPanel() {
       ) : null}
 
       {error ? (
-        <p className="mt-5 border border-line bg-ground p-3 text-sm text-[color:var(--color-signal)]">{error}</p>
+        <p className="mt-5 border border-[color:var(--admin-hairline)] bg-ground p-3 text-sm text-[color:var(--color-signal)]">{error}</p>
       ) : null}
 
-      <div className="mt-6 divide-y divide-line border-y border-line">
+      <div className="mt-6 space-y-1">
         {rows.map((c) => (
-          <div key={c.slug} className="flex flex-wrap items-center gap-3 py-3">
+          <div key={c.slug} className="ahe-row flex flex-wrap items-center gap-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm text-ink">{c.name}</p>
-              <p className="mt-0.5 font-mono text-[11px] text-muted">/shop/{c.slug}</p>
-              {c.blurb ? <p className="mt-1 truncate text-xs text-muted">{c.blurb}</p> : null}
+              <p className="mt-0.5 font-mono text-[13px] text-muted">/shop/{c.slug}</p>
+              {c.blurb ? <p className="mt-1 truncate text-[13px] text-muted">{c.blurb}</p> : null}
             </div>
-            <p className="shrink-0 font-mono text-[11px] text-muted">
+            <p className="shrink-0 font-mono text-[13px] text-muted">
               {c.products} product{c.products === 1 ? "" : "s"}
             </p>
             <div className="flex shrink-0 items-center gap-3">
               <button
                 type="button"
                 onClick={() => setEditing(c)}
-                className="text-xs text-ink underline underline-offset-4"
+                className={btnLink}
               >
                 Edit
               </button>
@@ -207,7 +205,7 @@ export function CategoriesPanel() {
                 type="button"
                 onClick={() => void remove(c)}
                 title={c.products > 0 ? "Move its products somewhere else first" : "Remove this category"}
-                className="text-xs text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
+                className="text-[13px] text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
                 disabled={c.products > 0}
               >
                 Remove
@@ -217,7 +215,7 @@ export function CategoriesPanel() {
         ))}
       </div>
 
-      <p className="mt-4 max-w-[70ch] text-[11px] leading-relaxed text-muted">
+      <p className="mt-4 max-w-[70ch] text-[13px] leading-[1.55] text-muted">
         A category with products in it cannot be removed &mdash; a product whose category no longer exists disappears
         from the shop without saying so. Move its products to another category first. Order decides where it sits in the
         list; lower numbers come first.

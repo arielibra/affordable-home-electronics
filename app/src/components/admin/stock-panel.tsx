@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { money } from "../../lib/site";
+import { input, label } from "./ui";
 
 export type AdminProduct = {
   slug: string;
@@ -66,16 +67,16 @@ function Row({ p, onSaved }: { p: AdminProduct; onSaved: (next: AdminProduct) =>
   }
 
   const input =
-    "h-9 w-full border border-line bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
+    "h-9 w-full border border-[color:var(--admin-hairline)] bg-surface px-2 text-sm text-ink focus:border-ink focus:outline-none";
   const soldOut = tracked && Number(stock) <= 0;
 
   return (
-    <tr className={`border-b border-line align-middle ${active ? "" : "opacity-55"}`}>
+    <tr className={`border-b border-[color:var(--admin-hairline)] align-middle ${active ? "" : "opacity-55"}`}>
       <td className="py-3 pr-3">
         <div className="flex items-center gap-3">
-          <img src={p.image} alt="" className="h-12 w-12 shrink-0 border border-line bg-white object-contain p-1" />
+          <img src={p.image} alt="" className="h-14 w-14 shrink-0 rounded-[12px] border border-[color:var(--admin-hairline)] bg-white object-contain p-1.5" />
           <div className="min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{p.brand}</p>
+            <p className="text-[13px] font-medium text-muted">{p.brand}</p>
             <p className="mt-0.5 max-w-[34ch] truncate text-sm text-ink" title={p.name}>
               {p.name}
             </p>
@@ -108,31 +109,31 @@ function Row({ p, onSaved }: { p: AdminProduct; onSaved: (next: AdminProduct) =>
         />
       </td>
       <td className="px-2 py-3 text-center">
-        <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-muted">
+        <label className="inline-flex cursor-pointer items-center gap-2 text-[13px] text-muted">
           <input type="checkbox" checked={tracked} onChange={(e) => setTracked(e.target.checked)} className="h-4 w-4 accent-[#1f66b8]" />
           <span className="sr-only sm:not-sr-only">count</span>
         </label>
       </td>
       <td className="px-2 py-3 text-center">
-        <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-muted">
+        <label className="inline-flex cursor-pointer items-center gap-2 text-[13px] text-muted">
           <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="h-4 w-4 accent-[#1f66b8]" />
           <span className="sr-only sm:not-sr-only">listed</span>
         </label>
       </td>
       <td className="py-3 pl-2 text-right">
         {state === "saved" ? (
-          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-signal">Saved</span>
+          <span className="font-mono text-[13px] uppercase tracking-[0.14em] text-signal">Saved</span>
         ) : (
           <button
             type="button"
             onClick={() => void save()}
             disabled={!dirty || state === "saving"}
-            className="h-9 border border-ink px-4 text-xs font-medium text-ink transition-colors hover:bg-ink hover:text-surface disabled:border-line disabled:text-muted disabled:hover:bg-transparent disabled:hover:text-muted"
+            className="h-9 border border-ink px-4 text-[13px] font-medium text-ink transition-colors hover:bg-ink hover:text-surface disabled:border-line disabled:text-muted disabled:hover:bg-transparent disabled:hover:text-muted"
           >
             {state === "saving" ? "Saving" : "Save"}
           </button>
         )}
-        {message ? <p className="mt-1 text-[11px] text-signal">{message}</p> : null}
+        {message ? <p className="mt-1 text-[13px] text-signal">{message}</p> : null}
       </td>
     </tr>
   );
@@ -172,9 +173,9 @@ export function StockPanel() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[color:var(--admin-hairline)] pb-4">
         <div>
-          <label htmlFor="admin-search" className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+          <label htmlFor="admin-search" className="mb-1.5 block font-mono text-[13px] uppercase tracking-[0.14em] text-muted">
             Find a product
           </label>
           <input
@@ -182,15 +183,15 @@ export function StockPanel() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Name, brand or part number"
-            className="h-10 w-[300px] max-w-full border border-line bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
+            className="h-10 w-[300px] max-w-full border border-[color:var(--admin-hairline)] bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none"
           />
         </div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+        <p className="text-[13px] font-medium text-muted">
           {products.length} products · {counted.length} counted · {out.length} sold out
         </p>
       </div>
 
-      <div className="mt-4 border-l-2 border-teal py-2 pl-3 text-sm leading-relaxed text-muted">
+      <div className="mt-4 border-l-2 border-teal py-2 pl-3 text-[15px] leading-[1.55] text-muted">
         Tick <b className="font-medium text-ink">count</b> to have the website keep a running number that drops with every
         sale and hides the product at zero. Leave it unticked and the product is simply always available, which is how
         every product behaves today. Untick <b className="font-medium text-ink">listed</b> to take something off the site
@@ -205,9 +206,9 @@ export function StockPanel() {
         <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[860px] border-collapse text-left">
             <thead>
-              <tr className="border-b border-line">
+              <tr className="border-b border-[color:var(--admin-hairline)]">
                 {["Product", "Price", "List price", "In stock", "Count", "Listed", ""].map((h) => (
-                  <th key={h} className="pb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                  <th key={h} className="pb-3 text-[13px] font-medium text-muted">
                     {h}
                   </th>
                 ))}
