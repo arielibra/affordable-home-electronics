@@ -8,6 +8,18 @@ import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
 
+/** Search engines show about 160 characters and drop the rest, so the full
+ *  description does not belong in the head — it would sit in the page source of
+ *  every product and be read by no one. Cut on a word, never mid-word. */
+function metaDescription(blurb: string | undefined, fallback: string): string {
+  const text = (blurb ?? "").trim();
+  if (!text) return fallback;
+  if (text.length <= 160) return text;
+  const cut = text.slice(0, 160);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 100 ? cut.slice(0, space) : cut).trimEnd()}\u2026`;
+}
+
 export const Route = createFileRoute("/p/$slug")({
   loader: async ({ params }) => {
     const data = await getProductPage({ data: { slug: params.slug } });
@@ -18,7 +30,7 @@ export const Route = createFileRoute("/p/$slug")({
     meta: loaderData?.product
       ? [
           { title: `${loaderData.product.name} | Affordable Home Electronics` },
-          { name: "description", content: loaderData.product.blurb || loaderData.product.name },
+          { name: "description", content: metaDescription(loaderData.product.blurb, loaderData.product.name) },
           { property: "og:image", content: `${ORIGIN}${loaderData.product.image}` },
         ]
       : [],

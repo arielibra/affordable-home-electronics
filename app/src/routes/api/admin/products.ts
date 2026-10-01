@@ -85,6 +85,11 @@ function clampInt(v: unknown, min: number, max: number): number | null {
   return Math.min(max, Math.max(min, Math.round(n)));
 }
 
+/** A product description is as long as the manufacturer wrote it — pasting a
+ *  full spec sheet is the normal case. This is not a limit he can reach by
+ *  typing; it only stops a runaway paste from putting megabytes in a row. */
+const BLURB_MAX = 20000;
+
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
 }
@@ -203,7 +208,7 @@ export const Route = createFileRoute("/api/admin/products")({
             price,
             msrp,
             cost,
-            str(body.blurb, 600),
+            str(body.blurb, BLURB_MAX),
             // Filled in properly by writeImages below; this keeps the insert
             // valid for a product saved without any pictures at all.
             "",
@@ -281,7 +286,7 @@ export const Route = createFileRoute("/api/admin/products")({
           if (!v) return Response.json({ ok: false, error: "A product needs a name." }, { status: 400 });
           put("name", v);
         }
-        if ("blurb" in body) put("blurb", str(body.blurb, 600));
+        if ("blurb" in body) put("blurb", str(body.blurb, BLURB_MAX));
         // The gallery is authoritative when it is sent; the single column is
         // kept in step by writeImages rather than set here.
         const nextImages = "images" in body ? cleanImages(body.images) : null;

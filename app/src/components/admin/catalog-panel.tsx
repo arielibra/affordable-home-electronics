@@ -245,10 +245,9 @@ function Editor({
         <span className="text-[13px] font-medium text-muted">Description</span>
         <textarea
           value={blurb}
-          rows={3}
-          maxLength={600}
+          rows={8}
           onChange={(e) => setBlurb(e.currentTarget.value)}
-          className="mt-1.5 w-full border border-[color:var(--admin-hairline)] bg-surface p-2 text-sm text-ink focus:border-ink focus:outline-none"
+          className={`mt-1.5 ${textarea}`}
         />
       </label>
 

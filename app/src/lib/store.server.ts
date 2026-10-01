@@ -9,7 +9,8 @@ export type Product = {
   category: string;
   price_cents: number;
   msrp_cents: number | null;
-  blurb: string;
+  /** Only the single-product query selects this; listings do not carry it. */
+  blurb?: string;
   image: string;
   featured: number;
   stock: number;
@@ -48,8 +49,11 @@ function db(): D1Database {
  * added. Naming the columns makes the storefront private by default: a new
  * column stays in the back office until somebody deliberately adds it here.
  */
+/** The columns a shop page may see. cost_cents is absent on purpose, and so is
+ *  blurb: no card renders it, and shipping a full description for every product
+ *  would put all of them in the HTML of /shop. getProduct() asks for it. */
 const PUBLIC =
-  "slug, name, brand, brand_slug, category, price_cents, msrp_cents, blurb, image, featured, stock, stock_tracked, active";
+  "slug, name, brand, brand_slug, category, price_cents, msrp_cents, image, featured, stock, stock_tracked, active";
 
 export async function listCategories(): Promise<Category[]> {
   const r = await db().prepare("SELECT slug,name,blurb,position FROM categories ORDER BY position").all<Category>();
@@ -95,7 +99,10 @@ export async function searchProducts(q: string, limit = 60): Promise<Product[]> 
 }
 
 export async function getProduct(slug: string): Promise<Product | null> {
-  return await db().prepare(`SELECT ${PUBLIC} FROM products WHERE slug = ?1 AND active = 1`).bind(slug).first<Product>();
+  return await db()
+    .prepare(`SELECT ${PUBLIC}, blurb FROM products WHERE slug = ?1 AND active = 1`)
+    .bind(slug)
+    .first<Product>();
 }
 
 /**
