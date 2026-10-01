@@ -7,12 +7,13 @@ import { AddToCartButton, ProductCard, isAvailable } from "../../components/site
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
+import { plainText, renderRichText } from "../../lib/rich-text";
 
 /** Search engines show about 160 characters and drop the rest, so the full
  *  description does not belong in the head — it would sit in the page source of
  *  every product and be read by no one. Cut on a word, never mid-word. */
 function metaDescription(blurb: string | undefined, fallback: string): string {
-  const text = (blurb ?? "").trim();
+  const text = plainText(blurb);
   if (!text) return fallback;
   if (text.length <= 160) return text;
   const cut = text.slice(0, 160);
@@ -99,7 +100,9 @@ function ProductPage() {
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{product.brand}</p>
           <h1 className="mt-3 text-3xl font-semibold leading-[1.06] tracking-tighter text-ink md:text-4xl">{product.name}</h1>
-          {product.blurb ? <p className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">{product.blurb}</p> : null}
+          {product.blurb ? (
+            <div className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
+          ) : null}
 
           <div className="mt-8 flex flex-wrap items-end gap-4 border-t border-line pt-6">
             <span className="font-mono text-4xl leading-none tracking-tighter text-ink">{money(product.price_cents)}</span>

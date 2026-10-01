@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { money } from "../../lib/site";
 import { GalleryField } from "./gallery-field";
-import { btnLink, card, cardQuiet, input, label, textarea } from "./ui";
+import { RichTextArea } from "./rich-textarea";
+import { btnLink, card, cardQuiet, input, label } from "./ui";
 
 export type CatalogProduct = {
   slug: string;
@@ -243,12 +244,7 @@ function Editor({
 
       <label className="mt-4 block">
         <span className="text-[13px] font-medium text-muted">Description</span>
-        <textarea
-          value={blurb}
-          rows={8}
-          onChange={(e) => setBlurb(e.currentTarget.value)}
-          className={`mt-1.5 ${textarea}`}
-        />
+        <RichTextArea value={blurb} onChange={setBlurb} />
       </label>
 
       <div className="mt-5">
