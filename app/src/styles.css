@@ -229,6 +229,20 @@ html.ahe :focus-visible {
 }
 .ahe-admin .ahe-row:hover { background: var(--admin-sunken); }
 
+/* One order in the list. It tints on hover only while collapsed — once it is
+ * open that tint would wash over the whole detail panel underneath. Open, it
+ * lifts instead, so the one being worked on stands out in a long list. */
+.ahe-admin .ahe-order {
+  transition: background-color 180ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.ahe-admin .ahe-order:not(.ahe-order-open):hover { background: var(--admin-sunken); }
+.ahe-admin .ahe-order-open {
+  border-color: #cfdcec;
+  box-shadow:
+    0 1px 2px rgba(20, 48, 78, 0.04),
+    0 10px 30px -16px rgba(20, 48, 78, 0.18);
+}
+
 .ahe-admin .ahe-input {
   border: 1px solid var(--admin-hairline);
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;

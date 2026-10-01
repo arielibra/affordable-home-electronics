@@ -4,7 +4,7 @@ import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, trackingUrl,
 import { AddOrder } from "./add-order";
 import { OrderEditor } from "./order-editor";
 import { money } from "../../lib/site";
-import { btnPrimary, card, input, label, pillInk, pillQuiet } from "./ui";
+import { btnPrimary, card, input, label, orderCard, pillInk, pillQuiet } from "./ui";
 
 type Item = { name: string; qty: number; price_cents: number };
 
@@ -86,7 +86,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
   const link = trackingUrl(order.carrier, order.tracking_number);
 
   return (
-    <div className="ahe-row !rounded-[16px] px-4 py-4">
+    <div className={`${orderCard} ${open ? "ahe-order-open" : ""}`}>
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-4 text-left">
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
@@ -475,7 +475,7 @@ export function OrdersPanel() {
                     : "No orders yet."}
           </p>
         ) : (
-          <div className="border-t border-[color:var(--admin-hairline)]">
+          <div className="space-y-3">
             {orders.map((o) => (
               <Card key={o.id} order={o} onChanged={load} />
             ))}

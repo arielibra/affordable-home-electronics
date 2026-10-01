@@ -28,6 +28,11 @@ export const small = "text-[13px] leading-[1.5] text-muted";
 
 export const card = "ahe-card rounded-[18px] bg-surface p-6 sm:p-7";
 export const cardQuiet = "rounded-[18px] bg-[color:var(--admin-sunken)] p-5 sm:p-6";
+/** One order in the list. Its own card with a real edge, because a run of
+ *  forty of them has to read as forty things and not one long column. */
+export const orderCard =
+  "ahe-order rounded-[16px] border border-[color:var(--admin-hairline)] bg-surface px-5 py-4";
+
 export const row = "ahe-row rounded-[14px] px-4 py-3.5 transition-colors";
 
 /** Controls -------------------------------------------------------------- */
