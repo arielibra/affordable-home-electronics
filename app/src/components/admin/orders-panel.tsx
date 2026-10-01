@@ -33,6 +33,7 @@ export type AdminOrder = {
   created_at: string;
   paid_at: string | null;
   shipped_at: string | null;
+  shipped_notified_at: string | null;
   channel: string;
   channel_ref: string;
   items: Item[];
@@ -60,6 +61,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
   const [hold, setHold] = useState(order.hold_reason);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [mailProblem, setMailProblem] = useState("");
 
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -70,10 +72,21 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reference: order.reference, ...body }),
       });
-      const data = (await res.json()) as { ok: boolean; error?: string };
+      const data = (await res.json()) as {
+        ok: boolean;
+        error?: string;
+        notified?: { ok: boolean; error: string } | null;
+      };
       if (!data.ok) {
         setError(data.error ?? "Could not save.");
         return;
+      }
+      // The order saved either way. If the customer's email did not go, say so
+      // here rather than leaving him believing they have been told.
+      if (data.notified && !data.notified.ok) {
+        setMailProblem(data.notified.error);
+      } else if (data.notified?.ok) {
+        setMailProblem("");
       }
       onChanged();
     } catch {
@@ -241,6 +254,14 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
               </div>
             ) : null}
 
+            {mailProblem ? (
+              <p className="mt-4 text-[13px] text-[color:var(--admin-bad)]">
+                Saved, but the customer was not emailed: {mailProblem} The parcel is still marked shipped.
+              </p>
+            ) : null}
+            {order.shipped_notified_at ? (
+              <p className="mt-4 text-[13px] text-muted">Customer emailed {when(order.shipped_notified_at)}.</p>
+            ) : null}
             {order.shipped_at ? (
               <p className="mt-4 text-[13px] text-muted">Handed to the carrier {when(order.shipped_at)}.</p>
             ) : null}
