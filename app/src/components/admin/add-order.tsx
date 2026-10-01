@@ -221,7 +221,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
         <div>
           <h3 className="text-base font-semibold tracking-tight text-ink">Add an order from somewhere else</h3>
           <p className="mt-1 max-w-[68ch] text-[13px] leading-[1.55] text-muted">
-            For sales made on Amazon, eBay and the rest. Once it is in, it moves through Paid, Ready to ship and Shipped
+            For sales made on Amazon, Walmart or Facebook Marketplace, or taken by hand. Once it is in, it moves through Paid, Ready to ship and Shipped
             exactly like an order from this site, and appears in the year report.
           </p>
         </div>

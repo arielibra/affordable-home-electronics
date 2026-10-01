@@ -78,7 +78,7 @@ export const CHANNELS: { id: ChannelId; name: string; remitsTax: boolean }[] = [
 /**
  * Marketplaces that tell the buyer themselves.
  *
- * Amazon, eBay, Walmart and Etsy all send their own shipping notice and treat
+ * Amazon and Walmart both send their own shipping notice and treat
  * contacting a buyer directly as a policy breach; the address on the order is
  * usually a relay anyway. Emailing those buyers risks his seller account, so
  * the shop never does it regardless of what is typed in the email box.
@@ -113,8 +113,8 @@ export function channelName(id: string): string {
 /**
  * Whether the marketplace collected and remitted the sales tax itself.
  *
- * Under the marketplace facilitator laws every US state now has, Amazon, eBay,
- * Walmart and Etsy are required to collect sales tax on a seller’s behalf and
+ * Under the marketplace facilitator laws every US state now has, Amazon,
+ * Walmart and Facebook are required to collect sales tax on a seller’s behalf and
  * pay it to the state directly. That tax is not his to file, and including it
  * in his own New York return would mean the state is paid twice for the same
  * sale. So those orders are recorded with no tax against them and reported in

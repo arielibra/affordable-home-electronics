@@ -83,7 +83,7 @@ export const Route = createFileRoute("/api/admin/report")({
 
         /*
          * Split by where the sale happened, because the two are filed
-         * differently. Amazon, eBay, Walmart and Etsy collect and remit the
+         * differently. Amazon, Walmart and Facebook collect and remit the
          * sales tax themselves under the marketplace facilitator rules, so the
          * only tax he owes New York is the tax on his own orders. A single
          * combined figure here is how a shop ends up paying twice.

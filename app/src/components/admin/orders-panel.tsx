@@ -400,7 +400,7 @@ function YearView({ years }: { years: string[] }) {
 
           {data.marketplace.orders > 0 ? (
             <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-[13px] leading-[1.55] text-muted">
-              The two boxes above are split because they are filed differently. Amazon, eBay, Walmart and Etsy are
+              The two boxes above are split because they are filed differently. Amazon, Walmart and Facebook Marketplace are
               required to collect sales tax on your behalf and pay it to the state themselves, so the only sales tax
               you owe New York is the amount on the left. Give your accountant the spreadsheet rather than the headline
               figure — it labels every row with where it sold and who remitted the tax.

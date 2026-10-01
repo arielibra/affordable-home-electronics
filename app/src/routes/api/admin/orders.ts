@@ -130,15 +130,15 @@ export const Route = createFileRoute("/api/admin/orders")({
       /**
        * Record an order that did not come through this site.
        *
-       * His dad also sells on Amazon and eBay and wants one place to look, so
+       * His dad also sells on Amazon, Walmart and Facebook and wants one place to look, so
        * these are typed in by hand and then travel through exactly the same
        * Paid -> Ready to ship -> Shipped workflow as everything else.
        *
        * Two things this deliberately does not do. It does not touch stock:
        * marketplace listings are managed on the marketplace, and a late entry
        * silently changing what this site has on the shelf would be worse than
-       * no link at all. And it records no sales tax, because Amazon, eBay,
-       * Walmart and Etsy collect and remit it themselves \u2014 putting it here
+       * no link at all. And it records no sales tax, because Amazon,
+       * Walmart and Facebook collect and remit it themselves \u2014 putting it here
        * would mean New York is paid twice for the same sale.
        */
       PUT: async ({ request }) => {
@@ -458,7 +458,7 @@ export const Route = createFileRoute("/api/admin/orders")({
          *     editable now, so a shipped order gets saved repeatedly.
          *   - it has not been told already (shipped_notified_at), which also
          *     covers moving an order out of shipped and back in.
-         *   - it came through this site. Amazon and eBay send their own
+         *   - telling the buyer is his job. Amazon and Walmart send their own
          *     shipping notices and forbid contacting a buyer directly; their
          *     addresses are proxies anyway, and the 93 imported marketplace
          *     orders have no address at all.
