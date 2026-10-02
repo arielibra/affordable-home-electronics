@@ -437,6 +437,21 @@ export const Route = createFileRoute("/api/admin/orders")({
               put("shipped_at", new Date().toISOString().slice(0, 19).replace("T", " "));
               justShipped = true;
             }
+          } else if (existing.status === "shipped") {
+            /* Moving an order OUT of shipped clears the record of having told
+             * the customer, so putting it back in tells them again.
+             *
+             * Without this, an order that was already sitting in shipped could
+             * never notify. That is right for the 119 imported from the old
+             * cart, which were loaded as shipped and whose customers were told
+             * at the time — but wrong the moment he actually fulfils one of
+             * them, which is exactly what happened with AHE-29688: real
+             * address, real tracking number, and silence.
+             *
+             * Pulling an order back out is deliberate. Nobody does it by
+             * accident, and nothing else does it for him, so it is a safe
+             * signal that the next shipment is a genuinely new one. */
+            put("shipped_notified_at", null);
           }
           put("status", next);
         }
