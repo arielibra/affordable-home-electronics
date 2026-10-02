@@ -4,6 +4,7 @@ import { recordTaxTransaction } from "./stripe.server";
 import {
   type ConfirmationOrder,
   deliverableAddress,
+  type NewOrder,
   newOrderMessage,
   orderConfirmationMessage,
   ownerAddress,
@@ -128,23 +129,15 @@ export async function finalizePaypalOrder(paypalOrderId: string): Promise<{ refe
    * payment that has already been taken. */
   try {
     const paid = await DB.prepare(
-      "SELECT reference,name,email,city,state,amount_total_cents,provider FROM orders WHERE id = ?1",
+      "SELECT reference,name,email,phone,address1,address2,city,state,zip,subtotal_cents,shipping_cents,tax_cents,amount_total_cents,provider,hold_reason FROM orders WHERE id = ?1",
     )
       .bind(row.id)
-      .first<{
-        reference: string;
-        name: string;
-        email: string;
-        city: string;
-        state: string;
-        amount_total_cents: number;
-        provider: string;
-      }>();
+      .first<NewOrder>();
     const to = ownerAddress();
     if (paid && to) {
-      const items = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
+      const items = await DB.prepare("SELECT name, qty, price_cents FROM order_items WHERE order_id = ?1")
         .bind(row.id)
-        .all<{ name: string; qty: number }>();
+        .all<{ name: string; qty: number; price_cents: number }>();
       const msg = newOrderMessage(paid, items.results ?? []);
       await sendMail(paid.reference, "new_order", { to, ...msg });
     }

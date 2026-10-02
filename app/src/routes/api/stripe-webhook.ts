@@ -7,6 +7,7 @@ import { verifyStripeSignature, webhookSecret } from "../../lib/stripe.server";
 import {
   type ConfirmationOrder,
   deliverableAddress,
+  type NewOrder,
   newOrderMessage,
   orderConfirmationMessage,
   ownerAddress,
@@ -123,6 +124,23 @@ export const Route = createFileRoute("/api/stripe-webhook")({
           )
           .run();
 
+        /* ---- what was bought, before anyone is told about it ----
+         * These two emails list the line items, and the line items do not
+         * exist until this block has run. Sending first is how both went out
+         * naming no products at all. */
+        // Snapshot what was bought, then empty the basket.
+        if (cartId) {
+          const lines = await cartLines(cartId);
+          if (lines.length > 0) {
+            const stmt = DB.prepare(
+              "INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)",
+            );
+            await DB.batch(lines.map((l) => stmt.bind(orderId, l.slug, l.name, l.qty, l.price_cents)));
+            await decrementStock(lines.map((l) => ({ slug: l.slug, qty: l.qty })));
+          }
+          await clearCart(cartId);
+        }
+
         /* ---- tell the shop a sale has landed ----
          * Until now nothing did, and the only way to find out was to open the
          * back office. Wrapped so a mail provider having a bad afternoon can
@@ -130,23 +148,15 @@ export const Route = createFileRoute("/api/stripe-webhook")({
          * return 200 or Stripe retries the whole webhook. */
         try {
           const paid = await DB.prepare(
-            "SELECT reference,name,email,city,state,amount_total_cents,provider FROM orders WHERE id = ?1",
+            "SELECT reference,name,email,phone,address1,address2,city,state,zip,subtotal_cents,shipping_cents,tax_cents,amount_total_cents,provider,hold_reason FROM orders WHERE id = ?1",
           )
             .bind(orderId)
-            .first<{
-              reference: string;
-              name: string;
-              email: string;
-              city: string;
-              state: string;
-              amount_total_cents: number;
-              provider: string;
-            }>();
+            .first<NewOrder>();
           const to = ownerAddress();
           if (paid && to) {
-            const lines = await DB.prepare("SELECT name, qty FROM order_items WHERE order_id = ?1")
+            const lines = await DB.prepare("SELECT name, qty, price_cents FROM order_items WHERE order_id = ?1")
               .bind(orderId)
-              .all<{ name: string; qty: number }>();
+              .all<{ name: string; qty: number; price_cents: number }>();
             const msg = newOrderMessage(paid, lines.results ?? []);
             await sendMail(paid.reference, "new_order", { to, ...msg });
           }
@@ -178,19 +188,6 @@ export const Route = createFileRoute("/api/stripe-webhook")({
             // Never the reason a payment looks like a failure.
           }
 
-
-        // Snapshot what was bought, then empty the basket.
-        if (cartId) {
-          const lines = await cartLines(cartId);
-          if (lines.length > 0) {
-            const stmt = DB.prepare(
-              "INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)",
-            );
-            await DB.batch(lines.map((l) => stmt.bind(orderId, l.slug, l.name, l.qty, l.price_cents)));
-            await decrementStock(lines.map((l) => ({ slug: l.slug, qty: l.qty })));
-          }
-          await clearCart(cartId);
-        }
 
         return new Response("ok", { status: 200 });
       },

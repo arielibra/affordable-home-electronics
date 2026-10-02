@@ -176,36 +176,83 @@ export type NewOrder = {
   reference: string;
   name: string;
   email: string;
+  phone: string;
+  address1: string;
+  address2: string;
   city: string;
   state: string;
+  zip: string;
+  subtotal_cents: number;
+  shipping_cents: number;
+  tax_cents: number;
   amount_total_cents: number;
   provider: string;
+  hold_reason: string;
 };
 
 export function newOrderMessage(
   order: NewOrder,
-  items: { name: string; qty: number }[],
+  items: { name: string; qty: number; price_cents: number }[],
 ): { subject: string; text: string; html: string } {
-  const where = [order.city, order.state].filter(Boolean).join(", ");
-  const lines = items.map((i) => `${i.qty} x ${i.name}`);
+  const address = [
+    order.address1,
+    order.address2,
+    [order.city, order.state, order.zip].filter(Boolean).join(" "),
+  ].filter(Boolean);
+  const held = (order.hold_reason ?? "").trim();
+
+  const totals: [string, string][] = [
+    ["Items", money(order.subtotal_cents)],
+    ["Shipping", order.shipping_cents > 0 ? money(order.shipping_cents) : "Free"],
+    ...((order.tax_cents > 0 ? [["Sales tax", money(order.tax_cents)]] : []) as [string, string][]),
+    ["Total", money(order.amount_total_cents)],
+  ];
+
   const text = [
     `${order.reference} — ${money(order.amount_total_cents)}`,
     ``,
-    `${order.name}${where ? ` (${where})` : ""}`,
-    order.email,
+    `WHAT SOLD`,
+    ...(items.length
+      ? items.map((i) => `  ${i.qty} x ${i.name} — ${money(i.price_cents * i.qty)}`)
+      : ["  (no line items recorded)"]),
     ``,
-    ...(lines.length ? [...lines, ``] : []),
+    ...totals.map(([k, v]) => `${k}: ${v}`),
+    ``,
+    `SHIP TO`,
+    `  ${order.name}`,
+    ...address.map((l) => `  ${l}`),
+    ...(order.phone ? [`  ${order.phone}`] : []),
+    `  ${order.email}`,
+    ``,
     `Paid by ${order.provider || "card"}.`,
+    ...(held ? [``, `ON HOLD: ${held}`] : []),
     ``,
     `Open it: ${ORIGIN}/admin`,
   ].join("\n");
 
-  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#14304e;max-width:560px">
-<p style="font-size:19px;margin:0 0 4px"><strong>${esc(order.reference)} — ${esc(money(order.amount_total_cents))}</strong></p>
-<p style="margin:0 0 16px;color:#5b7696">${esc(order.name)}${where ? ` · ${esc(where)}` : ""}<br>${esc(order.email)}</p>
-${lines.length ? `<ul style="padding-left:18px;margin:16px 0">${items.map((i) => `<li>${esc(String(i.qty))} &times; ${esc(i.name)}</li>`).join("")}</ul>` : ""}
-<p style="color:#5b7696;font-size:13px">Paid by ${esc(order.provider || "card")}.</p>
-<p><a href="${esc(ORIGIN)}/admin" style="color:#1668c1">Open it in the back office</a></p>
+  const row = (k: string, v: string, strong = false) =>
+    `<tr><td style="padding:3px 24px 3px 0;color:#5b7696;white-space:nowrap">${esc(k)}</td><td style="padding:3px 0;${strong ? "font-weight:650" : ""}">${esc(v)}</td></tr>`;
+
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#14304e;max-width:580px">
+<p style="font-size:21px;margin:0 0 2px"><strong>${esc(order.reference)}</strong></p>
+<p style="font-size:21px;margin:0 0 18px;color:#1668c1"><strong>${esc(money(order.amount_total_cents))}</strong></p>
+${held ? `<p style="margin:0 0 16px;padding:10px 14px;background:#fdecea;border-radius:10px;color:#b4332b;font-size:14px"><strong>On hold:</strong> ${esc(held)}</p>` : ""}
+<p style="margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.09em;color:#93a9c2">WHAT SOLD</p>
+${
+    items.length
+      ? `<table style="border-collapse:collapse;width:100%;margin:0 0 18px">${items
+          .map(
+            (i) =>
+              `<tr><td style="padding:6px 0;border-bottom:1px solid #e8f0f8">${esc(String(i.qty))} &times; ${esc(i.name)}</td><td style="padding:6px 0;border-bottom:1px solid #e8f0f8;text-align:right;white-space:nowrap">${esc(money(i.price_cents * i.qty))}</td></tr>`,
+          )
+          .join("")}</table>`
+      : `<p style="margin:0 0 18px;color:#5b7696">No line items recorded.</p>`
+  }
+<table style="border-collapse:collapse;margin:0 0 20px">${totals.map(([k, v], i) => row(k, v, i === totals.length - 1)).join("")}</table>
+<p style="margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.09em;color:#93a9c2">SHIP TO</p>
+<p style="margin:0 0 18px;line-height:1.5">${esc(order.name)}<br>${address.map(esc).join("<br>")}${order.phone ? `<br>${esc(order.phone)}` : ""}<br><span style="color:#5b7696">${esc(order.email)}</span></p>
+<p style="color:#5b7696;font-size:13px;margin:0 0 16px">Paid by ${esc(order.provider || "card")}.</p>
+<p style="margin:0"><a href="${esc(ORIGIN)}/admin" style="display:inline-block;background:#1668c1;color:#fff;text-decoration:none;padding:10px 18px;border-radius:9px;font-size:14px;font-weight:600">Open it in the back office</a></p>
 </div>`;
 
   return { subject: `New order ${order.reference} — ${money(order.amount_total_cents)}`, text, html };
