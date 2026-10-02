@@ -4,7 +4,14 @@ import { undeliverableReason } from "../../lib/address";
 import { bindings } from "../../lib/bindings.server";
 import { cartLines, clearCart, decrementStock } from "../../lib/store.server";
 import { verifyStripeSignature, webhookSecret } from "../../lib/stripe.server";
-import { newOrderMessage, ownerAddress, sendMail } from "../../lib/email.server";
+import {
+  type ConfirmationOrder,
+  deliverableAddress,
+  newOrderMessage,
+  orderConfirmationMessage,
+  ownerAddress,
+  sendMail,
+} from "../../lib/email.server";
 
 type SessionEvent = {
   type: string;
@@ -146,6 +153,31 @@ export const Route = createFileRoute("/api/stripe-webhook")({
         } catch {
           // Never the reason a webhook fails.
         }
+          // And the buyer. Separate try/catch from the shop's copy: if one
+          // address bounces the other must still go.
+          try {
+            {
+              const full = await DB.prepare(
+                "SELECT reference,name,email,address1,address2,city,state,zip,subtotal_cents,shipping_cents,tax_cents,amount_total_cents,hold_reason FROM orders WHERE id = ?1",
+              )
+                .bind(orderId)
+                .first<ConfirmationOrder>();
+              const detail = await DB.prepare(
+                "SELECT name, qty, price_cents FROM order_items WHERE order_id = ?1",
+              )
+                .bind(orderId)
+                .all<{ name: string; qty: number; price_cents: number }>();
+              if (full && deliverableAddress(full.email)) {
+                await sendMail(full.reference, "confirmation", {
+                  to: full.email,
+                  ...orderConfirmationMessage(full, detail.results ?? []),
+                });
+              }
+            }
+          } catch {
+            // Never the reason a payment looks like a failure.
+          }
+
 
         // Snapshot what was bought, then empty the basket.
         if (cartId) {

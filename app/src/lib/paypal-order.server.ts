@@ -1,7 +1,14 @@
 import { bindings } from "./bindings.server";
 import { cartLines, clearCart, decrementStock } from "./store.server";
 import { recordTaxTransaction } from "./stripe.server";
-import { newOrderMessage, ownerAddress, sendMail } from "./email.server";
+import {
+  type ConfirmationOrder,
+  deliverableAddress,
+  newOrderMessage,
+  orderConfirmationMessage,
+  ownerAddress,
+  sendMail,
+} from "./email.server";
 
 export type PaypalAddress = {
   name: string;
@@ -144,6 +151,31 @@ export async function finalizePaypalOrder(paypalOrderId: string): Promise<{ refe
   } catch {
     // Never the reason a captured payment looks like a failure.
   }
+    // And the buyer. Separate try/catch from the shop's copy: if one
+    // address bounces the other must still go.
+    try {
+      {
+  const full = await DB.prepare(
+    "SELECT reference,name,email,address1,address2,city,state,zip,subtotal_cents,shipping_cents,tax_cents,amount_total_cents,hold_reason FROM orders WHERE id = ?1",
+  )
+    .bind(row.id)
+    .first<ConfirmationOrder>();
+  const detail = await DB.prepare(
+    "SELECT name, qty, price_cents FROM order_items WHERE order_id = ?1",
+  )
+    .bind(row.id)
+    .all<{ name: string; qty: number; price_cents: number }>();
+  if (full) {
+    await sendMail(full.reference, "confirmation", {
+      to: full.email,
+      ...orderConfirmationMessage(full, detail.results ?? []),
+    });
+  }
+      }
+    } catch {
+      // Never the reason a payment looks like a failure.
+    }
+
 
   if (row.tax_calculation_id) await recordTaxTransaction(row.tax_calculation_id, row.reference);
 

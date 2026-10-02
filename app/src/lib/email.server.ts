@@ -215,3 +215,96 @@ ${lines.length ? `<ul style="padding-left:18px;margin:16px 0">${items.map((i) =>
 export function ownerAddress(): string {
   return deliverableAddress(cfg().OWNER_EMAIL) || deliverableAddress(SITE.email);
 }
+
+export type ConfirmationOrder = {
+  reference: string;
+  name: string;
+  email: string;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: string;
+  subtotal_cents: number;
+  shipping_cents: number;
+  tax_cents: number;
+  amount_total_cents: number;
+  hold_reason: string;
+};
+
+/**
+ * What the buyer gets the moment they pay.
+ *
+ * Until this existed they got nothing at all: Stripe Checkout is not
+ * configured to send its own receipt, so a customer handed over card details
+ * and then heard silence until the parcel moved. That is the point at which
+ * people email asking whether the order went through.
+ *
+ * It carries the order number, because the order lookup on the site needs that
+ * plus their email address, and they will not have written it down.
+ */
+export function orderConfirmationMessage(
+  order: ConfirmationOrder,
+  items: { name: string; qty: number; price_cents: number }[],
+): { subject: string; text: string; html: string } {
+  const first = (order.name ?? "").trim().split(/\s+/)[0] || "there";
+  const held = Boolean((order.hold_reason ?? "").trim());
+  const address = [
+    order.address1,
+    order.address2,
+    [order.city, order.state, order.zip].filter(Boolean).join(" "),
+  ].filter(Boolean);
+
+  const lines = items.map((i) => `${i.qty} x ${i.name} — ${money(i.price_cents * i.qty)}`);
+  const totals: [string, string][] = [
+    ["Items", money(order.subtotal_cents)],
+    ["Shipping", order.shipping_cents > 0 ? money(order.shipping_cents) : "Free"],
+    ...((order.tax_cents > 0 ? [["Sales tax", money(order.tax_cents)]] : []) as [string, string][]),
+    ["Total", money(order.amount_total_cents)],
+  ];
+
+  const next = held
+    ? "Before we can ship this we need to check the delivery address with you — we will be in touch shortly."
+    : "Most orders ship within two business days. You will get another email with the tracking number the moment it is handed to the carrier.";
+
+  const text = [
+    `Hi ${first},`,
+    ``,
+    `Thanks for your order. We have it, and payment went through.`,
+    ``,
+    `Order number: ${order.reference}`,
+    ``,
+    ...(lines.length ? [...lines, ``] : []),
+    ...totals.map(([k, v]) => `${k}: ${v}`),
+    ``,
+    ...(address.length ? [`Shipping to:`, ...address, ``] : []),
+    next,
+    ``,
+    `You can check this order any time at ${ORIGIN}/orders using the order number above and this email address.`,
+    ``,
+    `Any questions, email us at ${SITE.email} and we will come straight back to you.`,
+    ``,
+    SITE.name,
+    ORIGIN,
+  ].join("\n");
+
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#14304e;max-width:560px">
+<p>Hi ${esc(first)},</p>
+<p><strong>Thanks for your order. We have it, and payment went through.</strong></p>
+<p style="margin:16px 0;padding:14px 16px;background:#eef4fb;border-radius:10px">Order number: <strong>${esc(order.reference)}</strong></p>
+${lines.length ? `<ul style="padding-left:18px;margin:16px 0">${items.map((i) => `<li>${esc(String(i.qty))} &times; ${esc(i.name)} &mdash; ${esc(money(i.price_cents * i.qty))}</li>`).join("")}</ul>` : ""}
+<table style="border-collapse:collapse;margin:16px 0">${totals
+    .map(
+      ([k, v], i) =>
+        `<tr><td style="padding:3px 24px 3px 0;color:#5b7696">${esc(k)}</td><td style="padding:3px 0;${i === totals.length - 1 ? "font-weight:600" : ""}">${esc(v)}</td></tr>`,
+    )
+    .join("")}</table>
+${address.length ? `<p style="color:#5b7696;font-size:13px">Shipping to<br>${address.map(esc).join("<br>")}</p>` : ""}
+<p>${esc(next)}</p>
+<p style="color:#5b7696;font-size:13px">You can check this order any time at <a href="${esc(ORIGIN)}/orders" style="color:#1668c1">${esc(ORIGIN)}/orders</a> using the order number above and this email address.</p>
+<p>Any questions, email us at <a href="${esc(SITE.emailHref)}" style="color:#1668c1">${esc(SITE.email)}</a> and we will come straight back to you.</p>
+<p style="color:#5b7696;font-size:13px">${esc(SITE.name)}<br><a href="${esc(ORIGIN)}" style="color:#1668c1">${esc(ORIGIN)}</a></p>
+</div>`;
+
+  return { subject: `Order ${order.reference} confirmed — ${SITE.name}`, text, html };
+}
