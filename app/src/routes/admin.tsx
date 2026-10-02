@@ -9,9 +9,7 @@ import { OrdersPanel } from "../components/admin/orders-panel";
 import { StockPanel } from "../components/admin/stock-panel";
 import { Field, Notice, TextInput } from "../components/site/form";
 import { Mark } from "../components/site/mark";
-import { Shell } from "../components/site/section";
 import { SITE } from "../lib/site";
-import { btnQuiet, card, h1, h2, lede, small } from "../components/admin/ui";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -34,6 +32,106 @@ type Security = {
 };
 
 /**
+ * The same six screens, grouped the way the work splits: what he sells, and
+ * who is buying it. Six flat tabs gave no hint that Categories and Brands
+ * belong together and Messages does not, and a heading costs nothing.
+ */
+const GROUPS: { heading: string; items: [Tab, string][] }[] = [
+  {
+    heading: "Catalogue",
+    items: [
+      ["catalog", "Products"],
+      ["stock", "Prices and stock"],
+      ["categories", "Categories"],
+      ["brands", "Brands"],
+    ],
+  },
+  {
+    heading: "Customers",
+    items: [
+      ["orders", "Orders"],
+      ["messages", "Messages"],
+    ],
+  },
+];
+
+const ALL: [Tab, string][] = GROUPS.flatMap((g) => g.items);
+
+/**
+ * The marker slides between items rather than blinking from one to the next.
+ * Measured from the live buttons, never hard-coded, so renaming a section or
+ * changing the type size cannot knock it out of line.
+ */
+function useSlider(active: string) {
+  const wrap = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState({ top: 0, height: 0, left: 0, width: 0 });
+
+  useLayoutEffect(() => {
+    const host = wrap.current;
+    if (!host) return;
+    const measure = () => {
+      const el = host.querySelector<HTMLElement>('[data-active="true"]');
+      if (el) setBox({ top: el.offsetTop, height: el.offsetHeight, left: el.offsetLeft, width: el.offsetWidth });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, [active]);
+
+  return { wrap, box };
+}
+
+function SideNav({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
+  const { wrap, box } = useSlider(tab);
+  return (
+    <nav ref={wrap} className="ahe-nav">
+      <span
+        aria-hidden
+        className="ahe-nav-marker"
+        style={{ transform: `translateY(${box.top}px)`, height: box.height }}
+      />
+      {GROUPS.map((group) => (
+        <div key={group.heading} className="mb-7 last:mb-0">
+          <p className="ahe-nav-heading">{group.heading}</p>
+          {group.items.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              data-active={tab === key}
+              aria-current={tab === key ? "page" : undefined}
+              onClick={() => onPick(key)}
+              className="ahe-nav-item"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+/** The same six as one scrolling row, for a phone. */
+function TopNav({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
+  const { wrap, box } = useSlider(tab);
+  return (
+    <div ref={wrap} className="ahe-rail md:hidden">
+      <span
+        aria-hidden
+        className="ahe-rail-marker"
+        style={{ transform: `translateX(${box.left}px)`, width: box.width }}
+      />
+      {ALL.map(([key, label]) => (
+        <button key={key} type="button" data-active={tab === key} onClick={() => onPick(key)} className="ahe-rail-item">
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Only shown when something actually looks like an attempt to get in.
  *
  * The distinction that matters is attempts versus addresses: one address
@@ -42,68 +140,14 @@ type Security = {
  * would be ignored within a week, so a single address under the lockout
  * threshold says nothing at all.
  */
-const TABS: [Tab, string][] = [
-  ["catalog", "Products"],
-  ["stock", "Prices and stock"],
-  ["categories", "Categories"],
-  ["brands", "Brands"],
-  ["orders", "Orders"],
-  ["messages", "Messages"],
-];
-
-/**
- * One track, one pill, and the pill moves. Measured from the live buttons
- * rather than guessed, because the labels are different widths and anything
- * hard-coded drifts the moment one of them is renamed.
- */
-function Tabs({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
-  const wrap = useRef<HTMLDivElement>(null);
-  const [pill, setPill] = useState({ left: 0, width: 0 });
-
-  useLayoutEffect(() => {
-    const host = wrap.current;
-    if (!host) return;
-    const measure = () => {
-      const active = host.querySelector<HTMLElement>('[aria-selected="true"]');
-      if (active) setPill({ left: active.offsetLeft, width: active.offsetWidth });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(host);
-    return () => ro.disconnect();
-  }, [tab]);
-
-  return (
-    <div ref={wrap} role="tablist" className="ahe-tabs relative mt-8 overflow-x-auto">
-      <span
-        aria-hidden
-        className="ahe-tab-pill"
-        style={{ transform: `translateX(${pill.left}px)`, width: pill.width }}
-      />
-      {TABS.map(([key, label]) => (
-        <button
-          key={key}
-          type="button"
-          role="tab"
-          aria-selected={tab === key}
-          onClick={() => onPick(key)}
-          className="ahe-tab"
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function SecurityBanner({ s }: { s: Security }) {
   const many = s.addresses24h > 1;
   const noisy = s.fails24h >= 5 || s.lockedNow > 0 || many;
   if (!noisy) return null;
   return (
-    <div className="mt-6 border border-[color:var(--admin-hairline)] border-l-[3px] border-l-[color:var(--color-signal)] bg-surface p-4">
-      <p className="text-[13px] font-medium text-muted">Sign-in attempts</p>
-      <p className="mt-2 text-sm leading-relaxed text-ink">
+    <div className="ahe-alert">
+      <p className="text-[13px] font-semibold text-ink">Sign-in attempts</p>
+      <p className="mt-1.5 text-[14px] leading-[1.55] text-ink">
         <b>{s.fails24h}</b> failed sign-in{s.fails24h === 1 ? "" : "s"} in the last 24 hours, from{" "}
         <b>{s.addresses24h}</b> address{s.addresses24h === 1 ? "" : "es"}
         {s.countries.length ? ` (${s.countries.join(", ")})` : ""}.
@@ -114,7 +158,7 @@ function SecurityBanner({ s }: { s: Security }) {
           </>
         ) : null}
       </p>
-      <p className="mt-2 max-w-[74ch] text-[13px] leading-relaxed text-muted">
+      <p className="mt-2 max-w-[74ch] text-[13px] leading-[1.55] text-muted">
         {many
           ? "Several different addresses is the pattern worth noticing — that is someone guessing, not a forgotten password. Each is shut out for 15 minutes after 5 wrong tries, so the password itself is not at risk unless it is an easy one."
           : "Probably just a mistyped password. Worth a glance rather than a worry."}
@@ -145,36 +189,38 @@ function Admin() {
 
   if (status === "checking") {
     return (
-      <Frame>
+      <Plain>
         <p className="text-sm text-muted">Checking.</p>
-      </Frame>
+      </Plain>
     );
   }
 
   if (status === "unconfigured") {
     return (
-      <Frame>
-        <h1 className="text-3xl font-semibold tracking-tighter text-ink">The back office is not switched on yet.</h1>
-        <p className="mt-4 max-w-[62ch] text-base leading-relaxed text-muted">
-          It needs a password set on the site itself, as a secret called <code className="font-mono text-ink">ADMIN_PASSWORD</code>.
-          Nobody can sign in until that exists, which is deliberate: an admin page with no password is worse than no
-          admin page at all.
+      <Plain>
+        <h1 className="text-[32px] font-semibold leading-[1.1] tracking-[-0.025em] text-ink">
+          The back office is not switched on yet.
+        </h1>
+        <p className="mt-4 max-w-[62ch] text-[16px] leading-[1.6] text-muted">
+          It needs a password set on the site itself, as a secret called{" "}
+          <code className="font-mono text-ink">ADMIN_PASSWORD</code>. Nobody can sign in until that exists, which is
+          deliberate: an admin page with no password is worse than no admin page at all.
         </p>
-      </Frame>
+      </Plain>
     );
   }
 
   if (status === "out") return <SignIn onIn={() => setStatus("in")} />;
 
+  const title = ALL.find(([k]) => k === tab)?.[1] ?? "";
+
   return (
-    <Frame wide>
-      <header className="flex flex-wrap items-center justify-between gap-6">
-        <div>
-          <h1 className={h1}>Mind the shop.</h1>
-          <p className={`${lede} mt-3`}>Everything about the catalogue and the orders, in one place.</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <Link to="/" className={btnQuiet}>
+    <div className="ahe-admin min-h-dvh bg-ground">
+      <header className="ahe-topbar">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-4 px-5 md:px-8">
+          <Mark detail="compact" className="h-7 w-10 shrink-0 text-ink" />
+          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.01em] text-ink">{SITE.name}</p>
+          <Link to="/" className="ahe-topbar-link">
             View the site
           </Link>
           <button
@@ -183,33 +229,40 @@ function Admin() {
               await fetch("/api/admin/logout", { method: "POST" });
               window.location.reload();
             }}
-            className={btnQuiet}
+            className="ahe-topbar-link"
           >
             Sign out
           </button>
         </div>
       </header>
 
-      {security ? <SecurityBanner s={security} /> : null}
+      <div className="mx-auto flex max-w-[1440px] items-start px-5 md:px-8">
+        <aside className="ahe-sidebar hidden md:block">
+          <SideNav tab={tab} onPick={setTab} />
+        </aside>
 
-      <Tabs tab={tab} onPick={setTab} />
-
-      <div key={tab} className="ahe-panel pt-9">
-        {tab === "catalog" ? (
-          <CatalogPanel />
-        ) : tab === "stock" ? (
-          <StockPanel />
-        ) : tab === "categories" ? (
-          <CategoriesPanel />
-        ) : tab === "brands" ? (
-          <BrandsPanel />
-        ) : tab === "orders" ? (
-          <OrdersPanel />
-        ) : (
-          <MessagesPanel />
-        )}
+        <main className="ahe-main min-w-0 flex-1">
+          <TopNav tab={tab} onPick={setTab} />
+          {security ? <SecurityBanner s={security} /> : null}
+          <h1 className="ahe-title">{title}</h1>
+          <div key={tab} className="ahe-panel">
+            {tab === "catalog" ? (
+              <CatalogPanel />
+            ) : tab === "stock" ? (
+              <StockPanel />
+            ) : tab === "categories" ? (
+              <CategoriesPanel />
+            ) : tab === "brands" ? (
+              <BrandsPanel />
+            ) : tab === "orders" ? (
+              <OrdersPanel />
+            ) : (
+              <MessagesPanel />
+            )}
+          </div>
+        </main>
       </div>
-    </Frame>
+    </div>
   );
 }
 
@@ -239,27 +292,21 @@ function SignIn({ onIn }: { onIn: () => void }) {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-ground px-5 py-16">
-      <div className="w-full max-w-[400px]">
+    <div className="ahe-admin flex min-h-dvh items-center justify-center bg-ground px-5 py-16">
+      <div className="ahe-signin">
         <Mark detail="full" className="h-12 w-[68px] text-ink" />
-        <h1 className="mt-8 text-3xl font-semibold leading-none tracking-tighter text-ink">Shop sign in</h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          For staff. Customers never need this page.
-        </p>
-        <form onSubmit={onSubmit} className="mt-8 space-y-4">
+        <h1 className="mt-7 text-[30px] font-semibold leading-[1.1] tracking-[-0.025em] text-ink">Shop sign in</h1>
+        <p className="mt-2.5 text-[14px] leading-[1.55] text-muted">For staff. Customers never need this page.</p>
+        <form onSubmit={onSubmit} className="mt-7 space-y-4">
           <Field label="Password" name="password">
             <TextInput id="password" name="password" type="password" required autoFocus autoComplete="current-password" />
           </Field>
           {error ? <Notice tone="bad">{error}</Notice> : null}
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex h-12 w-full items-center justify-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98] disabled:bg-line disabled:text-muted"
-          >
+          <button type="submit" disabled={pending} className="ahe-signin-btn">
             {pending ? "Checking" : "Sign in"}
           </button>
         </form>
-        <p className="mt-8 text-sm leading-relaxed text-muted">
+        <p className="mt-7 text-[14px] leading-[1.55] text-muted">
           Locked out? The password is held by whoever set up the site. Shop line{" "}
           <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
             {SITE.email}
@@ -271,10 +318,10 @@ function SignIn({ onIn }: { onIn: () => void }) {
   );
 }
 
-function Frame({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
+function Plain({ children }: { children: React.ReactNode }) {
   return (
     <div className="ahe-admin min-h-dvh bg-ground">
-      <Shell className={wide ? "py-10 md:py-14" : "py-16"}>{children}</Shell>
+      <div className="mx-auto max-w-[72ch] px-5 py-16 md:px-8">{children}</div>
     </div>
   );
 }

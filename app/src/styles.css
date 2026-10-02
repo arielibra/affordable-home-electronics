@@ -193,127 +193,230 @@ html.ahe :focus-visible {
  * The back office.
  *
  * Scoped entirely under .ahe-admin so none of it can reach the shop.
- * The storefront keeps its hairlines and sharp corners; this is the one
- * screen somebody uses for an hour at a time, so it gets room to breathe,
- * bigger type and softer edges.
+ *
+ * The shape is a fixed bar across the top and a column of sections down
+ * the left, because that is the arrangement a person can hold in their head:
+ * where you are never moves, and the thing you are working on gets the rest
+ * of the screen. Six tabs across the top worked at six and would not have
+ * survived a seventh.
  * =================================================================== */
 
 .ahe-admin {
-  --admin-sunken: #eef4fb;      /* a recessed panel, instead of a border */
-  --admin-hairline: #e1ebf6;    /* only where a line genuinely helps */
-  --admin-faint: #8ba3bf;       /* placeholder text */
-  --admin-bad: #b3261e;
-  --admin-bad-bg: #fdecea;
-  --admin-ring: color-mix(in srgb, var(--color-signal) 28%, transparent);
-
+  --admin-sunken: #eef4fb;
+  --admin-hairline: #e3ecf6;
+  --admin-faint: #9db2c9;
+  --admin-bad: #b4332b;
+  --admin-ring: rgba(22, 104, 193, 0.16);
+  --admin-shadow: 20, 48, 78;
   font-size: 16px;
-  letter-spacing: -0.011em;
-  -webkit-font-smoothing: antialiased;
 }
 
-/* Cards sit on the page rather than being boxed in by it: a barely-there
- * edge plus two soft shadows, one tight for the lift and one wide and
- * diffuse so it looks like it is resting on the background. */
+/* ---- the bar across the top ---- */
+.ahe-admin .ahe-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  backdrop-filter: saturate(1.6) blur(14px);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid var(--admin-hairline);
+}
+.ahe-admin .ahe-topbar-link {
+  flex-shrink: 0;
+  border-radius: 9px;
+  padding: 0.4rem 0.7rem;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ahe-admin .ahe-topbar-link:hover { background: var(--admin-sunken); color: var(--color-ink); }
+
+/* ---- the column down the left ---- */
+.ahe-admin .ahe-sidebar {
+  position: sticky;
+  top: 4rem;
+  width: 228px;
+  flex-shrink: 0;
+  padding: 2rem 1.75rem 2rem 0;
+  align-self: flex-start;
+}
+.ahe-admin .ahe-nav { position: relative; }
+
+/* One marker that travels, rather than six that switch on and off. */
+.ahe-admin .ahe-nav-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  border-radius: 10px;
+  background: var(--admin-sunken);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), height 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.ahe-admin .ahe-nav-heading {
+  padding: 0 0.75rem;
+  margin-bottom: 0.4rem;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+}
+.ahe-admin .ahe-nav-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  transition: color 140ms ease;
+}
+.ahe-admin .ahe-nav-item:hover { color: var(--color-ink); }
+.ahe-admin .ahe-nav-item[data-active="true"] { color: var(--color-ink); font-weight: 600; }
+
+/* ---- the same thing on a phone ---- */
+.ahe-admin .ahe-rail {
+  position: relative;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  margin: 0 -1.25rem;
+  padding: 0.75rem 1.25rem;
+  scrollbar-width: none;
+}
+.ahe-admin .ahe-rail::-webkit-scrollbar { display: none; }
+.ahe-admin .ahe-rail-marker {
+  position: absolute;
+  top: 0.75rem;
+  left: 0;
+  height: 2rem;
+  border-radius: 9px;
+  background: var(--admin-sunken);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.ahe-admin .ahe-rail-item {
+  position: relative;
+  flex-shrink: 0;
+  height: 2rem;
+  border-radius: 9px;
+  padding: 0 0.7rem;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+.ahe-admin .ahe-rail-item[data-active="true"] { color: var(--color-ink); font-weight: 600; }
+
+/* ---- the working area ---- */
+.ahe-admin .ahe-main { padding: 1.5rem 0 5rem; }
+@media (min-width: 768px) {
+  .ahe-admin .ahe-main { padding: 2rem 0 6rem; }
+}
+.ahe-admin .ahe-title {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--color-ink);
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 768px) {
+  .ahe-admin .ahe-title { font-size: 34px; }
+}
+
+/* Each section arrives rather than appearing. */
+.ahe-admin .ahe-panel { animation: ahe-rise 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes ahe-rise {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---- surfaces ---- */
 .ahe-admin .ahe-card {
-  border: 1px solid var(--admin-hairline);
   box-shadow:
-    0 1px 2px rgba(20, 48, 78, 0.04),
-    0 10px 30px -16px rgba(20, 48, 78, 0.16);
+    0 1px 2px rgba(var(--admin-shadow), 0.05),
+    0 10px 32px -18px rgba(var(--admin-shadow), 0.22);
 }
-
-/* Rows light up rather than being divided by rules. */
-.ahe-admin .ahe-row {
-  border-radius: 14px;
-  padding: 0.7rem 0.85rem;
-  transition: background-color 180ms ease;
-}
+.ahe-admin .ahe-row { transition: background-color 140ms ease; }
 .ahe-admin .ahe-row:hover { background: var(--admin-sunken); }
 
 /* One order in the list. It tints on hover only while collapsed — once it is
  * open that tint would wash over the whole detail panel underneath. Open, it
  * lifts instead, so the one being worked on stands out in a long list. */
-.ahe-admin .ahe-order {
-  transition: background-color 180ms ease, box-shadow 200ms ease, border-color 200ms ease;
-}
+.ahe-admin .ahe-order { transition: background-color 180ms ease, box-shadow 200ms ease, border-color 200ms ease; }
 .ahe-admin .ahe-order:not(.ahe-order-open):hover { background: var(--admin-sunken); }
 .ahe-admin .ahe-order-open {
   border-color: #cfdcec;
   box-shadow:
-    0 1px 2px rgba(20, 48, 78, 0.04),
-    0 10px 30px -16px rgba(20, 48, 78, 0.18);
+    0 1px 2px rgba(var(--admin-shadow), 0.04),
+    0 10px 30px -16px rgba(var(--admin-shadow), 0.18);
 }
 
+/* ---- controls ---- */
 .ahe-admin .ahe-input {
   border: 1px solid var(--admin-hairline);
-  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
 }
-.ahe-admin .ahe-input:hover { border-color: #cfdcec; }
 .ahe-admin .ahe-input:focus,
 .ahe-admin .ahe-input:focus-visible {
   outline: none;
-  border-color: var(--color-signal);
-  box-shadow: 0 0 0 4px var(--admin-ring);
+  border-color: #8fb4dd;
+  box-shadow: 0 0 0 3.5px var(--admin-ring);
 }
-
-/* Buttons: the press is the whole feedback. No colour change, no border
- * flash — it just gives slightly, the way a physical key does. */
-.ahe-admin .ahe-btn {
-  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), opacity 140ms ease,
-    background-color 160ms ease, box-shadow 160ms ease;
-  will-change: transform;
-}
-.ahe-admin .ahe-btn:hover { opacity: 0.92; }
+.ahe-admin .ahe-btn { transition: transform 120ms ease, background-color 140ms ease, box-shadow 140ms ease; }
 .ahe-admin .ahe-btn:active { transform: scale(0.97); }
-.ahe-admin .ahe-btn:disabled { opacity: 0.4; transform: none; }
-.ahe-admin .ahe-btn-quiet:hover { background: #e3ecf7; opacity: 1; }
-
+.ahe-admin .ahe-btn-quiet:hover { background: #e4edf8; }
 .ahe-admin .ahe-link { transition: opacity 140ms ease; }
-.ahe-admin .ahe-link:hover { opacity: 0.6; }
+.ahe-admin .ahe-link:hover { opacity: 0.68; }
 
-/* The tab bar is one track with a single pill that slides between the
- * options, so moving between sections reads as one object moving rather
- * than two things blinking. */
-.ahe-admin .ahe-tabs {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--admin-sunken);
-}
-.ahe-admin .ahe-tab {
-  position: relative;
-  z-index: 1;
-  border-radius: 999px;
-  padding: 0.6rem 1.1rem;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--color-muted);
-  white-space: nowrap;
-  transition: color 180ms ease;
-}
-.ahe-admin .ahe-tab:hover { color: var(--color-ink); }
-.ahe-admin .ahe-tab[aria-selected="true"] { color: var(--color-ink); }
-.ahe-admin .ahe-tab-pill {
-  position: absolute;
-  inset: 4px auto 4px 0;
-  z-index: 0;
-  border-radius: 999px;
+/* ---- the sign-in attempts notice ---- */
+.ahe-admin .ahe-alert {
+  margin-bottom: 1.75rem;
+  border-radius: 14px;
+  border: 1px solid var(--admin-hairline);
+  border-left: 3px solid var(--color-signal);
   background: var(--color-surface);
-  box-shadow: 0 1px 3px rgba(20, 48, 78, 0.12);
-  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 1rem 1.15rem;
 }
 
-/* Panels fade up as they arrive, which keeps a tab change from feeling
- * like the page was replaced underneath him. */
-.ahe-admin .ahe-panel { animation: ahe-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes ahe-rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
+/* ---- signing in ---- */
+.ahe-admin .ahe-signin {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 20px;
+  background: var(--color-surface);
+  padding: 2.25rem;
+  box-shadow:
+    0 1px 2px rgba(var(--admin-shadow), 0.05),
+    0 24px 60px -28px rgba(var(--admin-shadow), 0.3);
 }
+.ahe-admin .ahe-signin-btn {
+  display: inline-flex;
+  height: 3rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-ink);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--color-surface);
+  transition: transform 120ms ease, opacity 140ms ease;
+}
+.ahe-admin .ahe-signin-btn:active { transform: scale(0.98); }
+.ahe-admin .ahe-signin-btn:disabled { opacity: 0.45; }
 
+/* Motion is decoration here; everything still works without it. */
 @media (prefers-reduced-motion: reduce) {
-  .ahe-admin .ahe-panel { animation: none; }
-  .ahe-admin .ahe-tab-pill,
-  .ahe-admin .ahe-btn { transition: none; }
+  .ahe-admin *,
+  .ahe-admin *::before,
+  .ahe-admin *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
