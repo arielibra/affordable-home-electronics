@@ -192,111 +192,171 @@ html.ahe :focus-visible {
 /* ===================================================================
  * The back office.
  *
- * Scoped entirely under .ahe-admin so none of it can reach the shop.
+ * Scoped under .ahe-admin so none of it can reach the shop. Every rule
+ * below is written with that prefix on purpose — an earlier pass left them
+ * bare and 41 of them were free to leak into the storefront.
  *
- * The shape is a fixed bar across the top and a column of sections down
- * the left, because that is the arrangement a person can hold in their head:
- * where you are never moves, and the thing you are working on gets the rest
- * of the screen. Six tabs across the top worked at six and would not have
- * survived a seventh.
+ * A fixed rail on the left, a working column to its right. The rail carries
+ * an icon per section because a shape is found faster than a word, and the
+ * sections are grouped because six flat links say nothing about which belong
+ * together.
  * =================================================================== */
 
 .ahe-admin {
-  --admin-sunken: #eef4fb;
-  --admin-hairline: #e3ecf6;
-  --admin-faint: #9db2c9;
-  --admin-bad: #b4332b;
+  --ad-bg: #f4f8fd;
+  --ad-panel: #ffffff;
+  --ad-edge: #dce7f3;
+  --ad-edge-soft: #e8f0f8;
+  --ad-sunken: #eef4fb;
+  --ad-faint: #93a9c2;
+  --ad-accent: #1668c1;
+  --ad-accent-wash: #e7f0fb;
+  --ad-bad: #b4332b;
+  --ad-shade: 20, 48, 78;
+
+  --admin-sunken: var(--ad-sunken);
+  --admin-hairline: var(--ad-edge);
+  --admin-faint: var(--ad-faint);
+  --admin-bad: var(--ad-bad);
   --admin-ring: rgba(22, 104, 193, 0.16);
-  --admin-shadow: 20, 48, 78;
-  font-size: 16px;
+
+  min-height: 100dvh;
+  background: var(--ad-bg);
+  font-size: 15.5px;
 }
 
-/* ---- the bar across the top ---- */
-.ahe-admin .ahe-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-  backdrop-filter: saturate(1.6) blur(14px);
-  -webkit-backdrop-filter: saturate(1.6) blur(14px);
-  border-bottom: 1px solid var(--admin-hairline);
-}
-.ahe-admin .ahe-topbar-link {
-  flex-shrink: 0;
-  border-radius: 9px;
-  padding: 0.4rem 0.7rem;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--color-muted);
-  transition: background-color 140ms ease, color 140ms ease;
-}
-.ahe-admin .ahe-topbar-link:hover { background: var(--admin-sunken); color: var(--color-ink); }
-
-/* ---- the column down the left ---- */
+/* ---- the rail ---- */
 .ahe-admin .ahe-sidebar {
-  position: sticky;
-  top: 4rem;
-  width: 228px;
-  flex-shrink: 0;
-  padding: 2rem 1.75rem 2rem 0;
-  align-self: flex-start;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: none;
+  width: 258px;
+  flex-direction: column;
+  background: var(--ad-panel);
+  border-right: 1px solid var(--ad-edge);
 }
-.ahe-admin .ahe-nav { position: relative; }
+@media (min-width: 900px) {
+  .ahe-admin .ahe-sidebar { display: flex; }
+  .ahe-admin .ahe-content { margin-left: 258px; }
+}
 
-/* One marker that travels, rather than six that switch on and off. */
+.ahe-admin .ahe-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1.1rem 1.15rem;
+  border-bottom: 1px solid var(--ad-edge-soft);
+}
+.ahe-admin .ahe-brand-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  color: var(--color-ink);
+  line-height: 1.2;
+}
+.ahe-admin .ahe-brand-sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--ad-faint);
+  line-height: 1.2;
+}
+
+.ahe-admin .ahe-nav {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.1rem 0.7rem;
+}
+/* One marker that travels, rather than six switching on and off. */
 .ahe-admin .ahe-nav-marker {
   position: absolute;
-  left: 0;
+  left: 0.7rem;
   top: 0;
-  width: 100%;
+  width: calc(100% - 1.4rem);
   border-radius: 10px;
-  background: var(--admin-sunken);
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), height 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--ad-accent-wash);
+  box-shadow: inset 0 0 0 1px #cfe0f5;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), height 280ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .ahe-admin .ahe-nav-heading {
-  padding: 0 0.75rem;
-  margin-bottom: 0.4rem;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  padding: 0 0.6rem;
+  margin: 1.35rem 0 0.35rem;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--admin-faint);
+  color: var(--ad-faint);
 }
+.ahe-admin .ahe-nav > div:first-child .ahe-nav-heading { margin-top: 0; }
 .ahe-admin .ahe-nav-item {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   width: 100%;
   border-radius: 10px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.52rem 0.6rem;
   text-align: left;
   font-size: 14.5px;
   font-weight: 500;
   color: var(--color-muted);
-  transition: color 140ms ease;
+  transition: color 150ms ease, background-color 150ms ease;
 }
-.ahe-admin .ahe-nav-item:hover { color: var(--color-ink); }
-.ahe-admin .ahe-nav-item[data-active="true"] { color: var(--color-ink); font-weight: 600; }
+.ahe-admin .ahe-nav-item:hover { background: var(--ad-sunken); color: var(--color-ink); }
+.ahe-admin .ahe-nav-item[data-active="true"] {
+  background: transparent;
+  color: var(--ad-accent);
+  font-weight: 600;
+}
+.ahe-admin .ahe-nav-icon { display: inline-flex; flex-shrink: 0; opacity: 0.8; }
+.ahe-admin .ahe-nav-item[data-active="true"] .ahe-nav-icon { opacity: 1; }
 
-/* ---- the same thing on a phone ---- */
+.ahe-admin .ahe-sidefoot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.8rem 0.7rem 1.1rem;
+  border-top: 1px solid var(--ad-edge-soft);
+}
+.ahe-admin .ahe-sidelink {
+  border-radius: 9px;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.ahe-admin .ahe-sidelink:hover { background: var(--ad-sunken); color: var(--color-ink); }
+
+/* ---- the same six on a narrow screen ---- */
 .ahe-admin .ahe-rail {
   position: relative;
   display: flex;
-  gap: 0.25rem;
+  gap: 0.2rem;
   overflow-x: auto;
-  margin: 0 -1.25rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.55rem 1.25rem;
+  background: var(--ad-panel);
+  border-bottom: 1px solid var(--ad-edge);
   scrollbar-width: none;
 }
 .ahe-admin .ahe-rail::-webkit-scrollbar { display: none; }
+@media (min-width: 900px) {
+  .ahe-admin .ahe-rail { display: none; }
+}
 .ahe-admin .ahe-rail-marker {
   position: absolute;
-  top: 0.75rem;
+  top: 0.55rem;
   left: 0;
   height: 2rem;
   border-radius: 9px;
-  background: var(--admin-sunken);
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--ad-accent-wash);
+  box-shadow: inset 0 0 0 1px #cfe0f5;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), width 280ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .ahe-admin .ahe-rail-item {
@@ -310,90 +370,97 @@ html.ahe :focus-visible {
   white-space: nowrap;
   color: var(--color-muted);
 }
-.ahe-admin .ahe-rail-item[data-active="true"] { color: var(--color-ink); font-weight: 600; }
+.ahe-admin .ahe-rail-item[data-active="true"] { color: var(--ad-accent); font-weight: 600; }
 
-/* ---- the working area ---- */
-.ahe-admin .ahe-main { padding: 1.5rem 0 5rem; }
-@media (min-width: 768px) {
-  .ahe-admin .ahe-main { padding: 2rem 0 6rem; }
+/* ---- the working column ---- */
+.ahe-admin .ahe-topbar {
+  padding: 1.6rem 1.25rem 0;
+  max-width: 1180px;
+}
+.ahe-admin .ahe-main {
+  padding: 1.25rem 1.25rem 5rem;
+  max-width: 1180px;
+}
+@media (min-width: 900px) {
+  .ahe-admin .ahe-topbar { padding: 2.1rem 2.5rem 0; }
+  .ahe-admin .ahe-main { padding: 1.4rem 2.5rem 6rem; }
 }
 .ahe-admin .ahe-title {
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-size: 29px;
+  font-weight: 650;
+  letter-spacing: -0.028em;
   line-height: 1.1;
   color: var(--color-ink);
-  margin-bottom: 1.5rem;
 }
-@media (min-width: 768px) {
-  .ahe-admin .ahe-title { font-size: 34px; }
+@media (min-width: 900px) {
+  .ahe-admin .ahe-title { font-size: 33px; }
+}
+.ahe-admin .ahe-subtitle {
+  margin-top: 0.4rem;
+  max-width: 68ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-muted);
 }
 
-/* Each section arrives rather than appearing. */
 .ahe-admin .ahe-panel { animation: ahe-rise 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 @keyframes ahe-rise {
   from { opacity: 0; transform: translateY(7px); }
   to { opacity: 1; transform: none; }
 }
 
-/* ---- surfaces ---- */
+/* ---- surfaces: edges you can see, not shadows you cannot ---- */
 .ahe-admin .ahe-card {
-  box-shadow:
-    0 1px 2px rgba(var(--admin-shadow), 0.05),
-    0 10px 32px -18px rgba(var(--admin-shadow), 0.22);
+  border: 1px solid var(--ad-edge);
+  box-shadow: 0 1px 2px rgba(var(--ad-shade), 0.04);
 }
-.ahe-admin .ahe-row { transition: background-color 140ms ease; }
-.ahe-admin .ahe-row:hover { background: var(--admin-sunken); }
+.ahe-admin .ahe-row { border-radius: 10px; transition: background-color 150ms ease; }
+.ahe-admin .ahe-row:hover { background: var(--ad-sunken); }
 
-/* One order in the list. It tints on hover only while collapsed — once it is
- * open that tint would wash over the whole detail panel underneath. Open, it
- * lifts instead, so the one being worked on stands out in a long list. */
 .ahe-admin .ahe-order { transition: background-color 180ms ease, box-shadow 200ms ease, border-color 200ms ease; }
-.ahe-admin .ahe-order:not(.ahe-order-open):hover { background: var(--admin-sunken); }
+.ahe-admin .ahe-order:not(.ahe-order-open):hover { border-color: #c9dcf1; background: #fbfdff; }
 .ahe-admin .ahe-order-open {
-  border-color: #cfdcec;
-  box-shadow:
-    0 1px 2px rgba(var(--admin-shadow), 0.04),
-    0 10px 30px -16px rgba(var(--admin-shadow), 0.18);
+  border-color: #b9d2ec;
+  box-shadow: 0 1px 2px rgba(var(--ad-shade), 0.05), 0 12px 32px -18px rgba(var(--ad-shade), 0.26);
 }
 
 /* ---- controls ---- */
 .ahe-admin .ahe-input {
-  border: 1px solid var(--admin-hairline);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  border: 1px solid var(--ad-edge);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 .ahe-admin .ahe-input:focus,
 .ahe-admin .ahe-input:focus-visible {
   outline: none;
-  border-color: #8fb4dd;
+  border-color: var(--ad-accent);
   box-shadow: 0 0 0 3.5px var(--admin-ring);
 }
-.ahe-admin .ahe-btn { transition: transform 120ms ease, background-color 140ms ease, box-shadow 140ms ease; }
+.ahe-admin .ahe-btn { transition: transform 120ms ease, background-color 150ms ease, box-shadow 150ms ease; }
 .ahe-admin .ahe-btn:active { transform: scale(0.97); }
-.ahe-admin .ahe-btn-quiet:hover { background: #e4edf8; }
-.ahe-admin .ahe-link { transition: opacity 140ms ease; }
-.ahe-admin .ahe-link:hover { opacity: 0.68; }
+.ahe-admin .ahe-btn-quiet { border: 1px solid var(--ad-edge); }
+.ahe-admin .ahe-btn-quiet:hover { background: var(--ad-sunken); border-color: #c9dcf1; }
+.ahe-admin .ahe-link { color: var(--ad-accent); transition: opacity 150ms ease; }
+.ahe-admin .ahe-link:hover { opacity: 0.7; }
 
 /* ---- the sign-in attempts notice ---- */
 .ahe-admin .ahe-alert {
-  margin-bottom: 1.75rem;
-  border-radius: 14px;
-  border: 1px solid var(--admin-hairline);
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--ad-edge);
   border-left: 3px solid var(--color-signal);
-  background: var(--color-surface);
-  padding: 1rem 1.15rem;
+  background: var(--ad-panel);
+  padding: 0.9rem 1.1rem;
 }
 
 /* ---- signing in ---- */
 .ahe-admin .ahe-signin {
   width: 100%;
   max-width: 420px;
-  border-radius: 20px;
-  background: var(--color-surface);
+  border-radius: 18px;
+  border: 1px solid var(--ad-edge);
+  background: var(--ad-panel);
   padding: 2.25rem;
-  box-shadow:
-    0 1px 2px rgba(var(--admin-shadow), 0.05),
-    0 24px 60px -28px rgba(var(--admin-shadow), 0.3);
+  box-shadow: 0 1px 2px rgba(var(--ad-shade), 0.05), 0 24px 60px -30px rgba(var(--ad-shade), 0.28);
 }
 .ahe-admin .ahe-signin-btn {
   display: inline-flex;
@@ -401,17 +468,17 @@ html.ahe :focus-visible {
   width: 100%;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: var(--color-ink);
+  border-radius: 10px;
+  background: var(--ad-accent);
   font-size: 14.5px;
-  font-weight: 500;
-  color: var(--color-surface);
-  transition: transform 120ms ease, opacity 140ms ease;
+  font-weight: 600;
+  color: #fff;
+  transition: transform 120ms ease, opacity 150ms ease;
 }
 .ahe-admin .ahe-signin-btn:active { transform: scale(0.98); }
 .ahe-admin .ahe-signin-btn:disabled { opacity: 0.45; }
 
-/* Motion is decoration here; everything still works without it. */
+/* Motion is decoration; everything works without it. */
 @media (prefers-reduced-motion: reduce) {
   .ahe-admin *,
   .ahe-admin *::before,

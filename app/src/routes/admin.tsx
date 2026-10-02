@@ -9,6 +9,7 @@ import { OrdersPanel } from "../components/admin/orders-panel";
 import { StockPanel } from "../components/admin/stock-panel";
 import { Field, Notice, TextInput } from "../components/site/form";
 import { Mark } from "../components/site/mark";
+import { ICONS } from "../components/admin/icons";
 import { SITE } from "../lib/site";
 
 export const Route = createFileRoute("/admin")({
@@ -54,6 +55,16 @@ const GROUPS: { heading: string; items: [Tab, string][] }[] = [
     ],
   },
 ];
+
+/** A line under each title saying what the screen is for. */
+const BLURBS: Record<Tab, string> = {
+  catalog: "Every listing on the shop — add one, edit one, copy one, take one down.",
+  stock: "Prices and how many are on the shelf, across the whole catalogue at once.",
+  categories: "The sections customers browse by.",
+  brands: "The makers you stock, and the logo shown against each.",
+  orders: "Everything sold, wherever it sold, and where each one has got to.",
+  messages: "What customers have sent in through the site.",
+};
 
 const ALL: [Tab, string][] = GROUPS.flatMap((g) => g.items);
 
@@ -103,6 +114,7 @@ function SideNav({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
               onClick={() => onPick(key)}
               className="ahe-nav-item"
             >
+              <span className="ahe-nav-icon">{ICONS[key]}</span>
               {label}
             </button>
           ))}
@@ -116,7 +128,7 @@ function SideNav({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
 function TopNav({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
   const { wrap, box } = useSlider(tab);
   return (
-    <div ref={wrap} className="ahe-rail md:hidden">
+    <div ref={wrap} className="ahe-rail">
       <span
         aria-hidden
         className="ahe-rail-marker"
@@ -215,12 +227,20 @@ function Admin() {
   const title = ALL.find(([k]) => k === tab)?.[1] ?? "";
 
   return (
-    <div className="ahe-admin min-h-dvh bg-ground">
-      <header className="ahe-topbar">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-4 px-5 md:px-8">
-          <Mark detail="compact" className="h-7 w-10 shrink-0 text-ink" />
-          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.01em] text-ink">{SITE.name}</p>
-          <Link to="/" className="ahe-topbar-link">
+    <div className="ahe-admin">
+      <aside className="ahe-sidebar">
+        <div className="ahe-brand">
+          <Mark detail="compact" className="h-8 w-11 shrink-0 text-ink" />
+          <span className="min-w-0">
+            <span className="ahe-brand-name">Affordable Home</span>
+            <span className="ahe-brand-sub">Shop admin</span>
+          </span>
+        </div>
+
+        <SideNav tab={tab} onPick={setTab} />
+
+        <div className="ahe-sidefoot">
+          <Link to="/" className="ahe-sidelink">
             View the site
           </Link>
           <button
@@ -229,22 +249,23 @@ function Admin() {
               await fetch("/api/admin/logout", { method: "POST" });
               window.location.reload();
             }}
-            className="ahe-topbar-link"
+            className="ahe-sidelink"
           >
             Sign out
           </button>
         </div>
-      </header>
+      </aside>
 
-      <div className="mx-auto flex max-w-[1440px] items-start px-5 md:px-8">
-        <aside className="ahe-sidebar hidden md:block">
-          <SideNav tab={tab} onPick={setTab} />
-        </aside>
-
-        <main className="ahe-main min-w-0 flex-1">
-          <TopNav tab={tab} onPick={setTab} />
-          {security ? <SecurityBanner s={security} /> : null}
+      <div className="ahe-content">
+        <header className="ahe-topbar">
           <h1 className="ahe-title">{title}</h1>
+          <p className="ahe-subtitle">{BLURBS[tab]}</p>
+        </header>
+
+        <TopNav tab={tab} onPick={setTab} />
+
+        <main className="ahe-main">
+          {security ? <SecurityBanner s={security} /> : null}
           <div key={tab} className="ahe-panel">
             {tab === "catalog" ? (
               <CatalogPanel />
