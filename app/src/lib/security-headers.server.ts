@@ -4,17 +4,23 @@
  */
 export function applySecurityHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
-  // Framing: the Supercomputer Design-mode inspector + preview render this app
-  // cross-origin inside an iframe. The Higgsfield hosting platform injects the
-  // canonical `frame-ancestors` allowlist on every app response, so this app
-  // MUST NOT set its own — browsers intersect multiple CSP headers, so a second
-  // (stricter) list here can only ever subtract from the platform's allowlist
-  // and silently block the embed. We also deliberately do NOT set
-  // `X-Frame-Options` (no cross-origin allowlist; SAMEORIGIN/DENY would blank
-  // the preview) and leave framing entirely to the platform.
+  // Framing: nothing may embed this site.
+  //
+  // This was deliberately left open while the app was hosted on Higgsfield,
+  // whose design-mode preview rendered it cross-origin in an iframe and
+  // injected its own frame-ancestors allowlist; a second, stricter list here
+  // could only subtract from that one and blank the preview. The site now runs
+  // on its own domain on Cloudflare and nothing legitimately frames it, so the
+  // exemption no longer applies and its absence is just a clickjacking hole —
+  // an invisible copy of the checkout or the admin login over an attacker's
+  // page, catching real clicks.
+  //
+  // Both headers on purpose: frame-ancestors is the modern rule, X-Frame-Options
+  // is what older browsers obey. Neither affects iframes this site loads
+  // ITSELF, so PayPal's button (see frame-src below) is unaffected.
   headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; " +
+    "default-src 'self'; frame-ancestors 'none'; " +
       // PayPal's button is an iframe served from paypal.com and loaded by a
     // script from paypalobjects.com. Without these three the button renders
     // as an empty box with nothing in the console to explain why.
@@ -26,6 +32,7 @@ export function applySecurityHeaders(response: Response): Response {
       "connect-src 'self' https:; " +
       "base-uri 'self'; form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com",
   );
+  headers.set('X-Frame-Options', 'DENY');
   headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
