@@ -3,7 +3,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
 import { CARRIERS, CHANNELS, MANUAL_STATES, channelName, shopMayEmailBuyer, type OrderState } from "../../../lib/orders";
-import { deliverableAddress, sendMail, shippedMessage } from "../../../lib/email.server";
+import {
+  deliverableAddress,
+  ownerAddress,
+  ownerInvoiceMessage,
+  sendMail,
+  shippedMessage,
+} from "../../../lib/email.server";
 
 /** Dollars-or-cents from a form field, as whole cents. */
 function money(v: unknown): number | null {
@@ -282,6 +288,40 @@ export const Route = createFileRoute("/api/admin/orders")({
 
         await logAdmin("order_manual_add", reference, `${channel} ${channelRef} ${total}`);
 
+        /* ---- his own copy, with the whole order on it ----
+         *
+         * The old cart mailed him an invoice for every sale and the
+         * replacement did not: `newOrderMessage` fires from the Stripe webhook
+         * only, so an order he typed in here told him nothing at all.
+         *
+         * Read back from the saved row rather than the request body, and only
+         * after the line items exist — sending before that insert is exactly
+         * what made both earlier emails arrive listing nothing.
+         *
+         * Goes to the shop and only the shop. Amazon and Walmart both forbid
+         * contacting a buyer outside their own messaging, and the buyer-facing
+         * notice below already honours that. */
+        const saved = (await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`)
+          .bind(id)
+          .first<Order>()) as Order | null;
+
+        let invoiced: { ok: boolean; error: string } | null = null;
+        const owner = ownerAddress();
+        if (saved && owner) {
+          invoiced = await sendMail(saved.reference, "manual_order", {
+            to: owner,
+            ...ownerInvoiceMessage(
+              saved,
+              items.map((i) => ({
+                product_slug: i.slug,
+                name: i.name,
+                qty: i.qty,
+                price_cents: i.price,
+              })),
+            ),
+          });
+        }
+
         /* ---- an order typed straight in as shipped still tells the buyer ----
          *
          * The notice on the update path fires when an order MOVES into
@@ -299,9 +339,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             error: `${channelName(channel)} sends its own notice and does not allow contacting buyers directly, so nothing was emailed from here.`,
           };
         } else if (status === "shipped" && tracking && deliverableAddress(str(body.email, 160))) {
-          const fresh = (await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`)
-            .bind(id)
-            .first<Order>()) as Order | null;
+          const fresh = saved;
           if (fresh) {
             const sent = await sendMail(fresh.reference, "shipped", {
               to: fresh.email,
@@ -319,7 +357,7 @@ export const Route = createFileRoute("/api/admin/orders")({
         }
 
         const row = await DB.prepare(`SELECT ${COLUMNS} FROM orders WHERE id = ?1`).bind(id).first<Order>();
-        return Response.json({ ok: true, order: row, notified });
+        return Response.json({ ok: true, order: row, notified, invoiced });
       },
 
       POST: async ({ request }) => {

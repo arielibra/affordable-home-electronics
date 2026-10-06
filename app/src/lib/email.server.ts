@@ -1,5 +1,12 @@
 import { bindings } from "./bindings.server";
-import { trackingUrl } from "./orders";
+import {
+  STATE_LABEL,
+  carrierName,
+  channelName,
+  marketplaceRemitsTax,
+  trackingUrl,
+  type OrderState,
+} from "./orders";
 import { ORIGIN, SITE } from "./site";
 
 /**
@@ -354,4 +361,279 @@ ${address.length ? `<p style="color:#5b7696;font-size:13px">Shipping to<br>${add
 </div>`;
 
   return { subject: `Order ${order.reference} confirmed — ${SITE.name}`, text, html };
+}
+
+/* ------------------------------------------------------------------ *
+ * The shop's own invoice, for an order typed in by hand
+ * ------------------------------------------------------------------ */
+
+export type InvoiceOrder = {
+  reference: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: string;
+  notes: string;
+  status: string;
+  channel: string;
+  channel_ref: string;
+  carrier: string;
+  tracking_number: string;
+  subtotal_cents: number | null;
+  shipping_cents: number | null;
+  tax_cents: number | null;
+  amount_total_cents: number | null;
+  paid_at: string | null;
+  created_at: string;
+};
+
+export type InvoiceItem = {
+  product_slug: string;
+  name: string;
+  qty: number;
+  price_cents: number;
+};
+
+const INK = "#14304e";
+const MUTED = "#5b7696";
+const HAIR = "#e3ebf5";
+const WASH = "#f3f6fa";
+const TINT = "#eef4fb";
+const BLUE = "#1668c1";
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif";
+
+/**
+ * Dates, defensively.
+ *
+ * This runs in a Worker, and `timeZone` depends on the runtime carrying a full
+ * ICU build. If it ever does not, a RangeError here would take down the whole
+ * order-creation request — the email is the least important thing happening on
+ * that code path. So it falls back to the stored string rather than throwing.
+ */
+function stamp(value: string | null | undefined, withTime: boolean): string {
+  const v = (value ?? "").trim();
+  if (!v) return "";
+  const d = new Date(v.replace(" ", "T") + "Z");
+  if (Number.isNaN(d.getTime())) return v;
+  try {
+    return d.toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      ...(withTime ? { hour: "numeric" as const, minute: "2-digit" as const } : {}),
+    });
+  } catch {
+    return v.slice(0, withTime ? 16 : 10);
+  }
+}
+
+/**
+ * What his dad gets the moment he records a sale made somewhere else.
+ *
+ * The old cart used to mail him an invoice like this and the replacement did
+ * not: `newOrderMessage` fires from the Stripe webhook only, so an order typed
+ * into the back office told him nothing at all.
+ *
+ * Three things the old invoice did that are deliberately not repeated. It
+ * printed Ship To and Bill To as two identical columns — there is one address
+ * on an order here, so the second column is the customer's contact details
+ * instead. It carried a phone, a fax and a street address, none of which are
+ * true since the shop went online-only. And its "How did you find our Store?"
+ * line was a referral field, not where the sale happened; confusing those two
+ * is what put $2,751.29 on the wrong side of the tax split during the import,
+ * so this shows the real channel.
+ *
+ * Nothing here corrects a figure. If the money does not add up it says so and
+ * leaves it alone, the same rule the order editor follows — silently rewriting
+ * a number he typed is how a total ends up meaning something he never meant.
+ */
+export function ownerInvoiceMessage(
+  order: InvoiceOrder,
+  items: InvoiceItem[],
+): { subject: string; text: string; html: string } {
+  const goods = order.subtotal_cents ?? 0;
+  const ship = order.shipping_cents ?? 0;
+  const tax = order.tax_cents ?? 0;
+  const total = order.amount_total_cents ?? 0;
+  const lines = items.reduce((a, i) => a + i.price_cents * i.qty, 0);
+
+  const where = channelName(order.channel);
+  const remits = marketplaceRemitsTax(order.channel);
+  const state = STATE_LABEL[order.status as OrderState] ?? order.status;
+  const carrier = carrierName(order.carrier) || "Carrier";
+  const tracking = (order.tracking_number ?? "").trim();
+  const track = trackingUrl(order.carrier, tracking);
+
+  const address = [
+    order.name,
+    order.company,
+    order.address1,
+    order.address2,
+    [order.city, order.state].filter(Boolean).join(", ") + (order.zip ? ` ${order.zip}` : ""),
+  ]
+    .map((l) => (l ?? "").trim())
+    .filter(Boolean);
+
+  const expected = goods + ship + tax;
+  const mismatch = total !== expected;
+  const linesOff = !mismatch && lines !== goods;
+  const mismatchNote = `These figures do not add up: ${money(goods)} + ${money(ship)} + ${money(tax)} comes to ${money(expected)}, but the order total says ${money(total)}. Nothing has been changed — open the order if you want to correct it.`;
+  const linesNote = `The line items come to ${money(lines)} but the items figure on the order says ${money(goods)}.`;
+  const taxNote = `${where} collects and remits the sales tax on this sale. It is counted separately in the year report and is not part of what you file.`;
+
+  /* ---------------------------------------------------------- plain text */
+
+  const text = [
+    `ORDER ${order.reference}`,
+    `${where}${order.channel_ref ? ` — ${order.channel_ref}` : ""}`,
+    stamp(order.created_at, true),
+    ``,
+    `WHAT WAS BOUGHT`,
+    ...(items.length
+      ? items.flatMap((i) => [
+          `  ${i.qty} x ${i.name}${i.product_slug ? ` [${i.product_slug}]` : ""}`,
+          `      ${money(i.price_cents)} each — ${money(i.price_cents * i.qty)}`,
+        ])
+      : ["  (no line items recorded)"]),
+    ``,
+    `  Items                 ${money(goods)}`,
+    `  Shipping and handling ${ship > 0 ? money(ship) : "Free"}`,
+    ...(tax > 0 ? [`  Sales tax             ${money(tax)}`] : []),
+    `  ORDER TOTAL           ${money(total)}`,
+    ...(mismatch ? [`  !! ${mismatchNote}`] : []),
+    ...(linesOff ? [`  !! ${linesNote}`] : []),
+    ...(remits ? [``, `  ${taxNote}`] : []),
+    ``,
+    `SHIP TO`,
+    ...address.map((l) => `  ${l}`),
+    ...(order.email ? [`  ${order.email}`] : ["  (no email on this order)"]),
+    ...(order.phone ? [`  ${order.phone}`] : []),
+    ...(tracking
+      ? [``, `TRACKING (${carrier})  ${tracking}`, ...(track ? [`  ${track}`] : [])]
+      : []),
+    ...((order.notes ?? "").trim() ? [``, `NOTES`, `  ${order.notes.trim()}`] : []),
+    ``,
+    `Paid ${stamp(order.paid_at, false) || "—"} · ${state}`,
+    ``,
+    `Open the back office: ${ORIGIN}/admin`,
+  ].join("\n");
+
+  /* ---------------------------------------------------------------- html */
+
+  const facts: [string, string][] = [
+    ...((order.channel_ref ? [["Their order number", order.channel_ref]] : []) as [
+      string,
+      string,
+    ][]),
+    ...((order.paid_at ? [["Paid", stamp(order.paid_at, false)]] : []) as [string, string][]),
+    ["Status", state],
+  ];
+  const factCells = facts
+    .map(
+      ([k, v]) =>
+        `<td width="${Math.floor(100 / facts.length)}%" valign="top" style="padding:0 16px 0 0"><div style="font:400 12px/1.3 ${FONT};color:${MUTED};padding-bottom:5px">${esc(k)}</div><div style="font:600 14px/1.4 ${FONT};color:${INK};word-break:break-word">${esc(v)}</div></td>`,
+    )
+    .join("");
+
+  const th = (label: string, align: string) =>
+    `<th align="${align}" style="font:600 12px/1 ${FONT};color:${MUTED};padding:0 0 10px ${align === "left" ? "0" : "14px"};border-bottom:1px solid ${HAIR};white-space:nowrap">${label}</th>`;
+
+  const itemRows = items
+    .map((i) => {
+      const part = (i.product_slug ?? "").trim();
+      return `<tr>
+<td valign="top" style="padding:14px 0;border-bottom:1px solid ${HAIR}"><div style="font:600 15px/1.45 ${FONT};color:${INK}">${esc(i.name)}</div>${part ? `<div style="font:400 12px/1.4 ${FONT};color:${MUTED};padding-top:4px">Part no. ${esc(part)}</div>` : ""}</td>
+<td valign="top" align="center" style="padding:14px 0 14px 14px;border-bottom:1px solid ${HAIR};font:400 15px/1.45 ${FONT};color:${INK}">${esc(String(i.qty))}</td>
+<td valign="top" align="right" style="padding:14px 0 14px 14px;border-bottom:1px solid ${HAIR};font:400 15px/1.45 ${FONT};color:${MUTED};white-space:nowrap">${esc(money(i.price_cents))}</td>
+<td valign="top" align="right" style="padding:14px 0 14px 14px;border-bottom:1px solid ${HAIR};font:600 15px/1.45 ${FONT};color:${INK};white-space:nowrap">${esc(money(i.price_cents * i.qty))}</td>
+</tr>`;
+    })
+    .join("");
+
+  const totalRow = (label: string, value: string, strong = false) =>
+    `<tr><td align="right" style="padding:${strong ? "14px 14px 0 0" : "0 14px 9px 0"};font:${strong ? "700" : "400"} ${strong ? "16px" : "14px"}/1.3 ${FONT};color:${strong ? INK : MUTED}">${esc(label)}</td><td align="right" width="110" style="padding:${strong ? "14px 0 0" : "0 0 9px"};font:${strong ? "700" : "500"} ${strong ? "20px" : "14px"}/1.3 ${FONT};color:${INK};white-space:nowrap">${esc(value)}</td></tr>`;
+
+  const warn = (t: string) =>
+    `<tr><td style="padding:18px 28px 0"><div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:13px 15px;font:400 13px/1.55 ${FONT};color:#9a3412">${esc(t)}</div></td></tr>`;
+
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"><title>${esc(order.reference)}</title></head>
+<body style="margin:0;padding:0;background:${WASH}">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;font-size:1px;line-height:1px">${esc(where)} &middot; ${esc(money(total))} &middot; ${items.length} item${items.length === 1 ? "" : "s"}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${WASH}"><tr><td align="center" style="padding:28px 12px 40px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%">
+
+<tr><td style="background:${BLUE};border-radius:14px 14px 0 0;padding:22px 28px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="font:600 16px/1.2 ${FONT};color:#ffffff;letter-spacing:.2px">${esc(SITE.name)}</td>
+<td align="right" style="font:400 13px/1.2 ${FONT};color:#cfe0f6">${esc(ORIGIN.replace(/^https?:\/\//, ""))}</td>
+</tr></table></td></tr>
+
+<tr><td style="background:#ffffff;border:1px solid ${HAIR};border-top:0;border-radius:0 0 14px 14px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+<tr><td style="padding:30px 28px 22px;border-bottom:1px solid ${HAIR}">
+<div style="font:600 13px/1 ${FONT};color:${MUTED};padding-bottom:10px">Order recorded in the back office</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="font:700 30px/1.15 ${FONT};color:${INK};letter-spacing:-.4px">${esc(order.reference)}</td>
+<td align="right" valign="middle"><span style="display:inline-block;background:${TINT};color:${BLUE};font:600 12px/1 ${FONT};padding:8px 12px;border-radius:999px;white-space:nowrap">${esc(where)}</span></td>
+</tr></table>
+<div style="font:400 14px/1.5 ${FONT};color:${MUTED};padding-top:10px">${esc(stamp(order.created_at, true))}</div>
+</td></tr>
+
+<tr><td style="padding:20px 28px;background:#fbfcfe;border-bottom:1px solid ${HAIR}"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>${factCells}</tr></table></td></tr>
+
+<tr><td style="padding:26px 28px 0">
+<div style="font:600 15px/1 ${FONT};color:${INK};padding-bottom:14px">What was bought</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>${th("Item", "left")}${th("Qty", "center")}${th("Each", "right")}${th("Total", "right")}</tr>
+${items.length ? itemRows : `<tr><td colspan="4" style="padding:18px 0;border-bottom:1px solid ${HAIR};font:400 15px/1.45 ${FONT};color:${MUTED}">No line items were recorded on this order.</td></tr>`}
+</table></td></tr>
+
+<tr><td style="padding:22px 28px 4px">
+<table role="presentation" align="right" cellpadding="0" cellspacing="0" border="0" style="width:290px;max-width:100%">
+${totalRow("Items", money(goods))}
+${totalRow("Shipping and handling", ship > 0 ? money(ship) : "Free")}
+${tax > 0 ? totalRow("Sales tax", money(tax)) : ""}
+<tr><td colspan="2" style="padding:4px 0 0"><div style="border-top:1px solid ${HAIR};font-size:0;line-height:0">&nbsp;</div></td></tr>
+${totalRow("Order total", money(total), true)}
+</table>
+<div style="clear:both;font-size:0;line-height:0">&nbsp;</div>
+</td></tr>
+${mismatch ? warn(mismatchNote) : ""}
+${linesOff ? warn(linesNote) : ""}
+
+${remits ? `<tr><td style="padding:18px 28px 0"><div style="background:${TINT};border-radius:10px;padding:13px 15px;font:400 13px/1.55 ${FONT};color:#1e4a80"><strong style="font-weight:600">${esc(where)} collects and remits the sales tax on this sale.</strong> It is counted separately in the year report and is not part of what you file.</div></td></tr>` : ""}
+
+<tr><td style="padding:26px 28px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td width="50%" valign="top" style="padding-right:12px">
+<div style="font:600 15px/1 ${FONT};color:${INK};padding-bottom:10px">Ship to</div>
+<div style="font:400 15px/1.6 ${FONT};color:${INK}">${address.length ? address.map(esc).join("<br>") : `<span style="color:${MUTED}">No address on this order</span>`}</div></td>
+<td width="50%" valign="top" style="padding-left:12px">
+<div style="font:600 15px/1 ${FONT};color:${INK};padding-bottom:10px">Contact</div>
+<div style="font:400 15px/1.6 ${FONT};color:${INK}">${order.email ? `<a href="mailto:${esc(order.email)}" style="color:${BLUE};text-decoration:none;word-break:break-word">${esc(order.email)}</a>` : `<span style="color:${MUTED}">No email on this order</span>`}${order.phone ? `<br>${esc(order.phone)}` : ""}</div></td>
+</tr></table></td></tr>
+
+${tracking ? `<tr><td style="padding:24px 28px 0"><div style="border:1px solid ${HAIR};border-radius:12px;padding:15px 17px"><div style="font:400 12px/1.3 ${FONT};color:${MUTED};padding-bottom:5px">${esc(carrier)} tracking</div><div style="font:600 16px/1.4 ${FONT};color:${INK};word-break:break-all">${track ? `<a href="${esc(track)}" style="color:${BLUE};text-decoration:none">${esc(tracking)}</a>` : esc(tracking)}</div></div></td></tr>` : ""}
+
+${(order.notes ?? "").trim() ? `<tr><td style="padding:24px 28px 0"><div style="font:600 15px/1 ${FONT};color:${INK};padding-bottom:9px">Notes</div><div style="font:400 14px/1.6 ${FONT};color:${MUTED};white-space:pre-wrap">${esc(order.notes.trim())}</div></td></tr>` : ""}
+
+<tr><td style="padding:28px 28px 30px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${BLUE};border-radius:10px"><a href="${esc(ORIGIN)}/admin" style="display:inline-block;padding:14px 24px;font:600 15px/1 ${FONT};color:#ffffff;text-decoration:none">Open the back office</a></td></tr></table></td></tr>
+
+</table></td></tr>
+
+<tr><td style="padding:20px 28px 0;text-align:center;font:400 12px/1.6 ${FONT};color:#8b95a3">${esc(SITE.name)} &middot; <a href="${esc(ORIGIN)}" style="color:#8b95a3;text-decoration:underline">${esc(ORIGIN.replace(/^https?:\/\//, ""))}</a><br>You are getting this because an order was recorded in your back office.</td></tr>
+
+</table></td></tr></table></body></html>`;
+
+  return {
+    subject: `${order.reference} — ${money(total)} — ${order.name || "no name"} (${where})`,
+    text,
+    html,
+  };
 }
