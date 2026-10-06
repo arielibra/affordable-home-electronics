@@ -2,7 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
-import { CARRIERS, CHANNELS, MANUAL_STATES, channelName, shopMayEmailBuyer, type OrderState } from "../../../lib/orders";
+import {
+  CARRIERS,
+  CHANNELS,
+  MANUAL_CHANNELS,
+  MANUAL_STATES,
+  channelName,
+  marketplaceRemitsTax,
+  shopMayEmailBuyer,
+  type OrderState,
+} from "../../../lib/orders";
 import {
   deliverableAddress,
   ownerAddress,
@@ -160,15 +169,22 @@ export const Route = createFileRoute("/api/admin/orders")({
         }
 
         const channel = str(body.channel, 20);
-        const chan = CHANNELS.find((c) => c.id === channel);
-        if (!chan || channel === "site") {
+        // Whatever the form offers has to be accepted here. `site` used to be
+        // refused outright — a leftover from when this screen was marketplaces
+        // only — so "This site" was a dead option that answered "Pick where the
+        // order came from" to someone who just had.
+        const chan = MANUAL_CHANNELS.find((c) => c.id === channel);
+        if (!chan) {
           return Response.json({ ok: false, error: "Pick where the order came from." }, { status: 400 });
         }
 
         const channelRef = str(body.channel_ref, 80);
         if (!channelRef) {
           return Response.json(
-            { ok: false, error: `Put in the ${chan.name} order number, so this can be matched back later.` },
+            { ok: false, error:
+                channel === "site" || channel === "other"
+                  ? "Put a reference on this order, so it can be matched back later."
+                  : `Put in the ${chan.name} order number, so this can be matched back later.` },
             { status: 400 },
           );
         }
@@ -216,8 +232,20 @@ export const Route = createFileRoute("/api/admin/orders")({
           return Response.json({ ok: false, error: "Check the shipping amount." }, { status: 400 });
         }
 
+        // Sales tax is only his to file when nobody else collected it. Amazon,
+        // Walmart and Facebook remit it themselves under the marketplace
+        // facilitator rules, so those stay at zero whatever arrives in the body
+        // — counting it would have New York paid twice for one sale. A sale on
+        // his own site, or one taken by hand, is his: recording it as zero
+        // understates what he owes.
+        const taxable = !marketplaceRemitsTax(channel);
+        const tax = taxable ? Math.trunc(Number(body.tax_cents ?? 0)) : 0;
+        if (!Number.isFinite(tax) || tax < 0 || tax > 99_999_999) {
+          return Response.json({ ok: false, error: "Check the sales tax amount." }, { status: 400 });
+        }
+
         const subtotal = items.reduce((a, i) => a + i.price * i.qty, 0);
-        const total = subtotal + shipping;
+        const total = subtotal + shipping + tax;
 
         // The date the money landed. Drives the year report, so it is the sale
         // date on the marketplace, not the day he got round to typing it in.
@@ -251,7 +279,7 @@ export const Route = createFileRoute("/api/admin/orders")({
              (id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,
               subtotal_cents,shipping_cents,tax_cents,amount_total_cents,
               status,provider,channel,channel_ref,carrier,tracking_number,paid_at,shipped_at)
-           VALUES (?1,?2,?3,?4,?5,'',?6,?7,?8,?9,?10,?11,?12,?13,0,?14,?15,'manual',?16,?17,?18,?19,?20,?21)`,
+           VALUES (?1,?2,?3,?4,?5,'',?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,'manual',?17,?18,?19,?20,?21,?22)`,
         )
           .bind(
             id,
@@ -267,6 +295,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             str(body.notes, 1000),
             subtotal,
             shipping,
+            tax,
             total,
             status,
             channel,

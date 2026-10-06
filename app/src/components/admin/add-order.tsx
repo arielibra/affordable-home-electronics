@@ -127,6 +127,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
   const [zip, setZip] = useState("");
   const [lines, setLines] = useState<Line[]>([blank()]);
   const [shipping, setShipping] = useState("");
+  const [tax, setTax] = useState("");
   const [status, setStatus] = useState("paid");
   const [carrier, setCarrier] = useState("ups");
   const [tracking, setTracking] = useState("");
@@ -137,8 +138,17 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
   const [done, setDone] = useState("");
 
   const subtotal = lines.reduce((a, l) => a + cents(l.price) * l.qty, 0);
-  const total = subtotal + cents(shipping);
+  /** Tax he collected is only his to file when the marketplace did not take it. */
+  const taxable = !marketplaceRemitsTax(channel);
+  const total = subtotal + cents(shipping) + (taxable ? cents(tax) : 0);
   const chanName = MANUAL_CHANNELS.find((c) => c.id === channel)?.name ?? "";
+  const ownSale = channel === "site" || channel === "other";
+
+  // Switching to a marketplace clears any tax already typed, so a figure he
+  // can no longer see cannot ride along in the saved order.
+  useEffect(() => {
+    if (!taxable) setTax("");
+  }, [taxable]);
 
   useEffect(() => {
     if (!done) return;
@@ -151,6 +161,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
     setName("");
     setLines([blank()]);
     setShipping("");
+    setTax("");
     setStatus("paid");
     setTracking("");
     setNotes("");
@@ -180,6 +191,7 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           carrier: status === "shipped" ? carrier : "",
           tracking_number: status === "shipped" ? tracking : "",
           shipping_cents: cents(shipping),
+          tax_cents: taxable ? cents(tax) : 0,
           items: lines
             .filter((l) => l.name.trim())
             .map((l) => ({ product_slug: l.slug, name: l.name.trim(), qty: l.qty, price_cents: cents(l.price) })),
@@ -242,10 +254,16 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           </select>
         </div>
         <div>
-          <p className={label}>Their order number</p>
+          <p className={label}>{ownSale ? "Order reference" : "Their order number"}</p>
           <input
             value={ref}
-            placeholder={channel === "amazon" ? "111-1234567-1234567" : "12-34567-89012"}
+            placeholder={
+              ownSale
+                ? "Invoice or order number"
+                : channel === "amazon"
+                  ? "111-1234567-1234567"
+                  : "12-34567-89012"
+            }
             onChange={(e) => setRef(e.currentTarget.value)}
             className={`mt-1.5 ${input} font-mono`}
           />
@@ -342,7 +360,9 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
         </button>
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-[160px_1fr]">
+      <div
+        className={`mt-5 grid gap-4 ${taxable ? "sm:grid-cols-[160px_160px_1fr]" : "sm:grid-cols-[160px_1fr]"}`}
+      >
         <div>
           <p className={label}>Shipping charged</p>
           <input
@@ -353,12 +373,34 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
             className={`mt-1.5 ${input} text-right font-mono`}
           />
         </div>
+        {taxable ? (
+          <div>
+            <p className={label}>Sales tax charged</p>
+            <input
+              value={tax}
+              inputMode="decimal"
+              placeholder="0.00"
+              onChange={(e) => setTax(e.currentTarget.value)}
+              className={`mt-1.5 ${input} text-right font-mono`}
+            />
+          </div>
+        ) : null}
         <div className="flex items-end">
           <dl className="w-full space-y-1 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted">Goods</dt>
               <dd className="font-mono text-ink">{money(subtotal)}</dd>
             </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Shipping</dt>
+              <dd className="font-mono text-ink">{money(cents(shipping))}</dd>
+            </div>
+            {taxable ? (
+              <div className="flex justify-between">
+                <dt className="text-muted">Sales tax</dt>
+                <dd className="font-mono text-ink">{money(cents(tax))}</dd>
+              </div>
+            ) : null}
             <div className="flex justify-between border-t border-[color:var(--admin-hairline)] pt-1">
               <dt className="text-ink">Order total</dt>
               <dd className="font-mono text-ink">{money(total)}</dd>
@@ -366,6 +408,14 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
           </dl>
         </div>
       </div>
+
+      {taxable ? (
+        <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-[13px] leading-[1.55] text-muted">
+          This one is yours to file. Nobody collected the tax on this sale for you, so whatever you
+          charged the buyer goes in the box above and lands in the &ldquo;your own sales&rdquo;
+          column of the year report. Leave it empty if you did not charge any.
+        </p>
+      ) : null}
 
       {marketplaceRemitsTax(channel) ? (
         <p className="mt-3 max-w-[70ch] border-l-2 border-line pl-3 text-[13px] leading-[1.55] text-muted">
