@@ -637,3 +637,106 @@ ${(order.notes ?? "").trim() ? `<tr><td style="padding:24px 28px 0"><div style="
     html,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Somebody wrote in through the contact form
+ * ------------------------------------------------------------------ */
+
+export type Enquiry = {
+  name: string;
+  email: string;
+  phone: string;
+  topic: string;
+  message: string;
+  spamScore: number;
+  spamReasons: string[];
+};
+
+/**
+ * The contact form used to write to the database and tell nobody, so a
+ * customer asking a question heard nothing back until his dad happened to open
+ * the Messages tab.
+ *
+ * Reply-to is set to whoever wrote in, so answering is one button and the
+ * answer goes to them rather than to the shop's own address.
+ */
+export function enquiryMessage(e: Enquiry): { subject: string; text: string; html: string } {
+  const suspect = e.spamScore >= 2;
+  const who = e.name.trim() || "Someone";
+  const topic = e.topic.trim();
+  const reply = deliverableAddress(e.email);
+
+  const subject = suspect
+    ? `[likely spam] ${who}${topic ? ` — ${topic}` : ""}`
+    : `${who} wrote in${topic ? ` — ${topic}` : ""}`;
+
+  const text = [
+    suspect ? `LOOKS LIKE SPAM (${e.spamReasons.join("; ")})` : "",
+    suspect ? "" : "",
+    `${who}${topic ? ` — ${topic}` : ""}`,
+    ``,
+    e.message.trim() || "(no message)",
+    ``,
+    reply ? `Reply to: ${reply}` : "No email address given.",
+    ...(e.phone.trim() ? [`Phone: ${e.phone.trim()}`] : []),
+    ``,
+    `All messages: ${ORIGIN}/admin`,
+  ]
+    .filter((l, i, a) => !(l === "" && a[i - 1] === ""))
+    .join("\n");
+
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"><title>${esc(who)}</title></head>
+<body style="margin:0;padding:0;background:${WASH}">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;font-size:1px;line-height:1px">${esc((e.message.trim() || "no message").slice(0, 110))}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${WASH}"><tr><td align="center" style="padding:28px 12px 40px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%">
+
+<tr><td style="background:${BLUE};border-radius:14px 14px 0 0;padding:22px 28px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="font:600 16px/1.2 ${FONT};color:#ffffff;letter-spacing:.2px">${esc(SITE.name)}</td>
+<td align="right" style="font:400 13px/1.2 ${FONT};color:#cfe0f6">Contact form</td>
+</tr></table></td></tr>
+
+<tr><td style="background:#ffffff;border:1px solid ${HAIR};border-top:0;border-radius:0 0 14px 14px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+<tr><td style="padding:30px 28px 20px;border-bottom:1px solid ${HAIR}">
+<div style="font:600 13px/1 ${FONT};color:${MUTED};padding-bottom:10px">Somebody wrote in</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="font:700 26px/1.2 ${FONT};color:${INK};letter-spacing:-.3px">${esc(who)}</td>
+${topic ? `<td align="right" valign="middle"><span style="display:inline-block;background:${TINT};color:${BLUE};font:600 12px/1 ${FONT};padding:8px 12px;border-radius:999px;white-space:nowrap">${esc(topic)}</span></td>` : ""}
+</tr></table></td></tr>
+
+${
+  suspect
+    ? `<tr><td style="padding:18px 28px 0"><div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:13px 15px;font:400 13px/1.55 ${FONT};color:#9a3412"><strong style="font-weight:600">This one looks like a sales pitch.</strong> ${esc(e.spamReasons.join("; "))}. It is saved in Messages either way &mdash; have a look if this seems wrong.</div></td></tr>`
+    : ""
+}
+
+<tr><td style="padding:24px 28px 0">
+<div style="font:400 16px/1.65 ${FONT};color:${INK};white-space:pre-wrap">${esc(e.message.trim() || "(no message)")}</div>
+</td></tr>
+
+<tr><td style="padding:26px 28px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td width="50%" valign="top" style="padding-right:12px">
+<div style="font:400 12px/1.3 ${FONT};color:${MUTED};padding-bottom:5px">Email</div>
+<div style="font:600 14px/1.5 ${FONT};color:${INK};word-break:break-word">${reply ? `<a href="mailto:${esc(reply)}" style="color:${BLUE};text-decoration:none">${esc(reply)}</a>` : `<span style="color:${MUTED};font-weight:400">None given</span>`}</div></td>
+<td width="50%" valign="top" style="padding-left:12px">
+<div style="font:400 12px/1.3 ${FONT};color:${MUTED};padding-bottom:5px">Phone</div>
+<div style="font:600 14px/1.5 ${FONT};color:${INK}">${e.phone.trim() ? esc(e.phone.trim()) : `<span style="color:${MUTED};font-weight:400">None given</span>`}</div></td>
+</tr></table></td></tr>
+
+<tr><td style="padding:28px 28px 30px">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+${reply ? `<td style="background:${BLUE};border-radius:10px"><a href="mailto:${esc(reply)}?subject=${encodeURIComponent(`Re: your message to ${SITE.name}`)}" style="display:inline-block;padding:14px 24px;font:600 15px/1 ${FONT};color:#ffffff;text-decoration:none">Reply to ${esc(who.split(/\s+/)[0] || "them")}</a></td><td style="width:10px"></td>` : ""}
+<td style="border:1px solid ${HAIR};border-radius:10px"><a href="${esc(ORIGIN)}/admin" style="display:inline-block;padding:14px 22px;font:600 15px/1 ${FONT};color:${INK};text-decoration:none">All messages</a></td>
+</tr></table></td></tr>
+
+</table></td></tr>
+
+<tr><td style="padding:20px 28px 0;text-align:center;font:400 12px/1.6 ${FONT};color:#8b95a3">${esc(SITE.name)} &middot; <a href="${esc(ORIGIN)}" style="color:#8b95a3;text-decoration:underline">${esc(ORIGIN.replace(/^https?:\/\//, ""))}</a><br>Sent because someone filled in the contact form.</td></tr>
+
+</table></td></tr></table></body></html>`;
+
+  return { subject, text, html };
+}

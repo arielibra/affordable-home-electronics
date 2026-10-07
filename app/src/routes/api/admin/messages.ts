@@ -12,6 +12,8 @@ type Message = {
   cameras: string;
   message: string;
   created_at: string;
+  spam_score: number;
+  spam_reasons: string;
 };
 
 export const Route = createFileRoute("/api/admin/messages")({
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/api/admin/messages")({
         const DB = bindings().DB;
         if (!DB) return Response.json({ ok: false, error: "No database." }, { status: 503 });
         const res = await DB.prepare(
-          "SELECT id,name,phone,email,borough,property_type,cameras,message,created_at FROM quote_requests ORDER BY created_at DESC LIMIT 300",
+          "SELECT id,name,phone,email,borough,property_type,cameras,message,created_at,spam_score,spam_reasons FROM quote_requests ORDER BY created_at DESC LIMIT 300",
         ).all<Message>();
         return Response.json({ ok: true, messages: res.results ?? [] }, { headers: { "Cache-Control": "no-store" } });
       },

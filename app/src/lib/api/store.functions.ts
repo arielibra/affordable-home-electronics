@@ -18,6 +18,8 @@ import {
   setCartQty,
 } from "../store.server";
 import { bindings } from "../bindings.server";
+import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../email.server";
+import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
 
@@ -146,11 +148,70 @@ export const submitQuote = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const DB = bindings().DB;
     if (!DB) throw new Error("The quote form is unavailable right now.");
+
+    // The same agency works a list under different names from one number.
+    // Cheap to check, and it caught two of the first four pitches.
+    let phoneSeenUnderAnotherName = false;
+    const phone = data.phone.trim();
+    if (phone) {
+      try {
+        const seen = await DB.prepare(
+          "SELECT 1 AS hit FROM quote_requests WHERE phone = ?1 AND lower(trim(name)) <> lower(trim(?2)) LIMIT 1",
+        )
+          .bind(phone, data.name)
+          .first<{ hit: number }>();
+        phoneSeenUnderAnotherName = Boolean(seen);
+      } catch {
+        // A scoring hint is never worth failing a customer's message over.
+      }
+    }
+
+    const verdict = scoreEnquiry({
+      message: data.message,
+      topic: data.property_type,
+      phoneSeenUnderAnotherName,
+    });
+
+    // Saved whatever it scores. A filter that silently drops a customer is
+    // worse than one that lets a sales pitch through.
     await DB.prepare(
-      "INSERT INTO quote_requests (id,name,phone,email,borough,property_type,cameras,message) VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+      "INSERT INTO quote_requests (id,name,phone,email,borough,property_type,cameras,message,spam_score,spam_reasons) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
     )
-      .bind(crypto.randomUUID(), data.name, data.phone, data.email, data.borough, data.property_type, data.cameras, data.message)
+      .bind(
+        crypto.randomUUID(),
+        data.name,
+        data.phone,
+        data.email,
+        data.borough,
+        data.property_type,
+        data.cameras,
+        data.message,
+        verdict.score,
+        verdict.reasons.join("; ").slice(0, 400),
+      )
       .run();
+
+    // Tell the shop. Until this existed the message sat in the database and
+    // nobody was told, which is why a wholesale enquiry could go a day
+    // unanswered. Obvious pitches are held back rather than emailed, so the
+    // inbox stays worth opening; they are still in Messages, marked.
+    const owner = ownerAddress();
+    if (owner && verdict.score < SPAM_HOLD) {
+      await sendMail("", "enquiry", {
+        to: owner,
+        replyTo: deliverableAddress(data.email) || undefined,
+        ...enquiryMessage({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          topic: data.property_type,
+          message: data.message,
+          spamScore: verdict.score,
+          spamReasons: verdict.reasons,
+        }),
+      });
+    }
+
     return { ok: true as const };
   });
 
