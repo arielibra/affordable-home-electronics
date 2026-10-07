@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useZipLookup } from "./use-zip-lookup";
 
 import { CHANNELS } from "../../lib/orders";
 import { money as fmt } from "../../lib/site";
@@ -77,45 +78,11 @@ export function OrderEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  /* ---- ZIP fills in the city and state ----------------------------------
-   * Only ever fires when he types in the ZIP box himself. Looking it up on
-   * open, or whenever the value merely differs, would let it quietly rewrite
-   * a city on an order he opened to change something else entirely. Editing
-   * the postcode is the one unambiguous signal that the address moved.
-   */
-  const [zipTouched, setZipTouched] = useState(false);
-  const [zipNote, setZipNote] = useState("");
-  const lastLooked = useRef("");
-
-  useEffect(() => {
-    if (!zipTouched) return;
-    const five = zip.replace(/[^0-9]/g, "").slice(0, 5);
-    if (five.length !== 5 || five === lastLooked.current) return;
-
-    let alive = true;
-    const t = setTimeout(() => {
-      setZipNote("Looking up…");
-      void fetch(`/api/admin/zip?zip=${five}`)
-        .then((r) => r.json() as Promise<{ ok: boolean; city?: string; state?: string }>)
-        .then((d) => {
-          if (!alive) return;
-          lastLooked.current = five;
-          if (d.ok && d.city && d.state) {
-            setCity(d.city);
-            setState(d.state);
-            setZipNote(`${five} is ${d.city}, ${d.state}`);
-          } else {
-            setZipNote("No match for that ZIP — type the city yourself.");
-          }
-        })
-        .catch(() => alive && setZipNote("Could not look that up — type the city yourself."));
-    }, 450);
-
-    return () => {
-      alive = false;
-      clearTimeout(t);
-    };
-  }, [zip, zipTouched]);
+  // Why it only fires on a typed ZIP is documented on the hook.
+  const { note: zipNote, touch: touchZip } = useZipLookup(zip, (c, st) => {
+    setCity(c);
+    setState(st);
+  });
 
   const lineSum = lines.reduce((a, l) => a + cents(l.price) * l.qty, 0);
   const computedTotal = cents(sub) + cents(ship) + cents(tax);
@@ -204,7 +171,7 @@ export function OrderEditor({
                 placeholder="33166"
                 onChange={(e) => {
                   setZip(e.currentTarget.value);
-                  setZipTouched(true);
+                  touchZip();
                 }}
                 className={`mt-1.5 ${input} font-mono`}
               />

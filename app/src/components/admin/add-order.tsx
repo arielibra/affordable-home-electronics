@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { CARRIERS, MANUAL_CHANNELS, channelName, marketplaceRemitsTax, shopMayEmailBuyer } from "../../lib/orders";
 import { money } from "../../lib/site";
 import { btnLink, btnPrimary, btnQuiet, card, input, label, textarea } from "./ui";
+import { useZipLookup } from "./use-zip-lookup";
 
 type Line = { key: string; slug: string; name: string; qty: number; price: string };
 type Hit = { slug: string; name: string; price_cents: number };
@@ -125,6 +126,15 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
   const [city, setCity] = useState("");
   const [stateCode, setStateCode] = useState("");
   const [zip, setZip] = useState("");
+  const {
+    note: zipNote,
+    touch: touchZip,
+    reset: resetZip,
+  } = useZipLookup(zip, (c, st) => {
+    setCity(c);
+    setStateCode(st);
+  });
+
   const [lines, setLines] = useState<Line[]>([blank()]);
   const [shipping, setShipping] = useState("");
   const [tax, setTax] = useState("");
@@ -158,7 +168,18 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
 
   function reset() {
     setRef("");
+    // The whole buyer block, not just the name. It used to clear the name and
+    // leave the address sitting there, so a second order typed straight after
+    // a first could be saved shipping to the previous customer.
     setName("");
+    setEmail("");
+    setPhone("");
+    setAddress1("");
+    setAddress2("");
+    setCity("");
+    setStateCode("");
+    setZip("");
+    resetZip();
     setLines([blank()]);
     setShipping("");
     setTax("");
@@ -329,8 +350,18 @@ export function AddOrder({ onAdded }: { onAdded: () => void }) {
             onChange={(e) => setStateCode(e.currentTarget.value.toUpperCase().slice(0, 2))}
             className={input}
           />
-          <input value={zip} placeholder="ZIP" inputMode="numeric" onChange={(e) => setZip(e.currentTarget.value)} className={input} />
+          <input
+            value={zip}
+            placeholder="ZIP"
+            inputMode="numeric"
+            onChange={(e) => {
+              setZip(e.currentTarget.value);
+              touchZip();
+            }}
+            className={input}
+          />
         </div>
+        {zipNote ? <p className="mt-1.5 text-[13px] leading-[1.55] text-muted">{zipNote}</p> : null}
       </div>
 
       <div className="mt-5">
