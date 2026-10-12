@@ -35,7 +35,7 @@ function ShopIndex() {
   return (
     <SiteShell>
       <CatalogHeader
-        title="Everything in stock."
+        title="Everything on the counter."
         lead="Real stock at the price we sell it for. Every item is genuine USA product from an authorized dealer, with the manufacturer warranty behind it."
       />
       <CatalogBody categories={categories} counts={counts} active="all" sort={sort} products={products} />

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SiteShell } from "../components/site/chrome";
 import { SendCta } from "../components/site/cta";
 import { Field, Notice, Select, TextArea, TextInput } from "../components/site/form";
-import { IconClock, IconMail, IconPin } from "../components/site/icons";
+import { IconClock, IconMail, IconPhone, IconPin } from "../components/site/icons";
 import { Eyebrow, Shell } from "../components/site/section";
 import { submitQuote } from "../lib/api/store.functions";
 import { ORIGIN, SITE } from "../lib/site";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Email info@AffordableHomeElectronics.com or send a message. An online security camera dealer in Rego Park, Queens, shipping nationwide since 2003.",
+          "Call 718.275.9343, message us on WhatsApp, or come to the counter at 62-65 Saunders Street, Rego Park, NY 11374.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/contact` }],
@@ -57,7 +57,7 @@ function Contact() {
       });
       setDone(true);
     } catch {
-      setError(`That did not send. Email ${SITE.email} directly and we will pick it up from there.`);
+      setError(`That did not send. Call ${SITE.phone} or email ${SITE.email} and we will pick it up from there.`);
     } finally {
       setPending(false);
     }
@@ -67,59 +67,70 @@ function Contact() {
     <SiteShell>
       <Shell className="py-14">
         <Eyebrow>Contact</Eyebrow>
-        <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
-          Send a message. A person reads it.
+        <h1 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
+          Call the shop. Someone picks up.
         </h1>
-        <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-muted">
-          We sell and support online only, so everything comes through email or the form below. Tell us the property, the
-          model or the order number and you will get a straight answer &mdash; not a ticket number.
-        </p>
 
         <div className="mt-12 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div>
             <dl className="border-t border-line">
               <div className="flex gap-4 border-b border-line py-6">
-                <IconMail className="mt-1 h-5 w-5 shrink-0 text-ink" />
+                <IconPhone className="mt-1 h-5 w-5 shrink-0 text-ink" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Email</dt>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Phone</dt>
                   <dd className="mt-2">
-                    <a href={SITE.emailHref} className="block break-all text-lg text-ink hover:text-signal">
-                      {SITE.email}
+                    <a href={SITE.phoneHref} className="font-mono text-2xl tracking-tight text-ink hover:text-signal">
+                      {SITE.phone}
                     </a>
                   </dd>
                 </div>
               </div>
               <div className="flex gap-4 border-b border-line py-6">
-                <IconClock className="mt-1 h-5 w-5 shrink-0 text-ink" />
+                <IconPhone className="mt-1 h-5 w-5 shrink-0 text-ink" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Reply time</dt>
-                  <dd className="mt-2 text-base leading-relaxed text-ink">
-                    Within {SITE.replyTime}
-                    <br />
-                    <span className="text-muted">Quotes and stock checks usually sooner</span>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">WhatsApp</dt>
+                  <dd className="mt-2">
+                    <a href={SITE.whatsappHref} className="font-mono text-lg tracking-tight text-ink hover:text-signal">
+                      {SITE.whatsapp}
+                    </a>
+                  </dd>
+                </div>
+              </div>
+              <div className="flex gap-4 border-b border-line py-6">
+                <IconMail className="mt-1 h-5 w-5 shrink-0 text-ink" />
+                <div>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Email and fax</dt>
+                  <dd className="mt-2 space-y-1">
+                    <a href={SITE.emailHref} className="block break-all text-base text-ink hover:text-signal">
+                      {SITE.email}
+                    </a>
+                    <span className="block font-mono text-sm text-muted">Fax {SITE.fax}</span>
                   </dd>
                 </div>
               </div>
               <div className="flex gap-4 border-b border-line py-6">
                 <IconPin className="mt-1 h-5 w-5 shrink-0 text-ink" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Where we are</dt>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">The counter</dt>
                   <dd className="mt-2 text-base leading-relaxed text-ink">
-                    {SITE.city}
+                    {SITE.street}
                     <br />
-                    <span className="text-muted">
-                      Online only &mdash; no counter or walk-in. Orders ship nationwide, and we install across New York
-                      City.
-                    </span>
+                    {SITE.cityLine}
+                  </dd>
+                </div>
+              </div>
+              <div className="flex gap-4 border-b border-line py-6">
+                <IconClock className="mt-1 h-5 w-5 shrink-0 text-ink" />
+                <div>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Opening hours</dt>
+                  <dd className="mt-2 text-base leading-relaxed text-ink">
+                    {SITE.hours.plain}
+                    <br />
+                    <span className="text-muted">{SITE.hours.closed}</span>
                   </dd>
                 </div>
               </div>
             </dl>
-
-            <p className="mt-8 max-w-[52ch] text-sm leading-relaxed text-muted">
-              Returning something? Ask for an authorization number first and we will send it back with the address to
-              post it to.
-            </p>
           </div>
 
           <div className="border border-line bg-surface p-6 sm:p-8">
@@ -127,11 +138,11 @@ function Contact() {
               <div>
                 <h2 className="text-xl font-semibold tracking-tight text-ink">Message received.</h2>
                 <p className="mt-3 text-sm leading-relaxed text-muted">
-                  We will come back to you within {SITE.replyTime}. If it is urgent, email{" "}
-                  <a href={SITE.emailHref} className="break-all text-ink underline underline-offset-4">
-                    {SITE.email}
-                  </a>{" "}
-                  and put the order number in the subject line.
+                  We will get back to you. If it is urgent, the shop line is{" "}
+                  <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+                    {SITE.phone}
+                  </a>
+                  .
                 </p>
               </div>
             ) : (

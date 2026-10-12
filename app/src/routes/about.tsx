@@ -12,7 +12,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "An independent online electronics dealer in Rego Park, Queens, selling security cameras, recorders and access control since 2003.",
+          "An independent electronics dealer in Rego Park, Queens, selling security cameras, recorders and access control since 2003.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/about` }],
@@ -27,7 +27,7 @@ function About() {
       <Shell className="py-14">
         <Eyebrow>About</Eyebrow>
         <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
-          A warehouse in Rego Park, and twenty-two years of knowing the gear.
+          A counter in Rego Park, and a warehouse behind it.
         </h1>
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
           <div className="max-w-[62ch] space-y-5 text-base leading-relaxed text-muted">
@@ -48,8 +48,7 @@ function About() {
               all handled the same way.
             </p>
             <p>
-              We sell and support online now &mdash; there is no counter to visit. Everything goes through email, and
-              the same people who have been doing this since {SITE.since} are the ones reading it.
+              The website changed. The phone number did not.
             </p>
             <div className="pt-2">
               <QuoteCta>Ask for a quote</QuoteCta>
@@ -60,8 +59,10 @@ function About() {
             <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">How we work</h2>
             <dl className="mt-5 space-y-4 text-sm leading-relaxed">
               <div>
-                <dt className="font-medium text-ink">Online only</dt>
-                <dd className="mt-1 text-muted">No counter and no walk-in. Orders are placed on the site.</dd>
+                <dt className="font-medium text-ink">Talk to a person</dt>
+                <dd className="mt-1 text-muted">
+                  {SITE.phone} &middot; {SITE.hours.plain}, {SITE.hours.closed.toLowerCase()}.
+                </dd>
               </div>
               <div>
                 <dt className="font-medium text-ink">Authorized dealer</dt>

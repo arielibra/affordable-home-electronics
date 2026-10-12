@@ -92,7 +92,7 @@ function CheckoutBody() {
       }
       window.location.href = r.url;
     } catch {
-      setError(`That did not go through. Email ${SITE.email} and we will take the order that way.`);
+      setError(`That did not go through. Call ${SITE.phone} and we will take the order on the phone.`);
     } finally {
       setPending(false);
     }
@@ -112,13 +112,13 @@ function CheckoutBody() {
       const d = details();
       const r = await placeOrder({ data: { cartId, ...d } });
       if (!r.ok) {
-        setError("The cart emptied before the order went through. Add the items again, or email us.");
+        setError("The cart emptied before the order went through. Add the items again, or call the shop.");
         return;
       }
       setDone({ reference: r.reference, paid: false, total: r.subtotal });
       await refresh();
     } catch {
-      setError(`That did not go through. Email ${SITE.email} and we will take the order that way.`);
+      setError(`That did not go through. Call ${SITE.phone} and we will take the order on the phone.`);
     } finally {
       setPending(false);
     }
@@ -143,7 +143,7 @@ function CheckoutBody() {
     el.onload = () => setSdk(true);
     el.onerror = () =>
       setError(
-        "PayPal did not load, so that option is unavailable right now. Pay by card instead, or email us and we will take the order that way.",
+        "PayPal did not load, so that option is unavailable right now. Pay by card instead, or call the shop and we will take the order over the phone.",
       );
     document.body.appendChild(el);
   }, [method, cfg.paypal, cfg.paypalClientId]);
@@ -197,7 +197,7 @@ function CheckoutBody() {
         }
       },
       onCancel: () => setError(""),
-      onError: () => setError(`PayPal ran into a problem. Try a card, or email ${SITE.email}.`),
+      onError: () => setError(`PayPal ran into a problem. Try a card, or call ${SITE.phone}.`),
     });
     buttons.render(host);
     return () => {

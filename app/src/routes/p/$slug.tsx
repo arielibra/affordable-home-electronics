@@ -129,7 +129,7 @@ function ProductPage() {
             ) : null}
             {!available ? (
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                Email us and we will tell you when the next shipment lands, or find you an equivalent.
+                Call the shop and we will tell you when the next shipment lands, or find you an equivalent.
               </p>
             ) : null}
           </div>
@@ -157,8 +157,8 @@ function ProductPage() {
 
           <p className="mt-6 text-sm leading-relaxed text-muted">
             Questions on compatibility or channel count? Call{" "}
-            <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
-              {SITE.email}
+            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
+              {SITE.phone}
             </a>{" "}
             and we will check it against your recorder before you buy.
           </p>

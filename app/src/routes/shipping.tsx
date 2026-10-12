@@ -48,7 +48,7 @@ function Shipping() {
         <p>
           Oversized or overweight items — larger recorders, monitors and some enclosures — may carry additional
           shipping. Where that applies we tell you before you pay. Rush delivery and special handling are available
-          and charged at cost; email us to arrange it.
+          and charged at cost; call the shop to arrange it.
         </p>
         <p>Shipping charges are not refundable.</p>
       </Clause>
@@ -80,8 +80,8 @@ function Shipping() {
         <p>
           Tell us as soon as you can, and keep the box and the packing material — carriers ask to see them. Call the
           shop on{" "}
-          <a href={SITE.emailHref} className="font-mono">
-            {SITE.email}
+          <a href={SITE.phoneHref} className="font-mono">
+            {SITE.phone}
           </a>{" "}
           and we will take it from there.
         </p>
@@ -93,7 +93,7 @@ function Shipping() {
           handled by Stripe and never touch this website.
         </p>
         <p>
-          For larger commercial and government orders we also accept <b>wire transfer</b> by arrangement. Email us
+          For larger commercial and government orders we also accept <b>wire transfer</b> by arrangement. Call the shop
           to set that up.
         </p>
         <p>Sales tax is calculated at checkout from the delivery address.</p>

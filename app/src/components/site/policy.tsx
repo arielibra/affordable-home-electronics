@@ -30,11 +30,11 @@ export function PolicyPage({
 
         <div className="mt-16 border-t border-line pt-8">
           <p className="max-w-[62ch] text-sm leading-relaxed text-muted">
-            Anything here you want explained, email us at{" "}
-            <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
-              {SITE.email}
+            Anything here you want explained, call the shop on{" "}
+            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+              {SITE.phone}
             </a>
-            . A person reads it.
+            . A person answers.
           </p>
           <nav className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <Link to="/shipping" className="text-ink underline underline-offset-4 hover:text-signal">

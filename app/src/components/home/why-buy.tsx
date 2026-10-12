@@ -58,7 +58,7 @@ export function WhyBuy() {
           </div>
           <div className="bg-surface p-7">
             <p className="font-mono text-5xl leading-none tracking-tighter text-ink">22k</p>
-            <h3 className="mt-4 text-base font-medium leading-snug text-ink">Parts kept in stock</h3>
+            <h3 className="mt-4 text-base font-medium leading-snug text-ink">Parts behind the counter</h3>
             <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted">
               If the part number exists we can usually get it, including the power supply the manufacturer told you was
               discontinued.

@@ -60,7 +60,7 @@ function describe(status: string): { label: string; body: string } {
   if (status === "paid")
     return {
       label: "Paid",
-      body: "We have your payment and the order is being picked. You will hear from us if anything on it needs a word before it ships.",
+      body: "We have your payment and the order is with the counter. You will hear from us if anything on it needs a word before it ships.",
     };
   if (status === "ready_to_ship")
     return {
@@ -75,16 +75,16 @@ function describe(status: string): { label: string; body: string } {
   if (status === "on_hold")
     return {
       label: "On hold",
-      body: "Something on this order needs sorting before it can ship. We will have emailed you; if not, email us and we will tell you where it stands.",
+      body: "Something on this order needs sorting before it can ship. The shop will have called or emailed; if not, call us and we will tell you where it stands.",
     };
   if (status === "pending_payment")
     return {
       label: "Not paid yet",
-      body: "This order was started but no payment has come through. If you think that is wrong, email us and we will look at it with you.",
+      body: "This order was started but no payment has come through. If you think that is wrong, call the shop and we will look at it with you.",
     };
   if (status === "cancelled")
-    return { label: "Cancelled", body: "This order was cancelled. Email us if that is a surprise." };
-  return { label: status, body: "Email us if you need the detail on this one." };
+    return { label: "Cancelled", body: "This order was cancelled. Call the shop if that is a surprise." };
+  return { label: status, body: "Call the shop if you need the detail on this one." };
 }
 
 function TrackOrder() {
@@ -108,7 +108,7 @@ function TrackOrder() {
       if (data.ok && data.order) setOrder(data.order);
       else setError(data.error ?? "Could not find that order.");
     } catch {
-      setError(`Could not reach the shop just now. Email ${SITE.email} and we will look it up for you.`);
+      setError(`Could not reach the shop just now. Call ${SITE.phone} and we will look it up for you.`);
     } finally {
       setPending(false);
     }
@@ -145,8 +145,8 @@ function TrackOrder() {
           </button>
           <p className="text-xs leading-relaxed text-muted">
             Cannot find the number? Call{" "}
-            <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
-              {SITE.email}
+            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+              {SITE.phone}
             </a>{" "}
             and we will look it up from your name.
           </p>
@@ -254,8 +254,8 @@ function TrackOrder() {
 
               <p className="mt-10 max-w-[58ch] text-sm leading-relaxed text-muted">
                 Need to change or cancel this order? Call{" "}
-                <a href={SITE.emailHref} className="font-mono text-ink underline underline-offset-4">
-                  {SITE.email}
+                <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+                  {SITE.phone}
                 </a>{" "}
                 with the order number. If it has not shipped, we can usually sort it on the phone.
               </p>

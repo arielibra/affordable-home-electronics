@@ -36,9 +36,9 @@ function Header() {
             <Link to="/orders" className="ahe-onblue">
               Track an order
             </Link>
-            <Link to="/contact" className="ahe-onblue">
-              Contact
-            </Link>
+            <a href={SITE.phoneHref} className="ahe-onblue">
+              {SITE.phone}
+            </a>
           </div>
         </div>
       </div>
@@ -203,23 +203,25 @@ function Footer() {
 
         <FooterColumn title="Reach us">
           <li className="flex items-start gap-2.5">
+            <IconPhone className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
+            <a href={SITE.phoneHref} className="ahe-onblue font-mono text-[13px]">
+              {SITE.phone}
+            </a>
+          </li>
+          <li className="flex items-start gap-2.5">
             <IconMail className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
             <a href={SITE.emailHref} className="ahe-onblue break-all">
               {SITE.email}
             </a>
           </li>
           <li className="flex items-start gap-2.5">
-            <IconMail className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
-            <Link to="/contact" className="ahe-onblue">
-              Send a message
-            </Link>
-          </li>
-          <li className="flex items-start gap-2.5">
             <IconPin className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
             <span>
-              {SITE.city}
+              {SITE.street}
               <br />
-              <span className="text-white/50">Online only. Ships nationwide.</span>
+              {SITE.cityLine}
+              <br />
+              <span className="text-white/50">{SITE.hours.plain}</span>
             </span>
           </li>
         </FooterColumn>

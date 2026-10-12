@@ -116,7 +116,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <Centered
       eyebrow="Error"
       title="This page did not load"
-      body="Something went wrong on our end. Try again, or email us and we will sort it out."
+      body="Something went wrong on our end. Try again, or call the shop and we will sort it out on the phone."
     >
       <button
         onClick={() => {

@@ -9,7 +9,7 @@ export function Featured({ products }: { products: CardProduct[] }) {
     <section className="bg-ground py-16 lg:py-20">
       <Shell>
         <SectionHead
-          title="In stock this week"
+          title="On the counter this week"
           lead="Real stock at the price we sell it for, with the manufacturer list price beside it so you can see the difference."
           aside={
             <Link to="/shop" className="border-b border-signal pb-0.5 text-sm text-ink hover:text-signal">

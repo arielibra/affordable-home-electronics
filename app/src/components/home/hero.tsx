@@ -1,5 +1,5 @@
 import { SITE } from "../../lib/site";
-import { AskCta, ShopCta } from "../site/cta";
+import { CallCta, ShopCta } from "../site/cta";
 import { Shell } from "../site/section";
 
 export function Hero() {
@@ -8,15 +8,15 @@ export function Hero() {
       <Shell className="grid items-center gap-12 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-24">
         <div className="ahe-rise">
           <h1 className="max-w-[15ch] text-4xl font-semibold leading-[0.98] tracking-tighter text-ink md:text-6xl">
-            Cameras, recorders, and someone who knows them.
+            Cameras, recorders, and someone who answers.
           </h1>
           <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
-            An authorized dealer since {SITE.since}. Genuine USA stock with the full manufacturer warranty, shipped
-            nationwide or installed across New York City.
+            An authorized dealer in Rego Park since {SITE.since}. Genuine USA stock with the full manufacturer warranty,
+            shipped nationwide or installed across New York City.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <ShopCta />
-            <AskCta />
+            <CallCta phone={SITE.phone} href={SITE.phoneHref} />
           </div>
         </div>
 

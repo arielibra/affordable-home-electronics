@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { SiteShell } from "../components/site/chrome";
-import { AskCta, ShopCta } from "../components/site/cta";
+import { CallCta, ShopCta } from "../components/site/cta";
 import { IconBullet, IconDome, IconRecorder, IconShield } from "../components/site/icons";
 import { ProductCard } from "../components/site/product-card";
 import { Eyebrow, SectionHead, Shell } from "../components/site/section";
@@ -64,7 +64,7 @@ function SecurityCameras() {
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <ShopCta category="cameras">Shop cameras</ShopCta>
-              <AskCta />
+              <CallCta phone={SITE.phone} href={SITE.phoneHref} />
             </div>
           </div>
           <figure className="border border-line bg-surface p-2.5">
