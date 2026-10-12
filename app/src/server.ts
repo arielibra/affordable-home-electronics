@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { legacyRedirect } from "./lib/legacy-redirect.server";
 import { applySecurityHeaders } from "./lib/security-headers.server";
 
 type ServerEntry = {
@@ -47,6 +48,9 @@ export default {
         url.pathname = url.pathname.replace(/\/+$/, "");
         return Response.redirect(url.toString(), 301);
       }
+      // Old-site addresses Google still links to (…/something.aspx).
+      const legacy = await legacyRedirect(url);
+      if (legacy) return applySecurityHeaders(legacy);
       const response = await handler.fetch(request, env, ctx);
       return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
