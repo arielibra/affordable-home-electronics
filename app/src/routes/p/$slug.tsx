@@ -1,6 +1,7 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { StructuredData } from "../../components/StructuredData";
 import { SiteShell } from "../../components/site/chrome";
 import { IconShield, IconTruck } from "../../components/site/icons";
 import { AddToCartButton, ProductCard, isAvailable } from "../../components/site/product-card";
@@ -19,6 +20,43 @@ function metaDescription(blurb: string | undefined, fallback: string): string {
   const cut = text.slice(0, 160);
   const space = cut.lastIndexOf(" ");
   return `${(space > 100 ? cut.slice(0, space) : cut).trimEnd()}\u2026`;
+}
+
+/**
+ * Product data for Google, as schema.org JSON-LD.
+ *
+ * Without it Google sees a page of text and has to guess that it is a product,
+ * what it costs and whether it is in stock. With it the page can show price
+ * and availability in results and qualify for Google's free product listings.
+ * Only facts the page itself shows go in: name, photos, brand, price, stock.
+ */
+function productJsonLd(
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; image: string },
+  shots: string[],
+  available: boolean,
+): string {
+  const abs = (src: string) => (/^https?:\/\//.test(src) ? src : `${ORIGIN}${src.startsWith("/") ? "" : "/"}${src}`);
+  const url = `${ORIGIN}/p/${p.slug}`;
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.name,
+    url,
+    image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
+    description: metaDescription(p.blurb, p.name),
+    ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: "USD",
+      price: (p.price_cents / 100).toFixed(2),
+      availability: available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+      seller: { "@type": "Organization", name: SITE.name },
+    },
+  };
+  // "</script>" inside a product name must not end the script tag early.
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export const Route = createFileRoute("/p/$slug")({
@@ -51,6 +89,7 @@ function ProductPage() {
 
   return (
     <SiteShell>
+      <StructuredData json={productJsonLd(product, shots, available)} />
       <Shell className="py-8">
         <nav className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted" aria-label="Breadcrumb">
           <Link to="/shop" className="hover:text-signal">
