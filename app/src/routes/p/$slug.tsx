@@ -7,7 +7,7 @@ import { AddToCartButton, ProductCard, isAvailable } from "../../components/site
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
-import { plainText, renderRichText, renderSpecs } from "../../lib/rich-text";
+import { parseSpecSheet, plainText, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
 
 /** Search engines show about 160 characters and drop the rest, so the full
  *  description does not belong in the head — it would sit in the page source of
@@ -103,12 +103,6 @@ function ProductPage() {
           {product.blurb ? (
             <div className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
           ) : null}
-          {product.specs ? (
-            <div className="mt-7 max-w-[58ch]">
-              <h2 className="text-sm font-semibold tracking-tight text-ink">Specifications</h2>
-              <div className="mt-2 text-base leading-relaxed">{renderSpecs(product.specs)}</div>
-            </div>
-          ) : null}
 
           <div className="mt-8 flex flex-wrap items-end gap-4 border-t border-line pt-6">
             <span className="font-mono text-4xl leading-none tracking-tighter text-ink">{money(product.price_cents)}</span>
@@ -165,6 +159,8 @@ function ProductPage() {
         </div>
       </Shell>
 
+      {product.specs ? <Specifications text={product.specs} /> : null}
+
       {related.length > 0 ? (
         <section className="border-t border-line bg-surface py-14">
           <Shell>
@@ -180,5 +176,83 @@ function ProductPage() {
         </section>
       ) : null}
     </SiteShell>
+  );
+}
+
+/** Rows shown before "Show all". Short sheets never collapse. */
+const SPEC_PREVIEW_ROWS = 12;
+
+/**
+ * The spec sheet, full width below the product.
+ *
+ * It used to sit in the right-hand column between the description and the
+ * price, so a long sheet pushed the price and the cart button a whole screen
+ * down. Here it can be as long as the manufacturer made it.
+ *
+ * A long sheet is folded, not cut: every row is in the HTML, so search
+ * engines index the whole thing and Ctrl-F still finds a figure, and the fold
+ * is only a height limit that the button lifts.
+ */
+function Specifications({ text }: { text: string }) {
+  const sheet = parseSpecSheet(text);
+  const [open, setOpen] = useState(false);
+  if (sheet.blocks.length === 0 && sheet.links.length === 0) return null;
+  const foldable = sheet.rowCount > SPEC_PREVIEW_ROWS + 4;
+  const folded = foldable && !open;
+
+  return (
+    <section className="border-t border-line py-14" aria-labelledby="specs-title">
+      <Shell>
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+          <h2 id="specs-title" className="text-2xl font-semibold leading-none tracking-tighter text-ink">
+            Specifications
+          </h2>
+          {sheet.links.length > 0 ? (
+            <ul className="flex flex-wrap gap-x-5 gap-y-2">
+              {sheet.links.map((url) => (
+                <li key={url}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="text-sm text-ink underline underline-offset-4 hover:text-signal"
+                  >
+                    {specLinkLabel(url)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+
+        {sheet.blocks.length > 0 ? (
+          <div className="mt-6 max-w-4xl">
+            <div
+              id="specs-body"
+              className={`relative text-base leading-relaxed ${folded ? "max-h-[36rem] overflow-hidden" : ""}`}
+            >
+              {renderSpecSheet(sheet)}
+              {folded ? (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-ground to-transparent"
+                />
+              ) : null}
+            </div>
+            {foldable ? (
+              <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                aria-expanded={open}
+                aria-controls="specs-body"
+                className="mt-5 border border-ink px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-white"
+              >
+                {open ? "Show fewer" : `Show all ${sheet.rowCount} specifications`}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </Shell>
+    </section>
   );
 }
