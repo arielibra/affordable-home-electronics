@@ -118,7 +118,45 @@ function gonePage(): string {
 
 let cache: { at: number; products: { slug: string }[]; categories: { slug: string; name: string }[] } | undefined;
 
+/**
+ * Deleted products. A /p/<slug> whose product is gone, looked up in
+ * product_redirects and sent on with a 301. Only consulted for /p/ paths, and
+ * the map is small, so it is cached per isolate like the legacy lookup.
+ */
+let productMap: { at: number; map: Map<string, string> } | undefined;
+
+async function productRedirect(url: URL): Promise<Response | null> {
+  const m = url.pathname.match(/^\/p\/([^/]+)$/);
+  if (!m) return null;
+  let slug = m[1];
+  try {
+    slug = decodeURIComponent(slug);
+  } catch {
+    // keep it raw
+  }
+  if (!productMap || Date.now() - productMap.at > 5 * 60_000) {
+    const map = new Map<string, string>();
+    const db = bindings().DB;
+    if (db) {
+      try {
+        const rows = (await db.prepare("SELECT old_slug, to_path FROM product_redirects").all<{ old_slug: string; to_path: string }>()).results ?? [];
+        for (const r of rows) map.set(r.old_slug, r.to_path);
+      } catch {
+        // table missing or DB down: fall through to the normal page / 404
+      }
+    }
+    productMap = { at: Date.now(), map };
+  }
+  const to = productMap.map.get(slug);
+  if (!to || !to.startsWith("/")) return null;
+  return new Response(null, {
+    status: 301,
+    headers: { Location: new URL(to, url.origin).toString(), "Cache-Control": "public, max-age=86400" },
+  });
+}
+
 export async function legacyRedirect(url: URL): Promise<Response | null> {
+  if (url.pathname.startsWith("/p/")) return productRedirect(url);
   if (!/\.aspx?$/i.test(url.pathname)) return null;
 
   if (!cache || Date.now() - cache.at > 5 * 60_000) {
