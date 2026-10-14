@@ -68,7 +68,11 @@ function buildHead(meta: AppMeta) {
         href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
       },
       { rel: "apple-touch-icon", href: "/app-icon.png" },
-      ...(favicon ? [{ rel: "icon", href: favicon }] : []),
+      // Google needs a square icon that is a multiple of 48px, so the ICO
+      // (16/32/48) and the 192px PNG come first; the SVG is for modern browsers.
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/favicon-192.png" },
+      { rel: "icon", type: "image/svg+xml", href: favicon ?? "/favicon.svg" },
     ],
   };
 }
