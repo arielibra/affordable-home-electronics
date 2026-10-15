@@ -5,6 +5,7 @@ import { StructuredData } from "../../components/StructuredData";
 import { SiteShell } from "../../components/site/chrome";
 import { IconShield, IconTruck } from "../../components/site/icons";
 import { AddToCartButton, ProductCard, isAvailable } from "../../components/site/product-card";
+import { ProductReviews, Stars, type ReviewData } from "../../components/site/reviews";
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../../lib/shipping";
@@ -35,6 +36,7 @@ function productJsonLd(
   p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; image: string },
   shots: string[],
   available: boolean,
+  reviews?: ReviewData,
 ): string {
   const abs = (src: string) => (/^https?:\/\//.test(src) ? src : `${ORIGIN}${src.startsWith("/") ? "" : "/"}${src}`);
   const url = `${ORIGIN}/p/${p.slug}`;
@@ -46,6 +48,28 @@ function productJsonLd(
     image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
     description: metaDescription(p.blurb, p.name),
     ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
+    // Only approved reviews from verified buyers, exactly as shown on the
+    // page. Left out entirely until there is at least one: Google's optional
+    // "review" warning is harmless, a made-up rating is not.
+    ...(reviews && reviews.summary.count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: reviews.summary.average.toFixed(1),
+            reviewCount: reviews.summary.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+          review: reviews.reviews.slice(0, 10).map((r) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: r.author },
+            datePublished: r.date,
+            reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+            ...(r.title ? { name: r.title } : {}),
+            ...(r.body ? { reviewBody: r.body } : {}),
+          })),
+        }
+      : {}),
     offers: {
       "@type": "Offer",
       url,
@@ -108,7 +132,7 @@ export const Route = createFileRoute("/p/$slug")({
 });
 
 function ProductPage() {
-  const { product, images, related, categoryName } = Route.useLoaderData();
+  const { product, images, related, categoryName, reviews } = Route.useLoaderData();
   const shots = images && images.length > 0 ? images : product?.image ? [product.image] : [];
   const [shown, setShown] = useState(0);
   if (!product) return null;
@@ -118,7 +142,7 @@ function ProductPage() {
 
   return (
     <SiteShell>
-      <StructuredData json={productJsonLd(product, shots, available)} />
+      <StructuredData json={productJsonLd(product, shots, available, reviews)} />
       <Shell className="py-8">
         <nav className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted" aria-label="Breadcrumb">
           <Link to="/shop" className="hover:text-signal">
@@ -168,6 +192,15 @@ function ProductPage() {
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{product.brand}</p>
           <h1 className="mt-3 text-3xl font-semibold leading-[1.06] tracking-tighter text-ink md:text-4xl">{product.name}</h1>
+          {reviews && reviews.summary.count > 0 ? (
+            <a href="#reviews" className="mt-3 inline-flex items-center gap-2 text-sm text-muted hover:text-ink">
+              <Stars value={reviews.summary.average} />
+              <span>
+                {reviews.summary.average.toFixed(1)} · {reviews.summary.count}{" "}
+                {reviews.summary.count === 1 ? "review" : "reviews"}
+              </span>
+            </a>
+          ) : null}
           {product.blurb ? (
             <div className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
           ) : null}
@@ -228,6 +261,13 @@ function ProductPage() {
       </Shell>
 
       {product.specs ? <Specifications text={product.specs} /> : null}
+
+      <Shell>
+        <ProductReviews
+          slug={product.slug}
+          data={reviews ?? { summary: { count: 0, average: 0, breakdown: [0, 0, 0, 0, 0] }, reviews: [] }}
+        />
+      </Shell>
 
       {related.length > 0 ? (
         <section className="border-t border-line bg-surface py-14">

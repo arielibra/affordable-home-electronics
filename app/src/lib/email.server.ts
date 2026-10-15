@@ -740,3 +740,111 @@ ${reply ? `<td style="background:${BLUE};border-radius:10px"><a href="mailto:${e
 
   return { subject, text, html };
 }
+
+/* ------------------------------------------------------------------ *
+ * Reviews
+ * ------------------------------------------------------------------ */
+
+function frame(title: string, preheader: string, tag: string, inner: string, footnote: string): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"><title>${esc(title)}</title></head>
+<body style="margin:0;padding:0;background:${WASH}">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;font-size:1px;line-height:1px">${esc(preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${WASH}"><tr><td align="center" style="padding:28px 12px 40px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%">
+<tr><td style="background:${BLUE};border-radius:14px 14px 0 0;padding:22px 28px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="font:600 16px/1.2 ${FONT};color:#ffffff;letter-spacing:.2px">${esc(SITE.name)}</td>
+<td align="right" style="font:400 13px/1.2 ${FONT};color:#cfe0f6">${esc(tag)}</td>
+</tr></table></td></tr>
+<tr><td style="background:#ffffff;border:1px solid ${HAIR};border-top:0;border-radius:0 0 14px 14px;padding:30px 28px">${inner}</td></tr>
+<tr><td style="padding:20px 28px 0;text-align:center;font:400 12px/1.6 ${FONT};color:#8b95a3">${esc(SITE.name)} &middot; <a href="${esc(ORIGIN)}" style="color:#8b95a3;text-decoration:underline">${esc(ORIGIN.replace(/^https?:\/\//, ""))}</a><br>${esc(footnote)}</td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+const button = (href: string, label: string) =>
+  `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${BLUE};border-radius:10px"><a href="${esc(href)}" style="display:inline-block;padding:14px 24px;font:600 15px/1 ${FONT};color:#ffffff;text-decoration:none">${esc(label)}</a></td></tr></table>`;
+
+/**
+ * Sent once, two weeks after an order ships. Asks for an honest review, not a
+ * good one: Google and the FTC both treat asking only happy customers, or
+ * offering anything in return, as a fake review.
+ */
+export function reviewRequestMessage(
+  order: { reference: string; name: string },
+  token: string,
+  products: string[],
+): { subject: string; text: string; html: string } {
+  const first = (order.name ?? "").trim().split(/\s+/)[0] || "there";
+  const link = `${ORIGIN}/review/${token}`;
+  const one = products.length === 1;
+  const what = one ? products[0] : "what you bought";
+
+  const text = [
+    `Hi ${first},`,
+    ``,
+    `Your order ${order.reference} should have been with you for a little while now. How is ${one ? "it" : "everything"} working out?`,
+    ``,
+    ...products.map((p) => `- ${p}`),
+    ``,
+    `If you have a minute, a short review helps the next person who is deciding whether it is right for them. Good or bad, we would rather know.`,
+    ``,
+    `Leave a review: ${link}`,
+    ``,
+    `If something is not right, reply to this email or call ${SITE.phone} and we will sort it out.`,
+    ``,
+    SITE.name,
+    ORIGIN,
+  ].join("\n");
+
+  const inner = `
+<div style="font:700 24px/1.25 ${FONT};color:${INK};letter-spacing:-.3px">How is ${esc(one ? "it" : "everything")} working out?</div>
+<p style="font:400 16px/1.6 ${FONT};color:${INK};margin:16px 0 0">Hi ${esc(first)}, your order ${esc(order.reference)} should have been with you for a little while now.</p>
+<ul style="margin:16px 0 0;padding-left:18px;font:400 15px/1.6 ${FONT};color:${INK}">${products.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+<p style="font:400 16px/1.6 ${FONT};color:${INK};margin:16px 0 24px">If you have a minute, a short review of ${esc(what)} helps the next person who is deciding whether it is right for them. Good or bad, we would rather know.</p>
+${button(link, "Leave a review")}
+<p style="font:400 14px/1.6 ${FONT};color:${MUTED};margin:24px 0 0">If something is not right, just reply to this email or call <a href="${SITE.phoneHref}" style="color:${BLUE}">${esc(SITE.phone)}</a> and we will sort it out.</p>`;
+
+  return {
+    subject: one ? `How is your ${products[0].split(/\s+/).slice(0, 4).join(" ")} working out?` : `How is your order ${order.reference} working out?`,
+    text,
+    html: frame("Leave a review", `A quick review of ${what}`, "Your order", inner, "Sent once, because you bought from us. We will not ask again for this order."),
+  };
+}
+
+const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
+
+/** To the shop: a review is waiting for approval. */
+export function newReviewMessage(
+  reference: string,
+  author: string,
+  items: { product: string; rating: number; title: string; body: string }[],
+): { subject: string; text: string; html: string } {
+  const text = [
+    `${author} (order ${reference}) left ${items.length === 1 ? "a review" : `${items.length} reviews`}. Nothing shows on the site until you approve it.`,
+    ``,
+    ...items.flatMap((i) => [`${stars(i.rating)}  ${i.product}`, ...(i.title ? [i.title] : []), ...(i.body ? [i.body] : []), ``]),
+    `Approve or hide: ${ORIGIN}/admin`,
+  ].join("\n");
+
+  const inner = `
+<div style="font:600 13px/1 ${FONT};color:${MUTED};padding-bottom:10px">Waiting for your approval</div>
+<div style="font:700 24px/1.25 ${FONT};color:${INK};letter-spacing:-.3px">${esc(author)} left ${items.length === 1 ? "a review" : `${items.length} reviews`}</div>
+<p style="font:400 14px/1.6 ${FONT};color:${MUTED};margin:8px 0 0">Order ${esc(reference)}. Nothing shows on the site until you approve it.</p>
+${items
+  .map(
+    (i) => `<div style="margin-top:20px;padding:16px 18px;background:${TINT};border-radius:10px">
+<div style="font:400 18px/1 ${FONT};color:#d97706;letter-spacing:2px">${stars(i.rating)}</div>
+<div style="font:600 14px/1.4 ${FONT};color:${INK};margin-top:8px">${esc(i.product)}</div>
+${i.title ? `<div style="font:600 15px/1.4 ${FONT};color:${INK};margin-top:10px">${esc(i.title)}</div>` : ""}
+${i.body ? `<div style="font:400 15px/1.6 ${FONT};color:${INK};margin-top:6px;white-space:pre-wrap">${esc(i.body)}</div>` : ""}
+</div>`,
+  )
+  .join("")}
+<div style="margin-top:24px">${button(`${ORIGIN}/admin`, "Approve or hide")}</div>`;
+
+  return {
+    subject: `New ${items[0].rating}-star review waiting — ${items[0].product.split(/\s+/).slice(0, 5).join(" ")}`,
+    text,
+    html: frame("New review", `${author}: ${stars(items[0].rating)}`, "Reviews", inner, "Sent because a customer reviewed a product."),
+  };
+}

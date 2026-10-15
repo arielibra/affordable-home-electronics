@@ -29,9 +29,11 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopCategoryRouteImport } from './routes/shop/$category'
+import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as MediaKeyRouteImport } from './routes/media/$key'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
+import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
 import { Route as ApiPaypalWebhookRouteImport } from './routes/api/paypal-webhook'
 import { Route as ApiOrderLookupRouteImport } from './routes/api/order-lookup'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
@@ -42,6 +44,7 @@ import { Route as ApiAdminUploadRouteImport } from './routes/api/admin/upload'
 import { Route as ApiAdminTestEmailRouteImport } from './routes/api/admin/test-email'
 import { Route as ApiAdminTaxonomyRouteImport } from './routes/api/admin/taxonomy'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
+import { Route as ApiAdminReviewsRouteImport } from './routes/api/admin/reviews'
 import { Route as ApiAdminReportRouteImport } from './routes/api/admin/report'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
@@ -151,6 +154,11 @@ const ShopCategoryRoute = ShopCategoryRouteImport.update({
   path: '/shop/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewTokenRoute = ReviewTokenRouteImport.update({
+  id: '/review/$token',
+  path: '/review/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PSlugRoute = PSlugRouteImport.update({
   id: '/p/$slug',
   path: '/p/$slug',
@@ -164,6 +172,11 @@ const MediaKeyRoute = MediaKeyRouteImport.update({
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe-webhook',
   path: '/api/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReviewsRoute = ApiReviewsRouteImport.update({
+  id: '/api/reviews',
+  path: '/api/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPaypalWebhookRoute = ApiPaypalWebhookRouteImport.update({
@@ -214,6 +227,11 @@ const ApiAdminTaxonomyRoute = ApiAdminTaxonomyRouteImport.update({
 const ApiAdminSessionRoute = ApiAdminSessionRouteImport.update({
   id: '/api/admin/session',
   path: '/api/admin/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminReviewsRoute = ApiAdminReviewsRouteImport.update({
+  id: '/api/admin/reviews',
+  path: '/api/admin/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminReportRoute = ApiAdminReportRouteImport.update({
@@ -279,9 +297,11 @@ export interface FileRoutesByFullPath {
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
+  '/api/reviews': typeof ApiReviewsRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/media/$key': typeof MediaKeyRoute
   '/p/$slug': typeof PSlugRoute
+  '/review/$token': typeof ReviewTokenRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
@@ -292,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/report': typeof ApiAdminReportRoute
+  '/api/admin/reviews': typeof ApiAdminReviewsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/test-email': typeof ApiAdminTestEmailRoute
@@ -322,9 +343,11 @@ export interface FileRoutesByTo {
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
+  '/api/reviews': typeof ApiReviewsRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/media/$key': typeof MediaKeyRoute
   '/p/$slug': typeof PSlugRoute
+  '/review/$token': typeof ReviewTokenRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop': typeof ShopIndexRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
@@ -335,6 +358,7 @@ export interface FileRoutesByTo {
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/report': typeof ApiAdminReportRoute
+  '/api/admin/reviews': typeof ApiAdminReviewsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/test-email': typeof ApiAdminTestEmailRoute
@@ -366,9 +390,11 @@ export interface FileRoutesById {
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
+  '/api/reviews': typeof ApiReviewsRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/media/$key': typeof MediaKeyRoute
   '/p/$slug': typeof PSlugRoute
+  '/review/$token': typeof ReviewTokenRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
@@ -379,6 +405,7 @@ export interface FileRoutesById {
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/report': typeof ApiAdminReportRoute
+  '/api/admin/reviews': typeof ApiAdminReviewsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/test-email': typeof ApiAdminTestEmailRoute
@@ -411,9 +438,11 @@ export interface FileRouteTypes {
     | '/api/checkout'
     | '/api/order-lookup'
     | '/api/paypal-webhook'
+    | '/api/reviews'
     | '/api/stripe-webhook'
     | '/media/$key'
     | '/p/$slug'
+    | '/review/$token'
     | '/shop/$category'
     | '/shop/'
     | '/api/admin/brands'
@@ -424,6 +453,7 @@ export interface FileRouteTypes {
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/report'
+    | '/api/admin/reviews'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/test-email'
@@ -454,9 +484,11 @@ export interface FileRouteTypes {
     | '/api/checkout'
     | '/api/order-lookup'
     | '/api/paypal-webhook'
+    | '/api/reviews'
     | '/api/stripe-webhook'
     | '/media/$key'
     | '/p/$slug'
+    | '/review/$token'
     | '/shop/$category'
     | '/shop'
     | '/api/admin/brands'
@@ -467,6 +499,7 @@ export interface FileRouteTypes {
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/report'
+    | '/api/admin/reviews'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/test-email'
@@ -497,9 +530,11 @@ export interface FileRouteTypes {
     | '/api/checkout'
     | '/api/order-lookup'
     | '/api/paypal-webhook'
+    | '/api/reviews'
     | '/api/stripe-webhook'
     | '/media/$key'
     | '/p/$slug'
+    | '/review/$token'
     | '/shop/$category'
     | '/shop/'
     | '/api/admin/brands'
@@ -510,6 +545,7 @@ export interface FileRouteTypes {
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/report'
+    | '/api/admin/reviews'
     | '/api/admin/session'
     | '/api/admin/taxonomy'
     | '/api/admin/test-email'
@@ -541,9 +577,11 @@ export interface RootRouteChildren {
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   ApiOrderLookupRoute: typeof ApiOrderLookupRoute
   ApiPaypalWebhookRoute: typeof ApiPaypalWebhookRoute
+  ApiReviewsRoute: typeof ApiReviewsRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   MediaKeyRoute: typeof MediaKeyRoute
   PSlugRoute: typeof PSlugRoute
+  ReviewTokenRoute: typeof ReviewTokenRoute
   ShopCategoryRoute: typeof ShopCategoryRoute
   ShopIndexRoute: typeof ShopIndexRoute
   ApiAdminBrandsRoute: typeof ApiAdminBrandsRoute
@@ -554,6 +592,7 @@ export interface RootRouteChildren {
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRoute
   ApiAdminReportRoute: typeof ApiAdminReportRoute
+  ApiAdminReviewsRoute: typeof ApiAdminReviewsRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
   ApiAdminTaxonomyRoute: typeof ApiAdminTaxonomyRoute
   ApiAdminTestEmailRoute: typeof ApiAdminTestEmailRoute
@@ -705,6 +744,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review/$token': {
+      id: '/review/$token'
+      path: '/review/$token'
+      fullPath: '/review/$token'
+      preLoaderRoute: typeof ReviewTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/p/$slug': {
       id: '/p/$slug'
       path: '/p/$slug'
@@ -724,6 +770,13 @@ declare module '@tanstack/react-router' {
       path: '/api/stripe-webhook'
       fullPath: '/api/stripe-webhook'
       preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/reviews': {
+      id: '/api/reviews'
+      path: '/api/reviews'
+      fullPath: '/api/reviews'
+      preLoaderRoute: typeof ApiReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/paypal-webhook': {
@@ -794,6 +847,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/session'
       fullPath: '/api/admin/session'
       preLoaderRoute: typeof ApiAdminSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/reviews': {
+      id: '/api/admin/reviews'
+      path: '/api/admin/reviews'
+      fullPath: '/api/admin/reviews'
+      preLoaderRoute: typeof ApiAdminReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/report': {
@@ -877,9 +937,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCheckoutRoute: ApiCheckoutRoute,
   ApiOrderLookupRoute: ApiOrderLookupRoute,
   ApiPaypalWebhookRoute: ApiPaypalWebhookRoute,
+  ApiReviewsRoute: ApiReviewsRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   MediaKeyRoute: MediaKeyRoute,
   PSlugRoute: PSlugRoute,
+  ReviewTokenRoute: ReviewTokenRoute,
   ShopCategoryRoute: ShopCategoryRoute,
   ShopIndexRoute: ShopIndexRoute,
   ApiAdminBrandsRoute: ApiAdminBrandsRoute,
@@ -890,6 +952,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRoute,
   ApiAdminReportRoute: ApiAdminReportRoute,
+  ApiAdminReviewsRoute: ApiAdminReviewsRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
   ApiAdminTaxonomyRoute: ApiAdminTaxonomyRoute,
   ApiAdminTestEmailRoute: ApiAdminTestEmailRoute,

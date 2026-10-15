@@ -18,6 +18,7 @@ import {
   setCartQty,
 } from "../store.server";
 import { bindings } from "../bindings.server";
+import { productReviews } from "../reviews.server";
 import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../email.server";
 import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
@@ -51,14 +52,16 @@ export const getProductPage = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const product = await getProduct(data.slug);
     if (!product) return { product: null, related: [], categoryName: "" };
-    const [related, categories, images] = await Promise.all([
+    const [related, categories, images, reviews] = await Promise.all([
       relatedProducts(product),
       listCategories(),
       productImages(product.slug, product.image),
+      productReviews(product.slug),
     ]);
     return {
       product,
       images,
+      reviews,
       related,
       categoryName: categories.find((c) => c.slug === product.category)?.name ?? "",
     };

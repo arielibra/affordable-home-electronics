@@ -39,7 +39,26 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
+type ScheduledCtx = { waitUntil: (p: Promise<unknown>) => void };
+
 export default {
+  /**
+   * Once a day (the cron in wrangler.jsonc): ask buyers whose order shipped
+   * two weeks ago for a review. Each order is asked once, ever.
+   */
+  async scheduled(_event: unknown, _env: unknown, ctx: ScheduledCtx) {
+    // Loaded on demand, not imported at the top: a static import pulls the
+    // shared store code into this entry file, the bundler then exports those
+    // helpers from it, and workerd refuses to start a Worker whose entry
+    // exports anything that is not a handler.
+    ctx.waitUntil(
+      import("./lib/reviews.server")
+        .then((m) => m.sendDueReviewRequests())
+        .then((r) => console.log(`review requests: ${r.sent} sent, ${r.skipped} skipped`))
+        .catch((err) => console.error("review requests failed", err)),
+    );
+  },
+
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();

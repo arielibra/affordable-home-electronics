@@ -6,6 +6,7 @@ import { CatalogPanel } from "../components/admin/catalog-panel";
 import { CategoriesPanel } from "../components/admin/categories-panel";
 import { MessagesPanel } from "../components/admin/messages-panel";
 import { OrdersPanel } from "../components/admin/orders-panel";
+import { ReviewsPanel } from "../components/admin/reviews-panel";
 import { StockPanel } from "../components/admin/stock-panel";
 import { Field, Notice, TextInput } from "../components/site/form";
 import { Mark } from "../components/site/mark";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-type Tab = "catalog" | "stock" | "categories" | "brands" | "orders" | "messages";
+type Tab = "catalog" | "stock" | "categories" | "brands" | "orders" | "reviews" | "messages";
 
 type Security = {
   fails24h: number;
@@ -51,6 +52,7 @@ const GROUPS: { heading: string; items: [Tab, string][] }[] = [
     heading: "Customers",
     items: [
       ["orders", "Orders"],
+      ["reviews", "Reviews"],
       ["messages", "Messages"],
     ],
   },
@@ -63,6 +65,7 @@ const BLURBS: Record<Tab, string> = {
   categories: "The sections customers browse by.",
   brands: "The makers you stock, and the logo shown against each.",
   orders: "Everything sold, wherever it sold, and where each one has got to.",
+  reviews: "What buyers said about what they bought. Nothing goes live until you approve it.",
   messages: "What customers have sent in through the site.",
 };
 
@@ -277,6 +280,8 @@ function Admin() {
               <BrandsPanel />
             ) : tab === "orders" ? (
               <OrdersPanel />
+            ) : tab === "reviews" ? (
+              <ReviewsPanel />
             ) : (
               <MessagesPanel />
             )}

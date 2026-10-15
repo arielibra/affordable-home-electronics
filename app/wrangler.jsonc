@@ -46,5 +46,9 @@
     }
   ],
 
+  // Daily at 14:00 UTC (10am New York in summer, 9am in winter): the review
+  // follow-up email for orders that shipped two weeks earlier.
+  "triggers": { "crons": ["0 14 * * *"] },
+
   "vars": { "HF_ENV": "production", "APP_SLUG": "affordable-home-electronics" }
 }
