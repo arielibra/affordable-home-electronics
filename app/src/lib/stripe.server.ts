@@ -2,10 +2,7 @@ import { bindings } from "./bindings.server";
 
 const API = "https://api.stripe.com/v1";
 
-/** Flat rate shipping, free above the threshold. Change these two numbers and
- *  the checkout, the cart copy and the shipping page all follow. */
-export const SHIPPING_FLAT_CENTS = 1495;
-export const FREE_SHIPPING_THRESHOLD_CENTS = 19900;
+export { SHIPPING_FLAT_CENTS, FREE_SHIPPING_THRESHOLD_CENTS } from "./shipping";
 
 function secretKey(): string {
   const key = (bindings() as unknown as Record<string, string | undefined>).STRIPE_SECRET_KEY;

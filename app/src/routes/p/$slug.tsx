@@ -7,6 +7,7 @@ import { IconShield, IconTruck } from "../../components/site/icons";
 import { AddToCartButton, ProductCard, isAvailable } from "../../components/site/product-card";
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
+import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../../lib/shipping";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
 import { parseSpecSheet, plainText, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
 
@@ -53,6 +54,34 @@ function productJsonLd(
       availability: available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@type": "Organization", name: SITE.name },
+      // Matches the /shipping page: UPS, $14.95 flat in the US or free over
+      // $199, ships within two business days, three to seven in transit.
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: (p.price_cents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS / 100).toFixed(2),
+          currency: "USD",
+        },
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 2, unitCode: "DAY" },
+          transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 7, unitCode: "DAY" },
+        },
+      },
+      // Matches the /returns page: ten days from delivery, returned by mail,
+      // 15% restocking fee on every return.
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "US",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 10,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/RestockingFees",
+        restockingFee: 15,
+        merchantReturnLink: `${ORIGIN}/returns`,
+      },
     },
   };
   // "</script>" inside a product name must not end the script tag early.
