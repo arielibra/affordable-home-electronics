@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, trackingUrl, type OrderState } from "../../lib/orders";
+import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, shopMayEmailBuyer, trackingUrl, type OrderState } from "../../lib/orders";
 import { AddOrder } from "./add-order";
 import { OrderEditor } from "./order-editor";
 import { money } from "../../lib/site";
@@ -36,6 +36,9 @@ export type AdminOrder = {
   shipped_notified_at: string | null;
   channel: string;
   channel_ref: string;
+  cancel_reason?: string;
+  cancelled_at?: string | null;
+  cancel_notified_at?: string | null;
   items: Item[];
 };
 
@@ -46,6 +49,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "ready_to_ship", label: "Ready to ship" },
   { key: "shipped", label: "Shipped" },
   { key: "on_hold", label: "On hold" },
+  { key: "cancelled", label: "Cancelled" },
   { key: "all", label: "Everything" },
   { key: "year", label: "By year" },
 ];
@@ -281,6 +285,12 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
               {editing ? "Close the editor" : "Edit everything on this order"}
             </button>
 
+            {order.status === "cancelled" ? (
+              <CancelledNote order={order} />
+            ) : (
+              <CancelOrder order={order} onDone={onChanged} />
+            )}
+
             <div className="mt-3 flex justify-end">
               <DeleteOrder order={order} onDone={onChanged} />
             </div>
@@ -421,6 +431,155 @@ function YearView({ years }: { years: string[] }) {
  * sends one message to the shop's own address and says exactly what came
  * back, so a wrong key or an unverified domain shows up here.
  */
+/** What a cancelled order shows: the reason given, and whether the customer was told. */
+function CancelledNote({ order }: { order: AdminOrder }) {
+  return (
+    <div className="mt-4 rounded-[12px] bg-[color:var(--admin-sunken)] px-4 py-3 text-[13px] leading-[1.5]">
+      <p className="font-medium text-ink">Cancelled{order.cancelled_at ? ` ${when(order.cancelled_at)}` : ""}</p>
+      {order.cancel_reason ? <p className="mt-1 whitespace-pre-wrap text-ink">{order.cancel_reason}</p> : null}
+      <p className="mt-1 text-muted">
+        {order.cancel_notified_at
+          ? `Customer emailed ${when(order.cancel_notified_at)}.`
+          : order.cancel_reason
+            ? "The customer was not emailed."
+            : ""}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Cancel an order with a written reason, which is emailed to the customer.
+ * Nothing goes until he presses the button, and the reason is required.
+ */
+function CancelOrder({ order, onDone }: { order: AdminOrder; onDone: () => void }) {
+  const canEmail = shopMayEmailBuyer(order.channel) && /@/.test(order.email ?? "");
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [refund, setRefund] = useState(Boolean(order.paid_at) && order.channel === "site");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{ text: string; bad: boolean } | null>(null);
+
+  async function submit() {
+    if (reason.trim().length < 3) {
+      setError("Write the reason first. It goes in the email to the customer.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/order-cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference: order.reference, reason: reason.trim(), mention_refund: refund }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        error?: string;
+        emailedTo?: string;
+        notified?: { ok: boolean; error: string; expected: boolean };
+      };
+      if (!data.ok) {
+        setError(data.error ?? "Could not cancel the order.");
+        return;
+      }
+      if (data.notified && !data.notified.ok) {
+        setResult({
+          text: data.notified.expected
+            ? `Order cancelled. ${data.notified.error}`
+            : `Order cancelled, but the email did not go: ${data.notified.error}`,
+          bad: !data.notified.expected,
+        });
+      } else {
+        setResult({ text: `Order cancelled. ${data.emailedTo || "The customer"} has been emailed.`, bad: false });
+      }
+      setTimeout(onDone, 2500);
+    } catch {
+      setError("Could not reach the site.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (result) {
+    return (
+      <p className={`mt-4 text-[13px] ${result.bad ? "text-[color:var(--admin-bad)]" : "text-ink"}`}>{result.text}</p>
+    );
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-3 h-9 w-full border border-[color:var(--admin-hairline)] text-[13px] font-medium text-[color:var(--admin-bad)] hover:border-[color:var(--admin-bad)]"
+      >
+        Cancel this order
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-[12px] bg-[color:var(--admin-sunken)] px-4 py-4">
+      <p className="text-[15px] font-semibold tracking-[-0.01em] text-ink">Cancel {order.reference}</p>
+      <label htmlFor={`cancel-${order.reference}`} className="mt-3 block text-[13px] font-medium text-muted">
+        Reason for cancelling{canEmail ? " (the customer will see this)" : ""}
+      </label>
+      <textarea
+        id={`cancel-${order.reference}`}
+        value={reason}
+        rows={4}
+        maxLength={2000}
+        placeholder="For example: This item is no longer available from the manufacturer."
+        onChange={(e) => setReason(e.currentTarget.value)}
+        className={`mt-2 ${input} h-auto py-2 leading-[1.5]`}
+      />
+      {canEmail ? (
+        <>
+          <label className="mt-3 flex items-start gap-2 text-[13px] text-ink">
+            <input
+              type="checkbox"
+              checked={refund}
+              onChange={(e) => setRefund(e.currentTarget.checked)}
+              className="mt-0.5"
+            />
+            <span>Tell them they will be refunded in full</span>
+          </label>
+          <p className="mt-1.5 text-[12px] leading-[1.5] text-muted">
+            This does not move any money. Refund the payment in {order.provider === "paypal" ? "PayPal" : "Stripe or PayPal"} as well.
+          </p>
+          <p className="mt-2 text-[12px] leading-[1.5] text-muted">
+            The email goes to {order.email}: your reason, an apology, and that we hope to do business with them again.
+          </p>
+        </>
+      ) : (
+        <p className="mt-2 text-[12px] leading-[1.5] text-muted">
+          {shopMayEmailBuyer(order.channel)
+            ? "There is no email address on this order, so the customer will not be emailed."
+            : `${channelName(order.channel)} orders are not emailed from here. Cancel it on ${channelName(order.channel)} too.`}
+        </p>
+      )}
+      {error ? <p className="mt-2 text-[13px] text-[color:var(--admin-bad)]">{error}</p> : null}
+      <div className="mt-3 flex items-center gap-3">
+        <button type="button" disabled={busy} onClick={() => void submit()} className={btnPrimary}>
+          {busy ? "Cancelling." : canEmail ? "Submit and email the customer" : "Submit"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            setError("");
+          }}
+          className={`${btnLink} text-muted`}
+        >
+          Keep the order
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Removing an order. Two clicks always, and a paid one answers the first with
  * what it is worth and which year it counts toward before it will go — that is

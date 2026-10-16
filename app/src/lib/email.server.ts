@@ -848,3 +848,74 @@ ${i.body ? `<div style="font:400 15px/1.6 ${FONT};color:${INK};margin-top:6px;wh
     html: frame("New review", `${author}: ${stars(items[0].rating)}`, "Reviews", inner, "Sent because a customer reviewed a product."),
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Order cancelled by the shop
+ * ------------------------------------------------------------------ */
+
+export type CancelledOrder = {
+  reference: string;
+  name: string;
+  amount_total_cents: number | null;
+};
+
+/**
+ * What the customer gets when the shop cancels their order.
+ *
+ * The reason is the shop's own words, shown as written (escaped, line breaks
+ * kept). The refund line goes in only when the shop ticks it, because this
+ * email moves no money: the refund itself is done in Stripe or PayPal.
+ */
+export function cancellationMessage(
+  order: CancelledOrder,
+  items: { name: string; qty: number }[],
+  reason: string,
+  mentionRefund: boolean,
+): { subject: string; text: string; html: string } {
+  const first = (order.name ?? "").trim().split(/\s+/)[0] || "there";
+  const lines = items.map((i) => `${i.qty} x ${i.name}`);
+  const total = order.amount_total_cents ? money(order.amount_total_cents) : "";
+  const year = new Date().getUTCFullYear();
+  const rights = `© ${year} ${SITE.name}. All rights reserved.`;
+  const refund = `You will be refunded in full${total ? ` (${total})` : ""} to the card or PayPal account you paid with. Depending on your bank, it can take 5 to 10 business days to show.`;
+
+  const text = [
+    `Hi ${first},`,
+    ``,
+    `We're writing to let you know that your order ${order.reference} has been cancelled.`,
+    ``,
+    ...(lines.length ? [...lines, ``] : []),
+    `Why your order was cancelled:`,
+    reason,
+    ``,
+    ...(mentionRefund ? [refund, ``] : []),
+    `We are very sorry for the inconvenience, and we hope we can do business together in the future.`,
+    ``,
+    `If you have any questions, reply to this email or call us at ${SITE.phone}.`,
+    ``,
+    SITE.name,
+    ORIGIN,
+    ``,
+    rights,
+  ].join("\n");
+
+  const reasonHtml = esc(reason).replace(/\r?\n/g, "<br>");
+
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#14304e;max-width:560px">
+<p>Hi ${esc(first)},</p>
+<p><strong>We're writing to let you know that your order ${esc(order.reference)} has been cancelled.</strong></p>
+${lines.length ? `<ul style="padding-left:18px;margin:16px 0">${items.map((i) => `<li>${esc(String(i.qty))} &times; ${esc(i.name)}</li>`).join("")}</ul>` : ""}
+<div style="margin:16px 0;padding:14px 16px;background:#eef4fb;border-radius:10px">
+<p style="margin:0 0 6px;font-weight:600">Why your order was cancelled</p>
+<p style="margin:0">${reasonHtml}</p>
+</div>
+${mentionRefund ? `<p>${esc(refund)}</p>` : ""}
+<p>We are very sorry for the inconvenience, and we hope we can do business together in the future.</p>
+<p>If you have any questions, reply to this email or call us at <a href="${SITE.phoneHref}" style="color:#1668c1">${esc(SITE.phone)}</a>.</p>
+<p style="color:#5b7696;font-size:13px">${esc(SITE.name)}<br><a href="${esc(ORIGIN)}" style="color:#1668c1">${esc(ORIGIN)}</a></p>
+<hr style="border:none;border-top:1px solid #dbe5f0;margin:24px 0 12px">
+<p style="color:#5b7696;font-size:12px;text-align:center;margin:0">${esc(rights)}</p>
+</div>`;
+
+  return { subject: `Your order ${order.reference} has been cancelled`, text, html };
+}

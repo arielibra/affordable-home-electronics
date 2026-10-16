@@ -55,11 +55,15 @@ type Order = {
   shipped_notified_at: string | null;
   channel: string;
   channel_ref: string;
+  cancel_reason: string;
+  cancelled_at: string | null;
+  cancel_notified_at: string | null;
 };
 
 const COLUMNS = `id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,
   subtotal_cents,shipping_cents,tax_cents,amount_total_cents,status,provider,
-  carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at,shipped_notified_at,channel,channel_ref`;
+  carrier,tracking_number,hold_reason,created_at,paid_at,shipped_at,shipped_notified_at,channel,channel_ref,
+  cancel_reason,cancelled_at,cancel_notified_at`;
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";

@@ -48,6 +48,7 @@ import { Route as ApiAdminReviewsRouteImport } from './routes/api/admin/reviews'
 import { Route as ApiAdminReportRouteImport } from './routes/api/admin/report'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
+import { Route as ApiAdminOrderCancelRouteImport } from './routes/api/admin/order-cancel'
 import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
 import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
@@ -249,6 +250,11 @@ const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
   path: '/api/admin/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminOrderCancelRoute = ApiAdminOrderCancelRouteImport.update({
+  id: '/api/admin/order-cancel',
+  path: '/api/admin/order-cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminMessagesRoute = ApiAdminMessagesRouteImport.update({
   id: '/api/admin/messages',
   path: '/api/admin/messages',
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
+  '/api/admin/order-cancel': typeof ApiAdminOrderCancelRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/report': typeof ApiAdminReportRoute
@@ -355,6 +362,7 @@ export interface FileRoutesByTo {
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
+  '/api/admin/order-cancel': typeof ApiAdminOrderCancelRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/report': typeof ApiAdminReportRoute
@@ -402,6 +410,7 @@ export interface FileRoutesById {
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
+  '/api/admin/order-cancel': typeof ApiAdminOrderCancelRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/report': typeof ApiAdminReportRoute
@@ -450,6 +459,7 @@ export interface FileRouteTypes {
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/messages'
+    | '/api/admin/order-cancel'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/report'
@@ -496,6 +506,7 @@ export interface FileRouteTypes {
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/messages'
+    | '/api/admin/order-cancel'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/report'
@@ -542,6 +553,7 @@ export interface FileRouteTypes {
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/messages'
+    | '/api/admin/order-cancel'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/report'
@@ -589,6 +601,7 @@ export interface RootRouteChildren {
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
   ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
   ApiAdminMessagesRoute: typeof ApiAdminMessagesRoute
+  ApiAdminOrderCancelRoute: typeof ApiAdminOrderCancelRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRoute
   ApiAdminReportRoute: typeof ApiAdminReportRoute
@@ -877,6 +890,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/order-cancel': {
+      id: '/api/admin/order-cancel'
+      path: '/api/admin/order-cancel'
+      fullPath: '/api/admin/order-cancel'
+      preLoaderRoute: typeof ApiAdminOrderCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/messages': {
       id: '/api/admin/messages'
       path: '/api/admin/messages'
@@ -949,6 +969,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminLoginRoute: ApiAdminLoginRoute,
   ApiAdminLogoutRoute: ApiAdminLogoutRoute,
   ApiAdminMessagesRoute: ApiAdminMessagesRoute,
+  ApiAdminOrderCancelRoute: ApiAdminOrderCancelRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRoute,
   ApiAdminReportRoute: ApiAdminReportRoute,

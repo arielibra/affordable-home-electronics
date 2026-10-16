@@ -120,10 +120,69 @@ export function MessagesPanel() {
                   Why: {m.spam_reasons}.
                 </p>
               ) : null}
+              <DeleteMessage
+                id={m.id}
+                onGone={() => setMessages((all) => all.filter((x) => x.id !== m.id))}
+              />
             </div>
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/**
+ * Permanently delete one message. Two clicks, because there is no copy kept
+ * and no undo.
+ */
+function DeleteMessage({ id, onGone }: { id: string; onGone: () => void }) {
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function go() {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/messages?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (data.ok || res.status === 404) onGone();
+      else setError(data.error ?? "Could not delete that.");
+    } catch {
+      setError("Could not reach the site.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px]">
+      {armed ? (
+        <>
+          <span className="text-muted">Delete this message for good? This cannot be undone.</span>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void go()}
+            className="font-medium text-[color:var(--admin-bad)] underline underline-offset-4 disabled:opacity-60"
+          >
+            {busy ? "Deleting." : "Yes, delete it"}
+          </button>
+          <button type="button" onClick={() => setArmed(false)} className="text-muted underline underline-offset-4 hover:text-ink">
+            Keep it
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setArmed(true)}
+          className="text-muted underline underline-offset-4 hover:text-[color:var(--admin-bad)]"
+        >
+          Delete permanently
+        </button>
+      )}
+      {error ? <span className="text-[color:var(--admin-bad)]">{error}</span> : null}
     </div>
   );
 }
