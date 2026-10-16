@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { money } from "../../lib/site";
+import { DESCRIPTION_SHOWN, TITLE_SHOWN, autoDescription, autoTitle } from "../../lib/seo";
+import { ORIGIN, money } from "../../lib/site";
+import { slugify } from "../../lib/slug";
 import { GalleryField } from "./gallery-field";
 import { RichTextArea } from "./rich-textarea";
 import { btnLink, card, cardQuiet, input, label } from "./ui";
@@ -16,6 +18,9 @@ export type CatalogProduct = {
   cost_cents: number | null;
   blurb: string;
   specs: string;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
   image: string;
   images?: string[];
   featured: number;
@@ -64,6 +69,117 @@ function Margin({ price, cost }: { price: string; cost: string }) {
   );
 }
 
+/** "38 / 60", turning red past the length Google shows. */
+function Count({ n, max }: { n: number; max: number }) {
+  return (
+    <span className={`font-mono text-[12px] ${n > max ? "text-[color:var(--color-signal)]" : "text-muted"}`}>
+      {n} / {max}
+    </span>
+  );
+}
+
+/**
+ * The three search-engine fields, plus a mock of the Google result they make.
+ *
+ * Each box shows the automatic text as its placeholder, so blank is never a
+ * mystery: what he sees greyed out is exactly what the page uses until he
+ * types something better. The preview runs the same functions as the real
+ * product page (lib/seo.ts), so it cannot disagree with it.
+ */
+function SeoFields({
+  name,
+  blurb,
+  slug,
+  title,
+  setTitle,
+  description,
+  setDescription,
+  keywords,
+  setKeywords,
+}: {
+  name: string;
+  blurb: string;
+  slug: string;
+  title: string;
+  setTitle: (v: string) => void;
+  description: string;
+  setDescription: (v: string) => void;
+  keywords: string;
+  setKeywords: (v: string) => void;
+}) {
+  const autoT = autoTitle(name.trim() || "Product name");
+  const autoD = autoDescription(blurb, name.trim() || "The description will appear here.");
+  const shownTitle = title.trim() || autoT;
+  const shownDesc = description.trim() || autoD;
+  const cut = (t: string, n: number) => (t.length > n ? `${t.slice(0, n).trimEnd()}\u2026` : t);
+  const host = ORIGIN.replace(/^https?:\/\//, "");
+
+  return (
+    <div className={`${cardQuiet} mt-5`}>
+      <p className="text-[15px] font-semibold text-ink">Search engines</p>
+      <p className="mt-1 max-w-[70ch] text-[13px] leading-[1.55] text-muted">
+        How this product appears on Google. Leave any box empty and the site fills it in for you &mdash; the grey text is
+        what it will use.
+      </p>
+
+      <div className="mt-4 rounded-[14px] border border-[color:var(--admin-hairline)] bg-white p-4" aria-label="Google preview">
+        <p className="text-[12px] text-[#4d5156]">
+          {host} &rsaquo; p &rsaquo; {slug || "web-address"}
+        </p>
+        <p className="mt-1 text-[19px] leading-[1.3] text-[#1a0dab]">{cut(shownTitle, TITLE_SHOWN)}</p>
+        <p className="mt-1 text-[14px] leading-[1.5] text-[#4d5156]">{cut(shownDesc, DESCRIPTION_SHOWN)}</p>
+      </div>
+
+      <label className="mt-4 block">
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="text-[13px] font-medium text-muted">Page title</span>
+          <Count n={title.trim().length} max={TITLE_SHOWN} />
+        </span>
+        <input
+          value={title}
+          placeholder={autoT}
+          onChange={(e) => setTitle(e.currentTarget.value)}
+          className={`mt-1.5 ${input}`}
+        />
+        <span className="mt-1 block text-[12px] leading-[1.5] text-muted">
+          The blue headline in Google and the text on the browser tab. Used exactly as typed. About 60 characters show.
+        </span>
+      </label>
+
+      <label className="mt-4 block">
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="text-[13px] font-medium text-muted">Meta description</span>
+          <Count n={description.trim().length} max={DESCRIPTION_SHOWN} />
+        </span>
+        <textarea
+          value={description}
+          placeholder={autoD}
+          rows={3}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+          className={`mt-1.5 ${input.replace("h-12", "min-h-[96px]")} py-3 leading-[1.5]`}
+        />
+        <span className="mt-1 block text-[12px] leading-[1.5] text-muted">
+          The grey lines under the headline. One or two sentences that make someone click. About 160 characters show.
+        </span>
+      </label>
+
+      <label className="mt-4 block">
+        <span className="text-[13px] font-medium text-muted">Keywords</span>
+        <input
+          value={keywords}
+          placeholder="e.g. 4k security camera, poe camera, outdoor cctv"
+          onChange={(e) => setKeywords(e.currentTarget.value)}
+          className={`mt-1.5 ${input}`}
+        />
+        <span className="mt-1 block text-[12px] leading-[1.5] text-muted">
+          Separate with commas. Put in the words customers actually type, including old or alternative part numbers.
+          These also help people find it with this site&rsquo;s own search box.
+        </span>
+      </label>
+    </div>
+  );
+}
+
 function Editor({
   product,
   cloneOf,
@@ -98,6 +214,12 @@ function Editor({
   const [cost, setCost] = useState(dollars(src?.cost_cents ?? null));
   const [blurb, setBlurb] = useState(src?.blurb ?? "");
   const [specs, setSpecs] = useState(src?.specs ?? "");
+  // A copy keeps the keywords (same kind of product, same searches) but not
+  // the title or description: two pages with one headline compete with each
+  // other on Google. Left blank, the copy's own name fills them in.
+  const [metaTitle, setMetaTitle] = useState(product?.meta_title ?? "");
+  const [metaDescription, setMetaDescription] = useState(product?.meta_description ?? "");
+  const [metaKeywords, setMetaKeywords] = useState(src?.meta_keywords ?? "");
   // A copy takes the original's whole gallery, not just its main photo.
   const [images, setImages] = useState<string[]>(
     src?.images && src.images.length > 0 ? [...src.images] : src?.image ? [src.image] : [],
@@ -129,6 +251,9 @@ function Editor({
       cost_cents: cost.trim() === "" ? null : toCents(cost),
       blurb,
       specs,
+      meta_title: metaTitle,
+      meta_description: metaDescription,
+      meta_keywords: metaKeywords,
       images,
       featured,
       stock: Number(stock) || 0,
@@ -261,6 +386,18 @@ function Editor({
       <div className="mt-5">
         <GalleryField value={images} onChange={setImages} />
       </div>
+
+      <SeoFields
+        name={name}
+        blurb={blurb}
+        slug={product ? product.slug : slugify(slug.trim() || name)}
+        title={metaTitle}
+        setTitle={setMetaTitle}
+        description={metaDescription}
+        setDescription={setMetaDescription}
+        keywords={metaKeywords}
+        setKeywords={setMetaKeywords}
+      />
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block">

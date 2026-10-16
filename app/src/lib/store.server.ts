@@ -13,6 +13,10 @@ export type Product = {
   blurb?: string;
   /** Same as blurb: only the single-product query selects it. */
   specs?: string;
+  /** Hand-set search text; blank means automatic. Single-product query only. */
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
   image: string;
   featured: number;
   stock: number;
@@ -94,7 +98,7 @@ export async function allProducts(sort = "featured"): Promise<Product[]> {
 export async function searchProducts(q: string, limit = 60): Promise<Product[]> {
   const like = `%${q.trim().toLowerCase()}%`;
   const r = await db()
-    .prepare(`SELECT ${PUBLIC} FROM products WHERE active = 1 AND (lower(name) LIKE ?1 OR lower(brand) LIKE ?1 OR lower(blurb) LIKE ?1) ORDER BY featured DESC, price_cents LIMIT ?2`)
+    .prepare(`SELECT ${PUBLIC} FROM products WHERE active = 1 AND (lower(name) LIKE ?1 OR lower(brand) LIKE ?1 OR lower(blurb) LIKE ?1 OR lower(meta_keywords) LIKE ?1) ORDER BY featured DESC, price_cents LIMIT ?2`)
     .bind(like, limit)
     .all<Product>();
   return r.results ?? [];
@@ -102,7 +106,7 @@ export async function searchProducts(q: string, limit = 60): Promise<Product[]> 
 
 export async function getProduct(slug: string): Promise<Product | null> {
   return await db()
-    .prepare(`SELECT ${PUBLIC}, blurb, specs FROM products WHERE slug = ?1 AND active = 1`)
+    .prepare(`SELECT ${PUBLIC}, blurb, specs, meta_title, meta_description, meta_keywords FROM products WHERE slug = ?1 AND active = 1`)
     .bind(slug)
     .first<Product>();
 }

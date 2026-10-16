@@ -10,19 +10,8 @@ import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../../lib/shipping";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
-import { parseSpecSheet, plainText, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
-
-/** Search engines show about 160 characters and drop the rest, so the full
- *  description does not belong in the head — it would sit in the page source of
- *  every product and be read by no one. Cut on a word, never mid-word. */
-function metaDescription(blurb: string | undefined, fallback: string): string {
-  const text = plainText(blurb);
-  if (!text) return fallback;
-  if (text.length <= 160) return text;
-  const cut = text.slice(0, 160);
-  const space = cut.lastIndexOf(" ");
-  return `${(space > 100 ? cut.slice(0, space) : cut).trimEnd()}\u2026`;
-}
+import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
+import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
 
 /**
  * Product data for Google, as schema.org JSON-LD.
@@ -33,7 +22,7 @@ function metaDescription(blurb: string | undefined, fallback: string): string {
  * Only facts the page itself shows go in: name, photos, brand, price, stock.
  */
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; image: string },
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; image: string },
   shots: string[],
   available: boolean,
   reviews?: ReviewData,
@@ -46,7 +35,7 @@ function productJsonLd(
     name: p.name,
     url,
     image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
-    description: metaDescription(p.blurb, p.name),
+    description: pageDescription(p),
     ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
     // Only approved reviews from verified buyers, exactly as shown on the
     // page. Left out entirely until there is at least one: Google's optional
@@ -120,11 +109,21 @@ export const Route = createFileRoute("/p/$slug")({
   },
   head: ({ loaderData, params }) => ({
     meta: loaderData?.product
-      ? [
-          { title: `${loaderData.product.name} | Affordable Home Electronics` },
-          { name: "description", content: metaDescription(loaderData.product.blurb, loaderData.product.name) },
-          { property: "og:image", content: `${ORIGIN}${loaderData.product.image}` },
-        ]
+      ? (() => {
+          const p = loaderData.product;
+          const title = pageTitle(p);
+          const description = pageDescription(p);
+          const keywords = pageKeywords(p);
+          return [
+            { title },
+            { name: "description", content: description },
+            ...(keywords ? [{ name: "keywords", content: keywords }] : []),
+            // What Facebook, WhatsApp and iMessage show when the link is shared.
+            { property: "og:title", content: title },
+            { property: "og:description", content: description },
+            { property: "og:image", content: `${ORIGIN}${p.image}` },
+          ];
+        })()
       : [],
     links: [{ rel: "canonical", href: `${ORIGIN}/p/${params.slug}` }],
   }),

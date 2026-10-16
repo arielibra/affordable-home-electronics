@@ -15,6 +15,9 @@ type Row = {
   msrp_cents: number | null;
   cost_cents: number | null;
   blurb: string;
+  meta_title: string;
+  meta_description: string;
+  meta_keywords: string;
   image: string;
   featured: number;
   stock: number;
@@ -23,7 +26,7 @@ type Row = {
 };
 
 const COLUMNS =
-  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,image,featured,stock,stock_tracked,active";
+  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,image,featured,stock,stock_tracked,active";
 
 /** At most twenty, no blanks, no duplicates, order preserved. */
 function cleanImages(v: unknown): string[] | null {
@@ -92,6 +95,29 @@ const BLURB_MAX = 20000;
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
+}
+
+/** Generous ceilings, well past what Google shows (about 60 characters of a
+ *  title, 160 of a description). The form warns at those lengths; these only
+ *  stop a stray paste of a whole page landing in the <head>. */
+const META_TITLE_MAX = 200;
+const META_DESC_MAX = 500;
+const META_KEYWORDS_MAX = 1000;
+
+/** One line, single spaces. A line break inside a <title> or a meta tag is
+ *  legal but shows up in search results as odd gaps. */
+const oneLine = (v: unknown, max: number) => str(typeof v === "string" ? v.replace(/\s+/g, " ") : v, max);
+
+/** "cctv, Security Camera ,, cctv" → "cctv, security camera". Lower case,
+ *  no blanks, no repeats, order kept. */
+function cleanKeywords(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const out: string[] = [];
+  for (const raw of v.split(/[,\n;]/)) {
+    const k = raw.replace(/\s+/g, " ").trim().toLowerCase();
+    if (k && !out.includes(k)) out.push(k);
+  }
+  return out.join(", ").slice(0, META_KEYWORDS_MAX);
 }
 
 export const Route = createFileRoute("/api/admin/products")({
@@ -196,8 +222,8 @@ export const Route = createFileRoute("/api/admin/products")({
         const stock = clampInt(body.stock, 0, 100000) ?? 0;
 
         await DB.prepare(
-          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,image,featured,stock,stock_tracked,active)
-           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)`,
+          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,image,featured,stock,stock_tracked,active)
+           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)`,
         )
           .bind(
             slug,
@@ -210,6 +236,9 @@ export const Route = createFileRoute("/api/admin/products")({
             cost,
             str(body.blurb, BLURB_MAX),
             str(body.specs, BLURB_MAX),
+            oneLine(body.meta_title, META_TITLE_MAX),
+            oneLine(body.meta_description, META_DESC_MAX),
+            cleanKeywords(body.meta_keywords),
             // Filled in properly by writeImages below; this keeps the insert
             // valid for a product saved without any pictures at all.
             "",
@@ -289,6 +318,9 @@ export const Route = createFileRoute("/api/admin/products")({
         }
         if ("blurb" in body) put("blurb", str(body.blurb, BLURB_MAX));
         if ("specs" in body) put("specs", str(body.specs, BLURB_MAX));
+        if ("meta_title" in body) put("meta_title", oneLine(body.meta_title, META_TITLE_MAX));
+        if ("meta_description" in body) put("meta_description", oneLine(body.meta_description, META_DESC_MAX));
+        if ("meta_keywords" in body) put("meta_keywords", cleanKeywords(body.meta_keywords));
         // The gallery is authoritative when it is sent; the single column is
         // kept in step by writeImages rather than set here.
         const nextImages = "images" in body ? cleanImages(body.images) : null;
