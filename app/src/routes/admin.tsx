@@ -11,7 +11,6 @@ import { StockPanel } from "../components/admin/stock-panel";
 import { Field, Notice, TextInput } from "../components/site/form";
 import { Mark } from "../components/site/mark";
 import { ICONS } from "../components/admin/icons";
-import { SITE } from "../lib/site";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -321,8 +320,7 @@ function SignIn({ onIn }: { onIn: () => void }) {
     <div className="ahe-admin flex min-h-dvh items-center justify-center bg-ground px-5 py-16">
       <div className="ahe-signin">
         <Mark detail="full" className="h-12 w-[68px] text-ink" />
-        <h1 className="mt-7 text-[30px] font-semibold leading-[1.1] tracking-[-0.025em] text-ink">Shop sign in</h1>
-        <p className="mt-2.5 text-[14px] leading-[1.55] text-muted">For staff. Customers never need this page.</p>
+        <h1 className="mt-7 text-[30px] font-semibold leading-[1.1] tracking-[-0.025em] text-ink">Admin Access</h1>
         <form onSubmit={onSubmit} className="mt-7 space-y-4">
           <Field label="Password" name="password">
             <TextInput id="password" name="password" type="password" required autoFocus autoComplete="current-password" />
@@ -332,13 +330,6 @@ function SignIn({ onIn }: { onIn: () => void }) {
             {pending ? "Checking" : "Sign in"}
           </button>
         </form>
-        <p className="mt-7 text-[14px] leading-[1.55] text-muted">
-          Locked out? The password is held by whoever set up the site. Shop line{" "}
-          <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
-            {SITE.phone}
-          </a>
-          .
-        </p>
       </div>
     </div>
   );
