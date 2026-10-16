@@ -61,12 +61,20 @@ export default {
 
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      const handler = await getServerEntry();
       const url = new URL(request.url);
-      if (url.pathname.length > 1 && url.pathname.endsWith("/")) {
-        url.pathname = url.pathname.replace(/\/+$/, "");
-        return Response.redirect(url.toString(), 301);
+      // One address per page: www. and trailing slashes both 301 to the
+      // plain form in a single hop, so ten years of www rankings move over.
+      let moved = false;
+      if (url.hostname.startsWith("www.")) {
+        url.hostname = url.hostname.slice(4);
+        moved = true;
       }
+      if (url.pathname.length > 1 && url.pathname.endsWith("/")) {
+        url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+        moved = true;
+      }
+      if (moved) return Response.redirect(url.toString(), 301);
+      const handler = await getServerEntry();
       // Old-site addresses Google still links to (…/something.aspx).
       const legacy = await legacyRedirect(url);
       if (legacy) return applySecurityHeaders(legacy);
