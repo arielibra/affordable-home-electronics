@@ -4,6 +4,7 @@ import { CatalogBody, CatalogHeader } from "../../components/shop/catalog";
 import { SiteShell } from "../../components/site/chrome";
 import { getCategoryPage } from "../../lib/api/store.functions";
 import { ORIGIN } from "../../lib/site";
+import { STORE_ID, WEBSITE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data";
 
 type Sort = "featured" | "price-asc" | "price-desc" | "name";
 const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "name"];
@@ -29,8 +30,40 @@ function CategoryPage() {
   const { categories, category, products } = Route.useLoaderData();
   const sort = Route.useSearch().sort ?? "featured";
   if (!category) return null;
+  const url = `${ORIGIN}/shop/${category.slug}`;
+  // What this aisle holds, in the order shown, for search engines and assistants.
+  const json = toJsonLd({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": url,
+        url,
+        name: category.name,
+        ...(category.blurb ? { description: category.blurb } : {}),
+        isPartOf: { "@id": WEBSITE_ID },
+        provider: { "@id": STORE_ID },
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: products.length,
+          itemListElement: products.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${ORIGIN}/p/${p.slug}`,
+            name: p.name,
+            ...(p.image ? { image: abs(p.image) } : {}),
+          })),
+        },
+      },
+      breadcrumbs([
+        { name: "Catalog", path: "/shop" },
+        { name: category.name, path: `/shop/${category.slug}` },
+      ]),
+    ],
+  });
   return (
     <SiteShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />
       <CatalogHeader
         title={category.name}
         lead={category.blurb}

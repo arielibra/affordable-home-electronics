@@ -10,7 +10,6 @@ import { Testimonials } from "../components/home/testimonials";
 import { WhatWeDo } from "../components/home/what-we-do";
 import { WhyBuy } from "../components/home/why-buy";
 import { SiteShell } from "../components/site/chrome";
-import { LocalBusinessData } from "../components/site/local-business";
 import { getStorefront } from "../lib/api/store.functions";
 import { ORIGIN } from "../lib/site";
 
@@ -24,7 +23,6 @@ function Index() {
   const { categories, counts, featured } = Route.useLoaderData();
   return (
     <SiteShell>
-      <LocalBusinessData />
       <Hero />
       <CategoriesRail categories={categories} counts={counts} />
       <WhatWeDo />

@@ -6,6 +6,7 @@ import appCss from "../styles.css?url";
 import { reportHiggsfieldError } from "../lib/higgsfield-error-reporting";
 import appMetaJson from "../app-meta.json";
 import { Mark } from "../components/site/mark";
+import { SITE_JSON_LD } from "../lib/structured-data";
 
 declare const __HF_DESIGN_INSPECTOR__: boolean;
 
@@ -151,6 +152,8 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" className="ahe" style={{ colorScheme: "light" }}>
       <head>
         <HeadContent />
+        {/* Who the shop is and how to search it, on every page (lib/structured-data.ts). */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SITE_JSON_LD }} />
       </head>
       <body className="bg-ground text-ink antialiased">
         {children}

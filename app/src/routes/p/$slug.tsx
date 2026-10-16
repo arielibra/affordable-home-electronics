@@ -12,6 +12,7 @@ import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../../lib/sh
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
 import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
 import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
+import { STORE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data";
 
 /**
  * Product data for Google, as schema.org JSON-LD.
@@ -22,18 +23,20 @@ import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
  * Only facts the page itself shows go in: name, photos, brand, price, stock.
  */
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string },
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string },
+  categoryName: string,
   shots: string[],
   available: boolean,
   reviews?: ReviewData,
 ): string {
-  const abs = (src: string) => (/^https?:\/\//.test(src) ? src : `${ORIGIN}${src.startsWith("/") ? "" : "/"}${src}`);
   const url = `${ORIGIN}/p/${p.slug}`;
-  const data = {
-    "@context": "https://schema.org",
+  const product = {
     "@type": "Product",
+    "@id": `${url}#product`,
     name: p.name,
     url,
+    sku: p.mpn || p.slug,
+    ...(categoryName ? { category: categoryName } : {}),
     image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
     description: pageDescription(p),
     ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
@@ -68,7 +71,7 @@ function productJsonLd(
       price: (p.price_cents / 100).toFixed(2),
       availability: available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
-      seller: { "@type": "Organization", name: SITE.name },
+      seller: { "@id": STORE_ID },
       // Matches the /shipping page: UPS, $14.95 flat in the US or free over
       // $199, ships within two business days, three to seven in transit.
       shippingDetails: {
@@ -99,8 +102,12 @@ function productJsonLd(
       },
     },
   };
-  // "</script>" inside a product name must not end the script tag early.
-  return JSON.stringify(data).replace(/</g, "\\u003c");
+  const trail = breadcrumbs([
+    { name: "Catalog", path: "/shop" },
+    ...(categoryName ? [{ name: categoryName, path: `/shop/${p.category}` }] : []),
+    { name: p.name, path: `/p/${p.slug}` },
+  ]);
+  return toJsonLd({ "@context": "https://schema.org", "@graph": [product, trail] });
 }
 
 export const Route = createFileRoute("/p/$slug")({
@@ -143,7 +150,7 @@ function ProductPage() {
 
   return (
     <SiteShell>
-      <StructuredData json={productJsonLd(product, shots, available, reviews)} />
+      <StructuredData json={productJsonLd(product, categoryName, shots, available, reviews)} />
       <Shell className="py-8">
         <nav className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted" aria-label="Breadcrumb">
           <Link to="/shop" className="hover:text-signal">
