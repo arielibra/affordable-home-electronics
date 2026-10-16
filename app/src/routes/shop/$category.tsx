@@ -20,9 +20,26 @@ export const Route = createFileRoute("/shop/$category")({
     if (!data.category) throw notFound();
     return data;
   },
-  head: ({ params }) => ({
-    links: [{ rel: "canonical", href: `${ORIGIN}/shop/${params.category}` }],
-  }),
+  head: ({ params, loaderData }) => {
+    const c = loaderData?.category;
+    const n = loaderData?.products.length ?? 0;
+    const title = c ? `${c.name} | Affordable Home Electronics` : "Affordable Home Electronics";
+    const description = c
+      ? (c.blurb?.trim() || `Shop ${c.name.toLowerCase()} at Affordable Home Electronics.`) +
+        ` ${n} ${n === 1 ? "item" : "items"} from an authorized dealer in Queens, NY, shipped across the US.`
+      : "";
+    return {
+      meta: [
+        { title },
+        ...(description ? [{ name: "description", content: description }] : []),
+        { property: "og:title", content: title },
+        ...(description ? [{ property: "og:description", content: description }] : []),
+        // An empty aisle has nothing to rank for; keep it out of the index until it is stocked.
+        ...(c && n === 0 ? [{ name: "robots", content: "noindex, follow" }] : []),
+      ],
+      links: [{ rel: "canonical", href: `${ORIGIN}/shop/${params.category}` }],
+    };
+  },
   component: CategoryPage,
 });
 

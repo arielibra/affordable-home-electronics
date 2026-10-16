@@ -14,7 +14,22 @@ import { getStorefront } from "../lib/api/store.functions";
 import { ORIGIN } from "../lib/site";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ links: [{ rel: "canonical", href: `${ORIGIN}/` }] }),
+  head: () => ({
+    meta: [
+      { title: "Security Cameras & Access Control | Affordable Home Electronics" },
+      {
+        name: "description",
+        content:
+          "Security cameras, NVR/DVR recorders, access control and smart locks from an authorized dealer in Rego Park, Queens. Shipped across the US, installed across NYC since 2003.",
+      },
+      { property: "og:title", content: "Affordable Home Electronics | Security Cameras & Access Control" },
+      {
+        property: "og:description",
+        content: "Authorized dealer in Rego Park, Queens. Shipped across the US, installed across NYC since 2003.",
+      },
+    ],
+    links: [{ rel: "canonical", href: `${ORIGIN}/` }],
+  }),
   loader: () => getStorefront(),
   component: Index,
 });
