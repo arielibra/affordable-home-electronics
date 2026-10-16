@@ -17,6 +17,9 @@ export type Product = {
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
+  /** Barcode and part number, printed on the box. Single-product query only. */
+  gtin?: string;
+  mpn?: string;
   image: string;
   featured: number;
   stock: number;
@@ -106,7 +109,7 @@ export async function searchProducts(q: string, limit = 60): Promise<Product[]> 
 
 export async function getProduct(slug: string): Promise<Product | null> {
   return await db()
-    .prepare(`SELECT ${PUBLIC}, blurb, specs, meta_title, meta_description, meta_keywords FROM products WHERE slug = ?1 AND active = 1`)
+    .prepare(`SELECT ${PUBLIC}, blurb, specs, meta_title, meta_description, meta_keywords, gtin, mpn FROM products WHERE slug = ?1 AND active = 1`)
     .bind(slug)
     .first<Product>();
 }

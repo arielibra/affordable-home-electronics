@@ -3,6 +3,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
+import { gtinProblem, normaliseGtin } from "../../../lib/gtin";
 import { slugify } from "../../../lib/slug";
 
 type Row = {
@@ -18,6 +19,8 @@ type Row = {
   meta_title: string;
   meta_description: string;
   meta_keywords: string;
+  gtin: string;
+  mpn: string;
   image: string;
   featured: number;
   stock: number;
@@ -26,7 +29,7 @@ type Row = {
 };
 
 const COLUMNS =
-  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,image,featured,stock,stock_tracked,active";
+  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,gtin,mpn,image,featured,stock,stock_tracked,active";
 
 /** At most twenty, no blanks, no duplicates, order preserved. */
 function cleanImages(v: unknown): string[] | null {
@@ -119,6 +122,9 @@ function cleanKeywords(v: unknown): string {
   }
   return out.join(", ").slice(0, META_KEYWORDS_MAX);
 }
+
+/** Part numbers keep their own capitalisation; only spacing is tidied. */
+const cleanMpn = (v: unknown) => oneLine(v, 70);
 
 export const Route = createFileRoute("/api/admin/products")({
   server: {
@@ -220,10 +226,13 @@ export const Route = createFileRoute("/api/admin/products")({
             ? null
             : clampInt(body.cost_cents, 0, 100000000);
         const stock = clampInt(body.stock, 0, 100000) ?? 0;
+        const gtin = normaliseGtin(str(body.gtin, 40));
+        const badGtin = gtinProblem(gtin);
+        if (badGtin) return Response.json({ ok: false, error: `UPC: ${badGtin}` }, { status: 400 });
 
         await DB.prepare(
-          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,image,featured,stock,stock_tracked,active)
-           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)`,
+          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,gtin,mpn,image,featured,stock,stock_tracked,active)
+           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20)`,
         )
           .bind(
             slug,
@@ -239,6 +248,8 @@ export const Route = createFileRoute("/api/admin/products")({
             oneLine(body.meta_title, META_TITLE_MAX),
             oneLine(body.meta_description, META_DESC_MAX),
             cleanKeywords(body.meta_keywords),
+            gtin,
+            cleanMpn(body.mpn),
             // Filled in properly by writeImages below; this keeps the insert
             // valid for a product saved without any pictures at all.
             "",
@@ -321,6 +332,13 @@ export const Route = createFileRoute("/api/admin/products")({
         if ("meta_title" in body) put("meta_title", oneLine(body.meta_title, META_TITLE_MAX));
         if ("meta_description" in body) put("meta_description", oneLine(body.meta_description, META_DESC_MAX));
         if ("meta_keywords" in body) put("meta_keywords", cleanKeywords(body.meta_keywords));
+        if ("gtin" in body) {
+          const g = normaliseGtin(str(body.gtin, 40));
+          const bad = gtinProblem(g);
+          if (bad) return Response.json({ ok: false, error: `UPC: ${bad}` }, { status: 400 });
+          put("gtin", g);
+        }
+        if ("mpn" in body) put("mpn", cleanMpn(body.mpn));
         // The gallery is authoritative when it is sent; the single column is
         // kept in step by writeImages rather than set here.
         const nextImages = "images" in body ? cleanImages(body.images) : null;

@@ -26,6 +26,8 @@ type Row = {
   category: string;
   price_cents: number;
   blurb: string;
+  gtin: string;
+  mpn: string;
   image: string;
   stock: number;
   stock_tracked: number;
@@ -74,7 +76,7 @@ export const Route = createFileRoute("/merchant-feed.xml")({
             (
               await db
                 .prepare(
-                  `SELECT p.slug, p.name, p.brand, p.category, p.price_cents, p.blurb, p.image, p.stock, p.stock_tracked,
+                  `SELECT p.slug, p.name, p.brand, p.category, p.price_cents, p.blurb, p.gtin, p.mpn, p.image, p.stock, p.stock_tracked,
                           c.name AS cat_name
                      FROM products p LEFT JOIN categories c ON c.slug = p.category
                     WHERE p.active = 1 AND p.price_cents > 0
@@ -115,6 +117,10 @@ export const Route = createFileRoute("/merchant-feed.xml")({
             `<g:price>${(p.price_cents / 100).toFixed(2)} USD</g:price>`,
             `<g:condition>new</g:condition>`,
             p.brand ? `<g:brand>${xml(p.brand)}</g:brand>` : "",
+            // What lets Google group this offer with other shops selling the
+            // same item. Either alone helps; the UPC is the strong one.
+            p.gtin ? `<g:gtin>${xml(p.gtin)}</g:gtin>` : "",
+            p.mpn ? `<g:mpn>${xml(p.mpn)}</g:mpn>` : "",
             p.cat_name ? `<g:product_type>${xml(p.cat_name)}</g:product_type>` : "",
           ].filter(Boolean);
           return `    <item>\n      ${lines.join("\n      ")}\n    </item>`;

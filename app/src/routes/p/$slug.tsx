@@ -22,7 +22,7 @@ import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
  * Only facts the page itself shows go in: name, photos, brand, price, stock.
  */
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; image: string },
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string },
   shots: string[],
   available: boolean,
   reviews?: ReviewData,
@@ -37,6 +37,8 @@ function productJsonLd(
     image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
     description: pageDescription(p),
     ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
+    ...(p.gtin ? { gtin: p.gtin } : {}),
+    ...(p.mpn ? { mpn: p.mpn } : {}),
     // Only approved reviews from verified buyers, exactly as shown on the
     // page. Left out entirely until there is at least one: Google's optional
     // "review" warning is harmless, a made-up rating is not.

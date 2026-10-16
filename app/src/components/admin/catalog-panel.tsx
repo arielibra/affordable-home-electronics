@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { gtinProblem } from "../../lib/gtin";
 import { DESCRIPTION_SHOWN, TITLE_SHOWN, autoDescription, autoTitle } from "../../lib/seo";
 import { ORIGIN, money } from "../../lib/site";
 import { slugify } from "../../lib/slug";
@@ -21,6 +22,8 @@ export type CatalogProduct = {
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
+  gtin?: string;
+  mpn?: string;
   image: string;
   images?: string[];
   featured: number;
@@ -220,6 +223,11 @@ function Editor({
   const [metaTitle, setMetaTitle] = useState(product?.meta_title ?? "");
   const [metaDescription, setMetaDescription] = useState(product?.meta_description ?? "");
   const [metaKeywords, setMetaKeywords] = useState(src?.meta_keywords ?? "");
+  // Barcode and part number identify one exact item, so a copy (by definition
+  // a different item) starts with both blank.
+  const [gtin, setGtin] = useState(product?.gtin ?? "");
+  const [mpn, setMpn] = useState(product?.mpn ?? "");
+  const gtinError = gtinProblem(gtin);
   // A copy takes the original's whole gallery, not just its main photo.
   const [images, setImages] = useState<string[]>(
     src?.images && src.images.length > 0 ? [...src.images] : src?.image ? [src.image] : [],
@@ -239,6 +247,7 @@ function Editor({
   async function save() {
     if (!name.trim()) return setError("A product needs a name.");
     if (!price.trim()) return setError("A product needs a price.");
+    if (gtinError) return setError(`UPC: ${gtinError}`);
     setSaving(true);
     setError("");
 
@@ -254,6 +263,8 @@ function Editor({
       meta_title: metaTitle,
       meta_description: metaDescription,
       meta_keywords: metaKeywords,
+      gtin,
+      mpn,
       images,
       featured,
       stock: Number(stock) || 0,
@@ -348,6 +359,39 @@ function Editor({
             List price <span className="normal-case tracking-normal">— shown struck through</span>
           </span>
           <input value={msrp} inputMode="decimal" onChange={(e) => setMsrp(e.currentTarget.value)} className={`mt-1.5 ${input}`} />
+        </label>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="text-[13px] font-medium text-muted">
+            UPC <span className="normal-case tracking-normal">— the barcode number on the box</span>
+          </span>
+          <input
+            value={gtin}
+            inputMode="numeric"
+            placeholder="e.g. 012345678905"
+            onChange={(e) => setGtin(e.currentTarget.value)}
+            className={`mt-1.5 ${input}`}
+          />
+          <span className={`mt-1 block text-[12px] leading-[1.5] ${gtinError ? "text-[color:var(--color-signal)]" : "text-muted"}`}>
+            {gtinError ||
+              "Lets Google show your price next to other shops selling the same item. Copy it from the box, or from your Amazon or Walmart listing."}
+          </span>
+        </label>
+        <label className="block">
+          <span className="text-[13px] font-medium text-muted">
+            Part number <span className="normal-case tracking-normal">— the maker&rsquo;s model code</span>
+          </span>
+          <input
+            value={mpn}
+            placeholder="e.g. VF30 PRO"
+            onChange={(e) => setMpn(e.currentTarget.value)}
+            className={`mt-1.5 ${input}`}
+          />
+          <span className="mt-1 block text-[12px] leading-[1.5] text-muted">
+            Exactly as the manufacturer writes it. Google uses it with the brand when there is no UPC.
+          </span>
         </label>
       </div>
 
