@@ -19,6 +19,7 @@ import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as MerchantFeedDotxmlRouteImport } from './routes/merchant-feed[.]xml'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -103,6 +104,11 @@ const OrderConfirmedRoute = OrderConfirmedRouteImport.update({
 const MerchantFeedDotxmlRoute = MerchantFeedDotxmlRouteImport.update({
   id: '/merchant-feed.xml',
   path: '/merchant-feed.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstallationRoute = InstallationRouteImport.update({
@@ -290,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/merchant-feed.xml': typeof MerchantFeedDotxmlRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/merchant-feed.xml': typeof MerchantFeedDotxmlRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/merchant-feed.xml': typeof MerchantFeedDotxmlRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
@@ -434,6 +443,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/llms.txt'
     | '/merchant-feed.xml'
     | '/order-confirmed'
     | '/orders'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/llms.txt'
     | '/merchant-feed.xml'
     | '/order-confirmed'
     | '/orders'
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/llms.txt'
     | '/merchant-feed.xml'
     | '/order-confirmed'
     | '/orders'
@@ -576,6 +588,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   InstallationRoute: typeof InstallationRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   MerchantFeedDotxmlRoute: typeof MerchantFeedDotxmlRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   OrdersRoute: typeof OrdersRoute
@@ -685,6 +698,13 @@ declare module '@tanstack/react-router' {
       path: '/merchant-feed.xml'
       fullPath: '/merchant-feed.xml'
       preLoaderRoute: typeof MerchantFeedDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/installation': {
@@ -944,6 +964,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   InstallationRoute: InstallationRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   MerchantFeedDotxmlRoute: MerchantFeedDotxmlRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   OrdersRoute: OrdersRoute,

@@ -4,6 +4,8 @@ import { InstallBand } from "../components/home/install-band";
 import { SiteShell } from "../components/site/chrome";
 import { Eyebrow, Shell, Stat } from "../components/site/section";
 import { ORIGIN, SITE } from "../lib/site";
+import { JsonLd } from "../components/JsonLd";
+import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 
 export const Route = createFileRoute("/installation")({
   head: () => ({
@@ -27,9 +29,35 @@ const STEPS = [
   { n: "04", t: "Handover", b: "Your phone shows the cameras before we leave, and you know how to pull a clip when someone asks for one." },
 ];
 
+const INSTALL_JSON = pageJsonLd({
+  path: "/installation",
+  name: "Security camera installation in NYC",
+  description:
+    "Camera and access control installation across Queens, Brooklyn, Manhattan and the Bronx. One trip, one bill, no monthly subscription.",
+  mainEntity: { "@id": `${ORIGIN}/installation#service` },
+  extra: [
+    {
+      "@type": "Service",
+      "@id": `${ORIGIN}/installation#service`,
+      name: "Security camera and access control installation",
+      serviceType: "Security camera installation",
+      url: `${ORIGIN}/installation`,
+      provider: { "@id": STORE_ID },
+      description:
+        "Site survey, a written itemised quote, cable runs, camera mounting and aiming, recorder setup, and a phone-app handover. No monthly subscription; the system is yours outright.",
+      areaServed: [
+        ...["Queens", "Brooklyn", "Manhattan", "The Bronx", "Staten Island", "Nassau County", "Westchester County"].map(
+          (name) => ({ "@type": "Place", name }),
+        ),
+      ],
+    },
+  ],
+});
+
 function Installation() {
   return (
     <SiteShell>
+      <JsonLd json={INSTALL_JSON} />
       <section className="relative border-b border-line">
         <img
           src="/assets/install-ladder.png"

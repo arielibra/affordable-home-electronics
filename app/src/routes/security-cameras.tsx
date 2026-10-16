@@ -7,6 +7,8 @@ import { ProductCard } from "../components/site/product-card";
 import { Eyebrow, SectionHead, Shell } from "../components/site/section";
 import { getCategoryPage } from "../lib/api/store.functions";
 import { ORIGIN, SITE } from "../lib/site";
+import { JsonLd } from "../components/JsonLd";
+import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 
 export const Route = createFileRoute("/security-cameras")({
   loader: () => getCategoryPage({ data: { slug: "cameras", sort: "featured" } }),
@@ -51,6 +53,7 @@ function SecurityCameras() {
   const { products } = Route.useLoaderData();
   return (
     <SiteShell>
+      <JsonLd json={pageJsonLd({ type: "CollectionPage", path: "/security-cameras", name: "Security cameras", description: "Security cameras, NVR and DVR recorders and complete systems from authorized brands.", mainEntity: { "@type": "ItemList", numberOfItems: products.length, itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, url: `${ORIGIN}/p/${p.slug}`, name: p.name })) } })} />
       <section className="border-b border-line bg-ground">
         <Shell className="grid items-center gap-12 py-14 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:py-20">
           <div>

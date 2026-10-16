@@ -4,6 +4,8 @@ import { CatalogBody, CatalogHeader } from "../../components/shop/catalog";
 import { SiteShell } from "../../components/site/chrome";
 import { getShop } from "../../lib/api/store.functions";
 import { ORIGIN } from "../../lib/site";
+import { JsonLd } from "../../components/JsonLd";
+import { STORE_ID, pageJsonLd } from "../../lib/structured-data";
 
 type Sort = "featured" | "price-asc" | "price-desc" | "name";
 const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "name"];
@@ -34,6 +36,7 @@ function ShopIndex() {
   const sort = Route.useSearch().sort ?? "featured";
   return (
     <SiteShell>
+      <JsonLd json={pageJsonLd({ type: "CollectionPage", path: "/shop", name: "Catalog", description: "Every product we sell, by category.", crumbs: [{ name: "Catalog", path: "/shop" }], mainEntity: { "@type": "ItemList", numberOfItems: categories.length, itemListElement: categories.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${ORIGIN}/shop/${c.slug}`, name: c.name })) } })} />
       <CatalogHeader
         title="Everything on the counter."
         lead="Real stock at the price we sell it for. Every item is genuine USA product from an authorized dealer, with the manufacturer warranty behind it."

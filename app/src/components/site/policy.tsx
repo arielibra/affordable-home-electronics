@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { SITE } from "../../lib/site";
+import { pageJsonLd } from "../../lib/structured-data";
+import { JsonLd } from "../JsonLd";
 import { SiteShell } from "./chrome";
 import { Eyebrow, Shell } from "./section";
 
@@ -10,15 +12,22 @@ export function PolicyPage({
   eyebrow,
   title,
   lead,
+  path,
+  mainEntity,
   children,
 }: {
   eyebrow: string;
   title: string;
   lead: string;
+  /** The page's own address, e.g. "/returns", for its structured data. */
+  path?: string;
+  mainEntity?: unknown;
   children: ReactNode;
 }) {
+  const name = title.replace(/\.$/, "");
   return (
     <SiteShell>
+      {path ? <JsonLd json={pageJsonLd({ path, name, description: lead, mainEntity })} /> : null}
       <Shell className="py-14">
         <Eyebrow>{eyebrow}</Eyebrow>
         <h1 className="mt-5 max-w-[20ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-5xl">

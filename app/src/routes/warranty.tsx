@@ -21,6 +21,7 @@ export const Route = createFileRoute("/warranty")({
 function Warranty() {
   return (
     <PolicyPage
+      path="/warranty"
       eyebrow="Store policy"
       title="Warranty."
       lead="We are an authorized dealer for every line we sell. That matters more than it sounds, and it is the difference between the price we quote and the suspiciously cheap one somewhere else."

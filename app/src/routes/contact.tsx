@@ -8,6 +8,8 @@ import { IconClock, IconMail, IconPhone, IconPin } from "../components/site/icon
 import { Eyebrow, Shell } from "../components/site/section";
 import { submitQuote } from "../lib/api/store.functions";
 import { ORIGIN, SITE } from "../lib/site";
+import { JsonLd } from "../components/JsonLd";
+import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -65,6 +67,7 @@ function Contact() {
 
   return (
     <SiteShell>
+      <JsonLd json={pageJsonLd({ type: "ContactPage", path: "/contact", name: "Contact Affordable Home Electronics", description: "Phone, WhatsApp, email, fax, address and opening hours.", about: { "@id": STORE_ID } })} />
       <Shell className="py-14">
         <Eyebrow>Contact</Eyebrow>
         <h1 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">

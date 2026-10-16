@@ -4,6 +4,8 @@ import { SiteShell } from "../components/site/chrome";
 import { Eyebrow, Shell } from "../components/site/section";
 import { getBrandIndex } from "../lib/api/store.functions";
 import { ORIGIN } from "../lib/site";
+import { JsonLd } from "../components/JsonLd";
+import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 
 export const Route = createFileRoute("/brands")({
   loader: () => getBrandIndex(),
@@ -31,6 +33,7 @@ function Brands() {
   const { brands } = Route.useLoaderData();
   return (
     <SiteShell>
+      <JsonLd json={pageJsonLd({ type: "CollectionPage", path: "/brands", name: "Brands we carry", description: "Authorized dealer for the security and electronics brands we stock.", mainEntity: { "@type": "ItemList", numberOfItems: brands.length, itemListElement: brands.map((b, i) => ({ "@type": "ListItem", position: i + 1, item: { "@type": "Brand", name: b.brand } })) } })} />
       <Shell className="py-14">
         <Eyebrow>Lines we carry</Eyebrow>
         <h1 className="mt-5 max-w-[18ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">

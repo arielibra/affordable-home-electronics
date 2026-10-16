@@ -4,6 +4,8 @@ import { SiteShell } from "../components/site/chrome";
 import { QuoteCta } from "../components/site/cta";
 import { Eyebrow, Shell, Stat } from "../components/site/section";
 import { ORIGIN, SITE } from "../lib/site";
+import { JsonLd } from "../components/JsonLd";
+import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -24,6 +26,7 @@ function About() {
   const years = new Date().getFullYear() - SITE.since;
   return (
     <SiteShell>
+      <JsonLd json={pageJsonLd({ type: "AboutPage", path: "/about", name: "About Affordable Home Electronics", description: "A family-run security camera and electronics shop in Rego Park, Queens, selling and installing since 2003.", about: { "@id": STORE_ID } })} />
       <Shell className="py-14">
         <Eyebrow>About</Eyebrow>
         <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">

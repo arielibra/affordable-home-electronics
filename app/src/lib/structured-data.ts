@@ -68,6 +68,18 @@ const STORE = {
     },
   ],
   areaServed: SITE.areas.map((a) => ({ "@type": "Place", name: a })),
+  // Store-wide return policy, matching /returns. Google reads this at the
+  // business level as well as on each product's offer.
+  hasMerchantReturnPolicy: {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "US",
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: 10,
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/RestockingFees",
+    restockingFee: 15,
+    merchantReturnLink: `${ORIGIN}/returns`,
+  },
   makesOffer: {
     "@type": "Offer",
     itemOffered: {
@@ -108,4 +120,42 @@ export function breadcrumbs(items: { name: string; path: string }[]) {
       item: `${ORIGIN}${it.path}`,
     })),
   };
+}
+
+/**
+ * A plain page: what kind of page it is, what it is about, which site and
+ * business it belongs to, and the breadcrumb trail back to the home page.
+ * `extra` adds more nodes to the same graph (a Service, an ItemList…).
+ */
+export function pageJsonLd(opts: {
+  type?: string;
+  path: string;
+  name: string;
+  description?: string;
+  crumbs?: { name: string; path: string }[];
+  about?: unknown;
+  mainEntity?: unknown;
+  extra?: unknown[];
+}): string {
+  const url = `${ORIGIN}${opts.path}`;
+  const crumbs = [{ name: "Home", path: "/" }, ...(opts.crumbs ?? [{ name: opts.name, path: opts.path }])];
+  return toJsonLd({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": opts.type ?? "WebPage",
+        "@id": url,
+        url,
+        name: opts.name,
+        ...(opts.description ? { description: opts.description } : {}),
+        inLanguage: "en-US",
+        isPartOf: { "@id": WEBSITE_ID },
+        publisher: { "@id": STORE_ID },
+        ...(opts.about ? { about: opts.about } : {}),
+        ...(opts.mainEntity ? { mainEntity: opts.mainEntity } : {}),
+        breadcrumb: breadcrumbs(crumbs),
+      },
+      ...(opts.extra ?? []),
+    ],
+  });
 }

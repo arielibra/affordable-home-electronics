@@ -21,6 +21,7 @@ export const Route = createFileRoute("/shipping")({
 function Shipping() {
   return (
     <PolicyPage
+      path="/shipping"
       eyebrow="Store policy"
       title="Shipping."
       lead="We ship from the shop in Rego Park, Queens, to anywhere in the United States and Canada."

@@ -21,6 +21,17 @@ export const Route = createFileRoute("/returns")({
 function Returns() {
   return (
     <PolicyPage
+      path="/returns"
+      mainEntity={{
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "US",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 10,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/RestockingFees",
+        restockingFee: 15,
+        merchantReturnLink: `${ORIGIN}/returns`,
+      }}
       eyebrow="Store policy"
       title="Returns and refunds."
       lead="Our return policy for online and mail orders. Read it before you buy — under New York law you are entitled to see it first, and we would rather you know where you stand than find out afterwards."

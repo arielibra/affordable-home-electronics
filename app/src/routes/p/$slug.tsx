@@ -22,8 +22,29 @@ import { STORE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data"
  * and availability in results and qualify for Google's free product listings.
  * Only facts the page itself shows go in: name, photos, brand, price, stock.
  */
+/**
+ * The spec sheet as name/value pairs (schema.org PropertyValue), so search
+ * engines and AI assistants can quote "Fingerprint capacity: 3,000" without
+ * reading the table. Only labelled rows; capped so a huge sheet stays sane.
+ */
+function specProperties(text: string | null | undefined) {
+  if (!text) return [];
+  const out: { "@type": "PropertyValue"; name: string; value: string }[] = [];
+  for (const block of parseSpecSheet(text).blocks) {
+    if (!("rows" in block)) continue;
+    for (const r of block.rows) {
+      const name = (r.label ?? "").replace(/\*\*/g, "").replace(/:$/, "").trim();
+      const value = r.value.replace(/\*\*/g, "").trim();
+      if (!name || !value || r.note || name.length > 80 || value.length > 300) continue;
+      out.push({ "@type": "PropertyValue", name, value });
+      if (out.length >= 60) return out;
+    }
+  }
+  return out;
+}
+
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string },
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string; specs?: string | null },
   categoryName: string,
   shots: string[],
   available: boolean,
@@ -36,6 +57,7 @@ function productJsonLd(
     name: p.name,
     url,
     sku: p.mpn || p.slug,
+    ...(specProperties(p.specs).length ? { additionalProperty: specProperties(p.specs) } : {}),
     ...(categoryName ? { category: categoryName } : {}),
     image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
     description: pageDescription(p),
