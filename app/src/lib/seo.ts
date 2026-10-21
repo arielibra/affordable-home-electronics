@@ -18,8 +18,16 @@ export const DESCRIPTION_SHOWN = 160;
 
 const SUFFIX = " | Affordable Home Electronics";
 
+/** Shop name only when it fits in what Google shows; otherwise the product
+ *  name alone, cut on a word if even that is too long. The product is what
+ *  people search for, so it gets the space. */
 export function autoTitle(name: string): string {
-  return `${name}${SUFFIX}`;
+  const n = name.trim();
+  if (n.length + SUFFIX.length <= TITLE_SHOWN) return `${n}${SUFFIX}`;
+  if (n.length <= TITLE_SHOWN) return n;
+  const cut = n.slice(0, TITLE_SHOWN);
+  const space = cut.lastIndexOf(" ");
+  return (space > 30 ? cut.slice(0, space) : cut).replace(/[\s,/|&-]+$/, "");
 }
 
 /** Search engines show about 160 characters and drop the rest, so the full

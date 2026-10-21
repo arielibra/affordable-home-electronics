@@ -14,7 +14,7 @@ export const Route = createFileRoute("/security-cameras")({
   loader: () => getCategoryPage({ data: { slug: "cameras", sort: "featured" } }),
   head: () => ({
     meta: [
-      { title: "Security cameras and CCTV in New York | Affordable Home Electronics" },
+      { title: "Security Cameras & CCTV | Affordable Home Electronics" },
       {
         name: "description",
         content:

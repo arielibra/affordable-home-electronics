@@ -83,6 +83,50 @@ function Brands() {
             </li>
           ))}
         </ul>
+
+        <section className="mt-20" aria-labelledby="why-heading">
+          <h2 id="why-heading" className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">
+            Why buying from an authorized dealer matters
+          </h2>
+          <div className="mt-8 grid gap-px border-y border-line bg-line md:grid-cols-3">
+            <div className="bg-ground p-6">
+              <h3 className="text-base font-medium text-ink">The warranty actually applies</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Manufacturers honor their warranty on product sold through their own dealer network. Grey-market imports
+                and units from unlisted sellers are often refused, and you only find out when something fails.
+              </p>
+            </div>
+            <div className="bg-ground p-6">
+              <h3 className="text-base font-medium text-ink">Genuine USA retail stock</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Everything we sell is the US model, with US firmware, the correct power supply and the manufacturer's own
+                packaging and documentation. That matters for recorders and cameras that have to talk to each other and to
+                the manufacturer's app.
+              </p>
+            </div>
+            <div className="bg-ground p-6">
+              <h3 className="text-base font-medium text-ink">We handle the claim</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                If something stops working inside its warranty, email us and we take it to the manufacturer for you. You
+                deal with one shop instead of a support queue. Details on the{" "}
+                <Link to="/warranty" className="text-ink underline underline-offset-4 hover:text-signal">warranty page</Link>.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-16 max-w-[62ch]" aria-labelledby="find-heading">
+          <h2 id="find-heading" className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">
+            Looking for a brand or model that is not listed?
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-muted">
+            We have been supplying security and electronics since 2003, and the lines above are only what is listed on the
+            website today. Search by part number first, since most of our listings include it. If nothing comes up, send us
+            the make and model through the{" "}
+            <Link to="/contact" className="text-ink underline underline-offset-4 hover:text-signal">contact page</Link> and
+            we will tell you whether we can supply it and at what price.
+          </p>
+        </section>
       </Shell>
     </SiteShell>
   );

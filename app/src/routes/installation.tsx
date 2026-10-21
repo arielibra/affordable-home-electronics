@@ -10,7 +10,7 @@ import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 export const Route = createFileRoute("/installation")({
   head: () => ({
     meta: [
-      { title: "Security camera installation in NYC | Affordable Home Electronics" },
+      { title: "Camera Installation NYC | Affordable Home Electronics" },
       {
         name: "description",
         content:

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { SiteShell } from "../components/site/chrome";
@@ -18,13 +18,78 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Call 718.275.9343, message us on WhatsApp, or come to the counter at 62-65 Saunders Street, Rego Park, NY 11374.",
+          "Call 718.275.9343, message us on WhatsApp or email the shop. Affordable Home Electronics, 62-65 Saunders Street, Rego Park, NY 11374.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/contact` }],
   }),
   component: Contact,
 });
+
+/** Answers to what people most often write in about, so a question can be
+ *  settled without waiting for a reply. Every line restates a policy page. */
+const HELP: { q: string; a: React.ReactNode }[] = [
+  {
+    q: "Where is my order?",
+    a: (
+      <>
+        Look it up on the{" "}
+        <Link to="/orders" className="text-ink underline underline-offset-4 hover:text-signal">order tracking page</Link>{" "}
+        with your order reference and email. Orders leave within two business days, and the tracking number appears
+        there as soon as it ships.
+      </>
+    ),
+  },
+  {
+    q: "Sending something back",
+    a: (
+      <>
+        Ask for a return authorization number first, by phone, email or the form here. The return address comes with it.
+        Returns without a number cannot be accepted. The full rules are on the{" "}
+        <Link to="/returns" className="text-ink underline underline-offset-4 hover:text-signal">returns page</Link>.
+      </>
+    ),
+  },
+  {
+    q: "Something stopped working",
+    a: (
+      <>
+        Everything we sell is genuine USA stock with the full manufacturer warranty, and we take the claim to the
+        manufacturer for you. Email the order reference, the model number and what it is doing. See the{" "}
+        <Link to="/warranty" className="text-ink underline underline-offset-4 hover:text-signal">warranty page</Link>.
+      </>
+    ),
+  },
+  {
+    q: "Installation in New York City",
+    a: (
+      <>
+        We install camera systems, recorders and access control across the five boroughs. Tell us the property type and
+        roughly how many cameras and we will come back with a quote. More on the{" "}
+        <Link to="/installation" className="text-ink underline underline-offset-4 hover:text-signal">installation page</Link>.
+      </>
+    ),
+  },
+  {
+    q: "Shipping questions",
+    a: (
+      <>
+        We ship across the United States and to Canada by UPS, which cannot deliver to PO boxes or APO/FPO addresses.
+        Oversized items and Canadian orders are covered on the{" "}
+        <Link to="/shipping" className="text-ink underline underline-offset-4 hover:text-signal">shipping page</Link>.
+      </>
+    ),
+  },
+  {
+    q: "A part number you cannot find",
+    a: (
+      <>
+        The website shows part of what we can supply. Send the make and model, or a photo of the label, and we will check
+        whether we can get it and what it costs.
+      </>
+    ),
+  },
+];
 
 const TOPICS = [
   "A quote for cameras",
@@ -185,6 +250,23 @@ function Contact() {
             )}
           </div>
         </div>
+
+        <section className="mt-20" aria-labelledby="help-heading">
+          <h2 id="help-heading" className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">
+            Quicker answers to common questions
+          </h2>
+          <p className="mt-3 max-w-[62ch] text-base leading-relaxed text-muted">
+            Most messages are about one of these. If yours is, the answer may already be here.
+          </p>
+          <dl className="mt-8 grid gap-px border-y border-line bg-line md:grid-cols-2 lg:grid-cols-3">
+            {HELP.map((h) => (
+              <div key={h.q} className="bg-ground p-6">
+                <dt className="text-base font-medium text-ink">{h.q}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted">{h.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </Shell>
     </SiteShell>
   );

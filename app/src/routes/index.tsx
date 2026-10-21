@@ -16,11 +16,11 @@ import { ORIGIN } from "../lib/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Security Cameras & Access Control | Affordable Home Electronics" },
+      { title: "Affordable Home Electronics: Cameras & Access Control" },
       {
         name: "description",
         content:
-          "Security cameras, NVR/DVR recorders, access control and smart locks from an authorized dealer in Rego Park, Queens. Shipped across the US, installed across NYC since 2003.",
+          "Security cameras, NVR/DVR recorders, access control and smart locks from an authorized dealer in Queens. Shipped nationwide, installed in NYC since 2003.",
       },
       { property: "og:title", content: "Affordable Home Electronics | Security Cameras & Access Control" },
       {
