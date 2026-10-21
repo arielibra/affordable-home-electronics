@@ -253,7 +253,9 @@ function CheckoutBody() {
   const tabs: { id: Method; label: string; note: string; on: boolean }[] = [
     { id: "card", label: "Credit or debit card", note: "Visa, Mastercard, Amex, Discover, Apple Pay and Google Pay", on: cfg.payments },
     { id: "paypal", label: "PayPal", note: "Pay with your PayPal balance, bank or saved card", on: cfg.paypal },
-    { id: "phone", label: "Order without paying now", note: "We call you back to confirm stock and take payment", on: true },
+    // Only a fallback for when no online payment is configured at all, so the
+    // checkout never dead-ends. With card or PayPal switched on it is hidden.
+    { id: "phone", label: "Order without paying now", note: "We call you back to confirm stock and take payment", on: !cfg.payments && !cfg.paypal },
   ];
   const shown = tabs.filter((t) => t.on);
   const needsAddress = method !== "card";
@@ -263,7 +265,7 @@ function CheckoutBody() {
       <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Checkout</h1>
       <p className="mt-4 max-w-[62ch] text-base leading-relaxed text-muted">
         {cfg.payments || cfg.paypal
-          ? "Pay online and the order goes straight through. Prefer to talk to someone first? Send it as a callback instead and nothing is charged."
+          ? "Pay by card or PayPal and the order goes straight through to the shop."
           : "Online payment is not switched on yet, so send the order through and the shop will call you back to confirm stock, shipping and the total."}
       </p>
 
