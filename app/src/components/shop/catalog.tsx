@@ -88,7 +88,7 @@ export function CatalogBody({
                 s.value === sort ? "bg-ink text-surface" : "text-muted hover:text-ink"
               }`;
               return active === "all" ? (
-                <Link key={s.value} to="/shop" search={{ sort: s.value }} className={cls}>
+                <Link key={s.value} to="/shop" search={s.value === "featured" ? {} : { sort: s.value as never }} className={cls}>
                   {s.label}
                 </Link>
               ) : (
@@ -96,7 +96,7 @@ export function CatalogBody({
                   key={s.value}
                   to="/shop/$category"
                   params={{ category: active }}
-                  search={{ sort: s.value }}
+                  search={s.value === "featured" ? {} : { sort: s.value as never }}
                   className={cls}
                 >
                   {s.label}

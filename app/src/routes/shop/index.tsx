@@ -12,8 +12,11 @@ const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "name"];
 
 export const Route = createFileRoute("/shop/")({
   validateSearch: (s: Record<string, unknown>): { sort?: Sort } => {
-    const raw = String(s.sort ?? "featured");
-    return { sort: (SORTS as string[]).includes(raw) ? (raw as Sort) : "featured" };
+    // "featured" is the default, so it is left out of the address. Returning
+    // it here made the router redirect /shop to /shop?sort=featured (a 307),
+    // so search engines met a redirect on every shop page.
+    const raw = String(s.sort ?? "");
+    return raw !== "featured" && (SORTS as string[]).includes(raw) ? { sort: raw as Sort } : {};
   },
   loaderDeps: ({ search }) => ({ sort: search.sort ?? ("featured" as Sort) }),
   loader: ({ deps }) => getShop({ data: { sort: deps.sort } }),
