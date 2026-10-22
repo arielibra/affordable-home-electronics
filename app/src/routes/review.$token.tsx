@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { SiteShell } from "../components/site/chrome";
 import { ReviewWriter } from "../components/site/reviews";
@@ -10,6 +10,11 @@ import { Eyebrow, Shell } from "../components/site/section";
  * of search: every one of these pages is private to one customer.
  */
 export const Route = createFileRoute("/review/$token")({
+  // Real links carry a 32-character hex token. Anything else is a mistyped or
+  // made-up address, so it gets a proper 404 instead of an empty review form.
+  beforeLoad: ({ params }) => {
+    if (!/^[0-9a-f]{32}$/i.test(params.token)) throw notFound();
+  },
   head: () => ({
     meta: [
       { title: "Review your order | Affordable Home Electronics" },

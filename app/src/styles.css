@@ -39,6 +39,18 @@
  * aliases below keep shadcn-style imports rendering while new UI migrates to
  * Quanta components.
  */
+/* ---------------------------------------------------------------------------
+ * Fonts, self-hosted (latin subset, from Google Fonts, SIL Open Font Licence).
+ * The "fallback" faces are Arial resized to the real fonts' proportions, so the
+ * moment the real font swaps in, lines do not rewrap and nothing jumps.
+ * ------------------------------------------------------------------------ */
+@font-face { font-family: "Figtree"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("/fonts/figtree-latin.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/barlow-condensed-500.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/barlow-condensed-600.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/barlow-condensed-700.woff2") format("woff2"); }
+@font-face { font-family: "Figtree Fallback"; src: local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 101.6%; ascent-override: 93.5%; descent-override: 24.6%; line-gap-override: 0%; }
+@font-face { font-family: "Barlow Condensed Fallback"; src: local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 83.8%; ascent-override: 119.3%; descent-override: 23.9%; line-gap-override: 0%; }
+
 @theme {
   --spacing: 0.25rem;
 }
@@ -133,9 +145,9 @@
    * --font-mono is kept as a name so every existing class keeps working, but it
    * now points at the readable body face; tiny typewriter labels were the
    * main reason pages felt hard to read. */
-  --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: "Figtree", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-sans: "Figtree", "Figtree Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Figtree", "Figtree Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Barlow Condensed", "Barlow Condensed Fallback", ui-sans-serif, sans-serif;
   --color-tile: #ffffff;
   --color-live: #19a974;
 }
@@ -183,6 +195,8 @@ html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="
 html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="h-12"],
 html.ahe body:not(:has(.ahe-admin)) textarea { border-radius: 10px; }
 html.ahe body:not(:has(.ahe-admin)) main [class~="border"][class~="border-line"]:is([class~="bg-surface"], [class~="bg-white"]) { border-radius: 14px; border-color: #dbe7f3; }
+/* Breadcrumb links: a taller tap area on phones. */
+nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 /* A white panel on the light blue page, the site's one card style. */
 .ahe-panel { background: var(--color-surface); border: 1px solid #dbe7f3; border-radius: 14px; }
 .ahe-live { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #11805a; }
@@ -243,6 +257,9 @@ html.ahe body:not(:has(.ahe-admin)) main [class~="border"][class~="border-line"]
   display: inline-block;
   transition: color 180ms ease, text-shadow 180ms ease;
 }
+/* A larger invisible tap area, so small header and footer links are easy to hit
+   on a phone without changing how they look. */
+.ahe-onblue::before { content: ""; position: absolute; inset: -7px -4px; }
 .ahe-onblue::after {
   content: "";
   position: absolute;

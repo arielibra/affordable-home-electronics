@@ -149,7 +149,7 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
   return (
     <div>
       <h3 className="ahe-display text-[18px] tracking-[0.03em] text-white">{title}</h3>
-      <ul className="mt-3 space-y-2 text-[15px] text-[#dcebfa]">{children}</ul>
+      <ul className="mt-3 space-y-2.5 text-[15px] text-[#dcebfa] ">{children}</ul>
     </div>
   );
 }

@@ -62,12 +62,11 @@ function buildHead(meta: AppMeta) {
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" as const },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap",
-      },
+      // Fonts are served from this site (public/fonts) and preloaded, so text
+      // is drawn in the right face from the first paint instead of reflowing
+      // when a third-party font arrives late.
+      { rel: "preload", href: "/fonts/figtree-latin.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" as const },
+      { rel: "preload", href: "/fonts/barlow-condensed-700.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" as const },
       { rel: "apple-touch-icon", href: "/app-icon.png" },
       // Google needs a square icon that is a multiple of 48px, so the ICO
       // (16/32/48) and the 192px PNG come first; the SVG is for modern browsers.

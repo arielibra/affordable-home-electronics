@@ -17,7 +17,7 @@ export function CatalogHeader({ title, lead, crumb }: { title: string; lead: str
   return (
     <div className="pb-2 pt-8 md:pt-10">
       <Shell>
-        {crumb ? <div className="mb-3 text-[14px] text-muted">{crumb}</div> : null}
+        {crumb ? <nav aria-label="Breadcrumb" className="mb-3 text-[14px] text-muted">{crumb}</nav> : null}
         <h1 className="max-w-[20ch] text-[40px] text-ink md:text-[56px]">{title}</h1>
         {lead ? <p className="mt-3 max-w-[62ch] text-[17px] leading-relaxed text-muted">{lead}</p> : null}
       </Shell>
