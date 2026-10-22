@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { useCart } from "../components/site/cart-context";
 import { SiteShell } from "../components/site/chrome";
@@ -16,8 +17,25 @@ export const Route = createFileRoute("/cart")({
   component: CartPage,
 });
 
-function QtyStepper({ slug, qty }: { slug: string; qty: number }) {
+/** Quantity changes and removals that fail (a dropped connection, a timeout)
+ *  used to throw silently. Now the shopper is told, and nothing is left
+ *  half-done: the cart simply keeps its last good state. */
+function useSafeSetQty() {
   const { setQty } = useCart();
+  const [failed, setFailed] = useState(false);
+  const run = async (slug: string, qty: number) => {
+    try {
+      setFailed(false);
+      await setQty(slug, qty);
+    } catch {
+      setFailed(true);
+    }
+  };
+  return { run, failed };
+}
+
+function QtyStepper({ slug, qty, onChange }: { slug: string; qty: number; onChange: (slug: string, qty: number) => void }) {
+  const setQty = onChange;
   const btn = "h-10 w-10 rounded-[10px] border-[1.5px] border-[#c6d9ec] bg-surface text-[18px] text-signal transition-colors hover:border-signal disabled:text-muted";
   return (
     <div className="flex items-center gap-1">
@@ -64,7 +82,8 @@ function CartPage() {
 }
 
 function CartBody() {
-  const { lines, subtotal, ready, setQty } = useCart();
+  const { lines, subtotal, ready } = useCart();
+  const { run: setQty, failed } = useSafeSetQty();
 
   return (
     <>
@@ -90,6 +109,12 @@ function CartBody() {
                 </div>
               </div>
             ) : (
+              <>
+              {failed ? (
+                <p role="alert" className="mb-3 rounded-lg border-l-[3px] border-signal bg-surface px-3.5 py-2.5 text-[15px] text-signal">
+                  We couldn't update your cart. Check your connection and try again.
+                </p>
+              ) : null}
               <ul className="rounded-[14px] border border-[#dbe7f3] bg-surface px-4 sm:px-5">
                 {lines.map((l) => (
                   <li key={l.slug} className="flex gap-4 border-b border-[#eef3f8] py-4 last:border-b-0 sm:gap-5">
@@ -104,7 +129,7 @@ function CartBody() {
                         </Link>
                       </h2>
                       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
-                        <QtyStepper slug={l.slug} qty={l.qty} />
+                        <QtyStepper slug={l.slug} qty={l.qty} onChange={(slug, q) => void setQty(slug, q)} />
                         <button
                           type="button"
                           onClick={() => void setQty(l.slug, 0)}
@@ -118,6 +143,7 @@ function CartBody() {
                   </li>
                 ))}
               </ul>
+              </>
             )}
           </div>
 

@@ -116,7 +116,7 @@ function CheckoutBody() {
         return;
       }
       setDone({ reference: r.reference, paid: false, total: r.subtotal });
-      await refresh();
+      await refresh().catch(() => undefined);
     } catch {
       setError(`That did not go through. Call ${SITE.phone} and we will take the order on the phone.`);
     } finally {
@@ -191,7 +191,14 @@ function CheckoutBody() {
             return;
           }
           setDone({ reference: r.reference, paid: true });
-          await refresh();
+          await refresh().catch(() => undefined);
+        } catch {
+          // The approval reached PayPal but our confirmation call did not come
+          // back (dropped connection, timeout). The PayPal webhook still
+          // completes the order, so the one thing to prevent is a second payment.
+          setError(
+            `We couldn't confirm your PayPal payment on our side. Please don't pay again: check your email for a PayPal receipt, or call ${SITE.phone} and we will confirm the order.`,
+          );
         } finally {
           setPending(false);
         }
