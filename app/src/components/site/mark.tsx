@@ -77,9 +77,9 @@ export function Mark({
  */
 export function Lockup({ reversed = false, className = "" }: { reversed?: boolean; className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-2.5 ${reversed ? "text-white" : "text-ink"} ${className}`}>
-      <Mark className="h-[44px] w-[56px] shrink-0" />
-      <span className="ahe-display text-[15.5px] leading-[0.98] tracking-[0.015em]">
+    <span className={`inline-flex items-center gap-2 sm:gap-2.5 ${reversed ? "text-white" : "text-ink"} ${className}`}>
+      <Mark className="h-[38px] w-[48px] shrink-0 sm:h-[44px] sm:w-[56px]" />
+      <span className="ahe-display text-[14px] leading-[0.98] tracking-[0.015em] sm:text-[15.5px]">
         Affordable
         <br />
         Home

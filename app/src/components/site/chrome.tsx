@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 
 import { NAV, SITE } from "../../lib/site";
 import { CartProvider, useCart } from "./cart-context";
-import { IconCart, IconMail, IconPhone, IconPin, IconSearch } from "./icons";
+import { IconCart, IconMail, IconPhone, IconPin, IconSearch, IconTruck } from "./icons";
 import { Lockup } from "./mark";
 import { useHalloween } from "./halloween";
 import { PayMarks } from "./pay-marks";
@@ -13,7 +13,7 @@ function CartLink() {
   return (
     <Link
       to="/cart"
-      className="relative inline-flex h-11 items-center gap-2 rounded-[10px] border border-line bg-surface px-3.5 text-[15px] font-semibold text-ink transition-colors hover:border-line-dark"
+      className="relative inline-flex h-10 items-center gap-1.5 rounded-[10px] border border-line bg-surface px-2.5 text-[15px] font-semibold text-ink transition-colors hover:border-line-dark sm:h-11 sm:gap-2 sm:px-3.5"
     >
       <IconCart className="h-[18px] w-[18px]" />
       <span className="hidden sm:inline">Cart</span>
@@ -75,9 +75,6 @@ function Header() {
             )}
           </span>
           <div className="flex shrink-0 items-center gap-5">
-            <Link to="/orders" className="ahe-onblue">
-              Track an order
-            </Link>
             <a href={SITE.phoneHref} className="ahe-onblue">
               {SITE.phone}
             </a>
@@ -85,20 +82,31 @@ function Header() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1240px] items-center gap-5 px-5 py-3">
+      <div className="mx-auto flex max-w-[1240px] items-center gap-3 px-4 py-3 sm:gap-5 sm:px-5">
         <Link to="/" className="shrink-0" aria-label={`${SITE.name} home`}>
           <Lockup />
         </Link>
 
         <HeaderSearch className="hidden flex-1 md:block" />
 
-        <div className="ml-auto flex items-center gap-2 md:ml-0">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2 md:ml-0">
           <Link
             to="/search"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-line bg-surface text-ink md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-line bg-surface text-ink sm:h-11 sm:w-11 md:hidden"
             aria-label="Search the catalog"
           >
             <IconSearch className="h-[18px] w-[18px]" />
+          </Link>
+          {/* Track an order sits beside the cart: the two things a shopper comes
+              back to the header for. Icon only on phones to keep the row tidy. */}
+          <Link
+            to="/orders"
+            aria-label="Track an order"
+            className="inline-flex h-10 w-10 items-center justify-center gap-2 rounded-[10px] border border-line bg-surface text-[15px] font-semibold text-ink transition-colors hover:border-line-dark sm:h-11 sm:w-auto sm:px-3.5"
+            activeProps={{ className: "border-line-dark" }}
+          >
+            <IconTruck className="h-[18px] w-[18px]" />
+            <span className="hidden sm:inline">Track order</span>
           </Link>
           <CartLink />
           <button
@@ -106,7 +114,7 @@ function Header() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label="Toggle menu"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-line bg-surface text-ink lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-line bg-surface text-ink sm:h-11 sm:w-11 lg:hidden"
           >
             <span className="flex flex-col gap-[5px]">
               <span className="block h-[2px] w-4 bg-ink" />
