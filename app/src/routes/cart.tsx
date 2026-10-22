@@ -6,6 +6,7 @@ import { CheckoutCta } from "../components/site/cta";
 import { Mark } from "../components/site/mark";
 import { Shell } from "../components/site/section";
 import { ORIGIN, SITE, money } from "../lib/site";
+import { FREE_SHIPPING_THRESHOLD_CENTS } from "../lib/shipping";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -17,13 +18,13 @@ export const Route = createFileRoute("/cart")({
 
 function QtyStepper({ slug, qty }: { slug: string; qty: number }) {
   const { setQty } = useCart();
-  const btn = "h-9 w-9 border border-line bg-surface text-ink transition-colors hover:border-ink disabled:text-muted";
+  const btn = "h-10 w-10 rounded-[10px] border-[1.5px] border-[#c6d9ec] bg-surface text-[18px] text-signal transition-colors hover:border-signal disabled:text-muted";
   return (
     <div className="flex items-center gap-1">
       <button type="button" aria-label="Decrease quantity" className={btn} onClick={() => void setQty(slug, qty - 1)}>
         &minus;
       </button>
-      <span className="w-10 text-center font-mono text-sm text-ink">{qty}</span>
+      <span className="w-10 text-center text-[16px] font-semibold tabular-nums text-ink">{qty}</span>
       <button
         type="button"
         aria-label="Increase quantity"
@@ -67,15 +68,15 @@ function CartBody() {
 
   return (
     <>
-      <Shell className="py-12">
-        <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Your cart</h1>
+      <Shell className="py-8 md:py-10">
+        <h1 className="text-[40px] text-ink md:text-[56px]">Your cart</h1>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px] lg:gap-14">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px] lg:gap-8">
           <div>
             {!ready ? (
               <Skeleton />
             ) : lines.length === 0 ? (
-              <div className="border border-line bg-surface p-10 text-center">
+              <div className="rounded-[14px] border border-[#dbe7f3] bg-surface p-10 text-center">
                 <Mark empty className="mx-auto h-20 w-[114px] text-ink" />
                 <p className="mt-7 text-base text-ink">Nothing in the cart yet.</p>
                 <p className="mt-2 text-sm text-muted">Start with the cameras, or tell us the building and we will spec it.</p>
@@ -89,50 +90,65 @@ function CartBody() {
                 </div>
               </div>
             ) : (
-              <ul className="border-t border-line">
+              <ul className="rounded-[14px] border border-[#dbe7f3] bg-surface px-4 sm:px-5">
                 {lines.map((l) => (
-                  <li key={l.slug} className="flex flex-col gap-5 border-b border-line py-6 sm:flex-row">
-                    <Link to="/p/$slug" params={{ slug: l.slug }} className="shrink-0 border border-line bg-white p-2">
-                      <img src={l.image} alt={l.name} width={96} height={96} className="h-24 w-24 object-contain" />
+                  <li key={l.slug} className="flex gap-4 border-b border-[#eef3f8] py-4 last:border-b-0 sm:gap-5">
+                    <Link to="/p/$slug" params={{ slug: l.slug }} className="ahe-photo h-[72px] w-[72px] shrink-0 border border-[#e3edf7] sm:h-[88px] sm:w-[88px]">
+                      <img src={l.image} alt={l.name} width={96} height={96} />
                     </Link>
-                    <div className="flex-1">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{l.brand}</p>
-                      <h2 className="mt-1.5 max-w-[46ch] text-sm leading-snug text-ink">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-semibold text-signal">{l.brand}</p>
+                      <h2 className="ahe-plain mt-0.5 max-w-[46ch] text-[15px] leading-snug text-ink">
                         <Link to="/p/$slug" params={{ slug: l.slug }} className="hover:text-signal">
                           {l.name}
                         </Link>
                       </h2>
-                      <div className="mt-4 flex flex-wrap items-center gap-5">
+                      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
                         <QtyStepper slug={l.slug} qty={l.qty} />
                         <button
                           type="button"
                           onClick={() => void setQty(l.slug, 0)}
-                          className="text-sm text-muted underline underline-offset-4 hover:text-signal"
+                          className="text-[14px] text-signal underline underline-offset-4 hover:text-ink"
                         >
                           Remove
                         </button>
                       </div>
                     </div>
-                    <div className="text-right font-mono text-base text-ink sm:w-28">{money(l.price_cents * l.qty)}</div>
+                    <div className="ahe-price shrink-0 text-right text-[22px] text-ink sm:w-28 sm:text-[24px]">{money(l.price_cents * l.qty)}</div>
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
-          <aside className="h-fit border border-line bg-surface p-6">
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Order summary</h2>
-            <dl className="mt-5 space-y-3 border-b border-line pb-5 text-sm">
+          <aside className="h-fit rounded-[14px] border border-[#dbe7f3] bg-surface p-5">
+            <h2 className="text-[26px] text-ink">Your order</h2>
+            <dl className="mt-3 space-y-1.5 text-[15px]">
               <div className="flex justify-between">
                 <dt className="text-muted">Subtotal</dt>
-                <dd className="font-mono text-ink">{money(subtotal)}</dd>
+                <dd className="tabular-nums text-ink">{money(subtotal)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted">Shipping</dt>
-                <dd className="text-ink">Calculated at checkout</dd>
+                <dd className="text-ink">{subtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? "Free" : "Calculated at checkout"}</dd>
               </div>
             </dl>
-            <p className="mt-5 text-sm leading-relaxed text-muted">
+            {lines.length > 0 ? (
+              <div className="mt-4">
+                <p className="mb-1.5 text-[14px] font-semibold text-[#11805a]">
+                  {subtotal >= FREE_SHIPPING_THRESHOLD_CENTS
+                    ? "You've unlocked free shipping"
+                    : `${money(FREE_SHIPPING_THRESHOLD_CENTS - subtotal)} away from free shipping`}
+                </p>
+                <div className="h-2 overflow-hidden rounded-full bg-[#e6eef6]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#2ab8e0] to-[#19a974]"
+                    style={{ width: `${Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD_CENTS) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            ) : null}
+            <p className="mt-4 border-t border-[#dbe7f3] pt-4 text-[14px] leading-relaxed text-muted">
               Flat rate shipping, free over $199. Sales tax and the final total are shown before you pay.
             </p>
             <div className="mt-6">
@@ -140,7 +156,7 @@ function CartBody() {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted">
               In a hurry? Call{" "}
-              <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
+              <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4 hover:text-signal">
                 {SITE.phone}
               </a>
               .

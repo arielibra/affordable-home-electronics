@@ -47,7 +47,7 @@ export const Route = createFileRoute("/shop/$category")({
 });
 
 function CategoryPage() {
-  const { categories, category, products } = Route.useLoaderData();
+  const { categories, category, products, counts } = Route.useLoaderData();
   const sort = Route.useSearch().sort ?? "featured";
   if (!category) return null;
   const url = `${ORIGIN}/shop/${category.slug}`;
@@ -92,13 +92,14 @@ function CategoryPage() {
             <Link to="/shop" className="hover:text-signal">
               Catalog
             </Link>
-            <span className="mx-2 text-line">/</span>
-            <span className="text-ink">{category.name}</span>
+            <span className="mx-2 text-muted">/</span>
+            <span className="font-semibold text-ink">{category.name}</span>
           </>
         }
       />
       <CatalogBody
         categories={categories}
+        counts={counts}
         active={category.slug}
         sort={sort}
         products={products}

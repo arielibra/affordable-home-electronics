@@ -4,7 +4,7 @@ import { useState } from "react";
 import { StructuredData } from "../../components/StructuredData";
 import { SiteShell } from "../../components/site/chrome";
 import { IconShield, IconTruck } from "../../components/site/icons";
-import { AddToCartButton, ProductCard, isAvailable } from "../../components/site/product-card";
+import { AddToCartButton, ProductCard, isAvailable, stockLabel } from "../../components/site/product-card";
 import { ProductReviews, Stars, type ReviewData } from "../../components/site/reviews";
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
@@ -173,33 +173,34 @@ function ProductPage() {
   return (
     <SiteShell>
       <StructuredData json={productJsonLd(product, categoryName, shots, available, reviews)} />
-      <Shell className="py-8">
-        <nav className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted" aria-label="Breadcrumb">
+      <Shell className="pb-4 pt-6">
+        <nav className="text-[14px] text-muted" aria-label="Breadcrumb">
           <Link to="/shop" className="hover:text-signal">
             Catalog
           </Link>
-          <span className="mx-2 text-line">/</span>
+          <span className="mx-2">/</span>
           <Link to="/shop/$category" params={{ category: product.category }} className="hover:text-signal">
             {categoryName}
           </Link>
         </nav>
       </Shell>
 
-      <Shell className="grid gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        <div>
-          <figure className="border border-line bg-white p-8">
-            <img
-              src={main}
-              alt={product.name}
-              width={520}
-              height={520}
-              className="mx-auto h-[320px] w-auto max-w-full object-contain md:h-[440px]"
-            />
+      <Shell className="grid gap-8 pb-14 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-12">
+        {/* Photos: a calm, medium-sized panel. Thumbnails sit beside it on wide
+            screens and in a row underneath on narrow ones, never on top of it. */}
+        <div className="flex flex-col gap-3 lg:flex-row-reverse lg:items-start">
+          <figure className="ahe-photo w-full max-w-[460px] rounded-[14px] border border-[#dbe7f3] max-lg:mx-auto max-lg:max-w-[300px]">
+            <img src={main} alt={product.name} width={520} height={520} />
+            {shots.length > 1 ? (
+              <span className="absolute bottom-2.5 right-2.5 rounded-full bg-ground px-2.5 py-0.5 text-[12px] font-semibold text-muted">
+                {shown + 1} / {shots.length}
+              </span>
+            ) : null}
           </figure>
 
           {/* Only worth showing when there is actually a choice to make. */}
           {shots.length > 1 ? (
-            <ul className="mt-3 flex flex-wrap gap-2">
+            <ul className="flex flex-wrap gap-2 max-lg:justify-center lg:w-16 lg:flex-col">
               {shots.map((src, i) => (
                 <li key={src}>
                   <button
@@ -207,11 +208,11 @@ function ProductPage() {
                     onClick={() => setShown(i)}
                     aria-label={`Photo ${i + 1} of ${shots.length}`}
                     aria-current={i === shown}
-                    className={`flex h-16 w-16 items-center justify-center border bg-white p-1 transition-colors ${
-                      i === shown ? "border-ink" : "border-line hover:border-muted"
+                    className={`ahe-photo h-14 w-14 rounded-[10px] border lg:h-16 lg:w-16 ${
+                      i === shown ? "border-signal shadow-[0_0_0_1px_var(--color-signal)]" : "border-[#dbe7f3] hover:border-[#9db6cf]"
                     }`}
                   >
-                    <img src={src} alt="" className="h-full w-full object-contain" loading="lazy" />
+                    <img src={src} alt="" loading="lazy" />
                   </button>
                 </li>
               ))}
@@ -219,9 +220,9 @@ function ProductPage() {
           ) : null}
         </div>
 
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{product.brand}</p>
-          <h1 className="mt-3 text-3xl font-semibold leading-[1.06] tracking-tighter text-ink md:text-4xl">{product.name}</h1>
+        <div className="min-w-0">
+          <p className="text-[14px] font-semibold text-signal">{product.brand}</p>
+          <h1 className="mt-1.5 text-[30px] text-ink md:text-[40px]">{product.name}</h1>
           {reviews && reviews.summary.count > 0 ? (
             <a href="#reviews" className="mt-3 inline-flex items-center gap-2 text-sm text-muted hover:text-ink">
               <Stars value={reviews.summary.average} />
@@ -232,57 +233,59 @@ function ProductPage() {
             </a>
           ) : null}
           {product.blurb ? (
-            <div className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
+            <div className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
           ) : null}
 
-          <div className="mt-8 flex flex-wrap items-end gap-4 border-t border-line pt-6">
-            <span className="font-mono text-4xl leading-none tracking-tighter text-ink">{money(product.price_cents)}</span>
-            {product.msrp_cents && product.msrp_cents > product.price_cents ? (
-              <span className="font-mono text-base leading-none text-muted line-through">{money(product.msrp_cents)}</span>
-            ) : null}
-            {save ? (
-              <span className="bg-signal px-2 py-1 font-mono text-[11px] leading-none text-white">Save {save}%</span>
-            ) : null}
+          <div className="mt-6 grid gap-3.5 rounded-[14px] border border-[#dbe7f3] bg-surface p-5">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
+              <span className="ahe-price text-[40px] text-ink">{money(product.price_cents)}</span>
+              {product.msrp_cents && product.msrp_cents > product.price_cents ? (
+                <span className="text-[15px] text-muted line-through tabular-nums">{money(product.msrp_cents)}</span>
+              ) : null}
+              {save && product.msrp_cents ? (
+                <span className="rounded-full bg-[#e6f1fb] px-2.5 py-1 text-[14px] font-bold text-signal">
+                  You save {money(product.msrp_cents - product.price_cents)}
+                </span>
+              ) : null}
+            </div>
+            <span className={`ahe-live ${available ? "" : "is-out"}`}>{stockLabel(product)}</span>
+            <div className="max-w-[420px]">
+              <AddToCartButton slug={product.slug} soldOut={!available} />
+              {available && product.stock_tracked === 1 && product.stock <= 3 ? (
+                <p className="mt-2 text-[14px] font-semibold text-signal">Only {product.stock} left</p>
+              ) : null}
+              {!available ? (
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  Call the shop and we will tell you when the next shipment lands, or find you an equivalent.
+                </p>
+              ) : null}
+            </div>
           </div>
 
-          <div className="mt-6 max-w-[380px]">
-            <AddToCartButton slug={product.slug} soldOut={!available} />
-            {available && product.stock_tracked === 1 && product.stock <= 3 ? (
-              <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-signal">
-                Only {product.stock} left
-              </p>
-            ) : null}
-            {!available ? (
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                Call the shop and we will tell you when the next shipment lands, or find you an equivalent.
-              </p>
-            ) : null}
-          </div>
-
-          <dl className="mt-10 border-t border-line">
-            <div className="flex gap-4 border-b border-line py-5">
-              <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
+          <dl className="mt-6 grid gap-3.5">
+            <div className="flex gap-3">
+              <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-[#19a974]" />
               <div>
-                <dt className="text-sm font-medium text-ink">Authorized dealer stock</dt>
-                <dd className="mt-1 max-w-[52ch] text-sm leading-relaxed text-muted">
+                <dt className="text-[15px] font-semibold text-ink">Authorized dealer stock</dt>
+                <dd className="mt-0.5 max-w-[52ch] text-[14px] leading-relaxed text-muted">
                   Sealed USA retail product with the full manufacturer warranty and every accessory the factory packed.
                 </dd>
               </div>
             </div>
-            <div className="flex gap-4 border-b border-line py-5">
-              <IconTruck className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
+            <div className="flex gap-3">
+              <IconTruck className="mt-0.5 h-5 w-5 shrink-0 text-[#19a974]" />
               <div>
-                <dt className="text-sm font-medium text-ink">Shipping</dt>
-                <dd className="mt-1 max-w-[52ch] text-sm leading-relaxed text-muted">
+                <dt className="text-[15px] font-semibold text-ink">Shipping</dt>
+                <dd className="mt-0.5 max-w-[52ch] text-[14px] leading-relaxed text-muted">
                   Ships anywhere in the United States and Canada. NYC installation can be added to the order.
                 </dd>
               </div>
             </div>
           </dl>
 
-          <p className="mt-6 text-sm leading-relaxed text-muted">
+          <p className="mt-5 text-[14px] leading-relaxed text-muted">
             Questions on compatibility or channel count? Call{" "}
-            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4 hover:text-signal">
+            <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4 hover:text-signal">
               {SITE.phone}
             </a>{" "}
             and we will check it against your recorder before you buy.
@@ -300,12 +303,10 @@ function ProductPage() {
       </Shell>
 
       {related.length > 0 ? (
-        <section className="border-t border-line bg-surface py-14">
+        <section className="py-12">
           <Shell>
-            <h2 className="border-b border-line pb-4 text-2xl font-semibold leading-none tracking-tighter text-ink">
-              Sits near it on the shelf
-            </h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <h2 className="text-[32px] text-ink">Sits near it on the shelf</h2>
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {related.map((r) => (
                 <ProductCard key={r.slug} p={r} />
               ))}
@@ -339,10 +340,10 @@ function Specifications({ text }: { text: string }) {
   const folded = foldable && !open;
 
   return (
-    <section className="border-t border-line py-14" aria-labelledby="specs-title">
+    <section className="pb-6 pt-2" aria-labelledby="specs-title">
       <Shell>
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
-          <h2 id="specs-title" className="text-2xl font-semibold leading-none tracking-tighter text-ink">
+        <div className="flex flex-wrap items-end justify-between gap-4 pb-3">
+          <h2 id="specs-title" className="text-[32px] text-ink">
             Specifications
           </h2>
           {sheet.links.length > 0 ? (
@@ -364,16 +365,16 @@ function Specifications({ text }: { text: string }) {
         </div>
 
         {sheet.blocks.length > 0 ? (
-          <div className="mt-6 max-w-4xl">
+          <div className="rounded-[14px] border border-[#dbe7f3] bg-surface p-5 md:p-7">
             <div
               id="specs-body"
-              className={`relative text-base leading-relaxed ${folded ? "max-h-[36rem] overflow-hidden" : ""}`}
+              className={`relative max-w-4xl text-[15px] leading-relaxed ${folded ? "max-h-[36rem] overflow-hidden" : ""}`}
             >
               {renderSpecSheet(sheet)}
               {folded ? (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-ground to-transparent"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-surface to-transparent"
                 />
               ) : null}
             </div>
@@ -383,7 +384,7 @@ function Specifications({ text }: { text: string }) {
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
                 aria-controls="specs-body"
-                className="mt-5 border border-ink px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-white"
+                className="mt-5 rounded-[10px] border border-ink px-5 py-2.5 text-[14px] font-semibold text-ink transition-colors hover:bg-ink hover:text-white"
               >
                 {open ? "Show fewer" : `Show all ${sheet.rowCount} specifications`}
               </button>

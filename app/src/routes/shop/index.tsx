@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CatalogBody, CatalogHeader } from "../../components/shop/catalog";
+import { CatalogBody, CatalogHeader, CategoryTiles } from "../../components/shop/catalog";
 import { SiteShell } from "../../components/site/chrome";
 import { getShop } from "../../lib/api/store.functions";
 import { ORIGIN } from "../../lib/site";
@@ -44,6 +44,7 @@ function ShopIndex() {
         title="Everything on the counter."
         lead="Real stock at the price we sell it for. Every item is genuine USA product from an authorized dealer, with the manufacturer warranty behind it."
       />
+      <CategoryTiles categories={categories} counts={counts} products={products} />
       <CatalogBody categories={categories} counts={counts} active="all" sort={sort} products={products} />
     </SiteShell>
   );

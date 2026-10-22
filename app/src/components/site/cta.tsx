@@ -6,7 +6,7 @@ import { IconArrow } from "./icons";
 /** Hero primary: ink slab with a signal rule that draws across on hover. */
 export function ShopCta({ category, children = "Shop cameras" }: { category?: string; children?: ReactNode }) {
   const cls =
-    "group relative inline-flex h-12 items-center overflow-hidden bg-ink px-7 text-sm font-medium text-surface transition-transform duration-150 active:scale-[0.98]";
+    "group relative inline-flex h-12 items-center overflow-hidden rounded-[10px] bg-ink px-7 text-[15px] font-semibold text-surface transition-transform duration-150 active:scale-[0.98]";
   const inner = (
     <>
       <span className="relative z-10">{children}</span>
@@ -68,7 +68,7 @@ export function CheckoutCta({ disabled = false }: { disabled?: boolean }) {
       to="/checkout"
       aria-disabled={disabled}
       tabIndex={disabled ? -1 : undefined}
-      className={`group inline-flex h-12 w-full items-center justify-center gap-3 px-7 text-sm font-medium transition-transform duration-150 sm:w-auto ${
+      className={`group inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] px-7 text-[15px] font-semibold transition-transform duration-150 ${
         disabled
           ? "pointer-events-none border border-line bg-transparent text-muted"
           : "bg-ink text-surface active:scale-[0.98]"

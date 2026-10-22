@@ -42,9 +42,13 @@ export const getShop = createServerFn({ method: "GET" })
 export const getCategoryPage = createServerFn({ method: "GET" })
   .inputValidator(z.object({ slug, sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
   .handler(async ({ data }) => {
-    const [categories, products] = await Promise.all([listCategories(), productsIn(data.slug, data.sort)]);
+    const [categories, products, counts] = await Promise.all([
+      listCategories(),
+      productsIn(data.slug, data.sort),
+      categoryCounts(),
+    ]);
     const category = categories.find((c) => c.slug === data.slug) ?? null;
-    return { categories, category, products };
+    return { categories, category, products, counts };
   });
 
 export const getProductPage = createServerFn({ method: "GET" })

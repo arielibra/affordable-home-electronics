@@ -17,10 +17,17 @@ export function Featured({ products }: { products: CardProduct[] }) {
             </Link>
           }
         />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((p) => (
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
+          {products.slice(0, 9).map((p) => (
             <ProductCard key={p.slug} p={p} />
           ))}
+          <Link
+            to="/shop"
+            className="flex min-h-[200px] flex-col justify-end gap-1.5 rounded-[14px] bg-ink p-5 text-white transition-colors hover:bg-ink-soft"
+          >
+            <span className="ahe-display text-[28px] leading-none">Shop all →</span>
+            <span className="text-[14px] text-[#cfe1ef]">Cameras, recorders, access control and more</span>
+          </Link>
         </div>
       </Shell>
     </section>

@@ -51,21 +51,29 @@ function Tile({ mark }: { mark: Mark }) {
   );
 }
 
+/**
+ * `strip` sets the row on a slim white strip. Visa and Amex are blue cards, so
+ * on the blue footer they would all but disappear; on white every mark reads.
+ */
 export function PayMarks({
   wallets = true,
   label = "We accept",
   className = "",
+  strip = false,
 }: {
   wallets?: boolean;
   label?: string | null;
   className?: string;
+  strip?: boolean;
 }) {
   const marks = wallets ? [...CARD_MARKS, ...WALLET_MARKS] : CARD_MARKS;
   return (
-    <div className={`flex flex-wrap items-center gap-x-3 gap-y-2.5 ${className}`}>
-      {label ? (
-        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">{label}</span>
-      ) : null}
+    <div
+      className={`flex flex-wrap items-center gap-x-3 gap-y-2 ${
+        strip ? "rounded-xl bg-white px-3 py-2 shadow-[0_6px_18px_-10px_rgba(10,30,60,0.5)]" : ""
+      } ${className}`}
+    >
+      {label ? <span className="text-[13px] font-semibold text-muted">{label}</span> : null}
       <ul className="flex flex-wrap items-center gap-1.5">
         {marks.map((m) => (
           <li key={m.key}>

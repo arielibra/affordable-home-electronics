@@ -40,9 +40,9 @@ function Index() {
     <SiteShell>
       <Hero />
       <CategoriesRail categories={categories} counts={counts} />
+      <Featured products={featured} />
       <WhatWeDo />
       <InstallBand />
-      <Featured products={featured} />
       <WhyBuy />
       <BrandsWall />
       <Testimonials />

@@ -1,10 +1,11 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 
 import { NAV, SITE } from "../../lib/site";
 import { CartProvider, useCart } from "./cart-context";
 import { IconCart, IconMail, IconPhone, IconPin, IconSearch } from "./icons";
-import { Mark } from "./mark";
+import { Lockup } from "./mark";
+import { HalloweenStrip, useHalloween } from "./halloween";
 import { PayMarks } from "./pay-marks";
 
 function CartLink() {
@@ -12,23 +13,51 @@ function CartLink() {
   return (
     <Link
       to="/cart"
-      className="relative inline-flex h-10 items-center gap-2 border border-line bg-surface px-3 text-sm font-medium text-ink transition-colors hover:border-ink"
+      className="relative inline-flex h-11 items-center gap-2 rounded-[10px] border border-line bg-surface px-3.5 text-[15px] font-semibold text-ink transition-colors hover:border-line-dark"
     >
-      <IconCart className="h-4 w-4" />
+      <IconCart className="h-[18px] w-[18px]" />
       <span className="hidden sm:inline">Cart</span>
-      <span className="min-w-[1.5rem] bg-ink px-1 text-center font-mono text-[11px] leading-5 text-surface">
+      <span className="min-w-[1.5rem] rounded-full bg-ink px-1.5 text-center text-[12px] font-semibold leading-5 text-surface">
         {ready ? count : "0"}
       </span>
     </Link>
   );
 }
 
+/** The search box in the header. Sends the same ?q= the search page already reads. */
+function HeaderSearch({ className = "" }: { className?: string }) {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  return (
+    <form
+      role="search"
+      className={className}
+      onSubmit={(e) => {
+        e.preventDefault();
+        void navigate({ to: "/search", search: { q: q.trim() } });
+      }}
+    >
+      <label className="relative block">
+        <span className="sr-only">Search the catalog</span>
+        <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.currentTarget.value)}
+          placeholder="Search cameras, recorders, locks"
+          className="h-11 w-full rounded-[10px] border-[1.5px] border-[#c6d9ec] bg-ground pl-10 pr-3 text-[15px] text-ink placeholder:text-muted/80 focus:border-signal focus:outline-none"
+        />
+      </label>
+    </form>
+  );
+}
+
 function Header() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-ground/95 backdrop-blur">
-      <div className="border-b border-line bg-band text-surface">
-        <div className="mx-auto flex h-9 max-w-[1240px] items-center justify-between gap-4 px-5 font-mono text-[11px] tracking-tight">
+    <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur">
+      <div className="bg-band text-surface">
+        <div className="mx-auto flex h-9 max-w-[1240px] items-center justify-between gap-4 px-5 text-[13px] font-medium">
           {/* Hidden on the narrowest screens so the two useful links keep their
               room. A reassurance is worth less than a way to do something. */}
           <span className="hidden truncate sm:inline">Authorized dealer. Full USA warranty on every item.</span>
@@ -43,35 +72,20 @@ function Header() {
         </div>
       </div>
 
-      <div className="mx-auto flex h-[70px] max-w-[1240px] items-center justify-between gap-6 px-5">
-        <Link to="/" className="flex shrink-0 items-center gap-2.5 text-ink" aria-label={`${SITE.name} home`}>
-          <Mark className="h-[26px] w-[37px]" />
-          <span className="hidden text-[15px] font-semibold leading-none tracking-tight sm:inline">
-            Affordable Home Electronics
-          </span>
-          <span className="text-[15px] font-semibold leading-none tracking-tight sm:hidden">AHE</span>
+      <div className="mx-auto flex max-w-[1240px] items-center gap-5 px-5 py-3">
+        <Link to="/" className="shrink-0" aria-label={`${SITE.name} home`}>
+          <Lockup />
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="text-sm text-muted transition-colors hover:text-ink [&.active]:text-ink"
-              activeProps={{ className: "text-ink" }}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <HeaderSearch className="hidden flex-1 md:block" />
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 md:ml-0">
           <Link
             to="/search"
-            className="inline-flex h-10 w-10 items-center justify-center border border-line bg-surface text-ink transition-colors hover:border-ink"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-line bg-surface text-ink md:hidden"
             aria-label="Search the catalog"
           >
-            <IconSearch className="h-4 w-4" />
+            <IconSearch className="h-[18px] w-[18px]" />
           </Link>
           <CartLink />
           <button
@@ -79,7 +93,7 @@ function Header() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label="Toggle menu"
-            className="inline-flex h-10 w-10 items-center justify-center border border-line bg-surface text-ink lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-line bg-surface text-ink lg:hidden"
           >
             <span className="flex flex-col gap-[5px]">
               <span className="block h-[2px] w-4 bg-ink" />
@@ -89,12 +103,27 @@ function Header() {
         </div>
       </div>
 
+      <nav className="hidden border-t border-line lg:block" aria-label="Primary">
+        <div className="mx-auto flex max-w-[1240px] items-center gap-1 px-5 py-2">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="rounded-lg px-3 py-1.5 text-[15px] font-semibold text-ink-soft transition-colors hover:bg-ground hover:text-ink"
+              activeProps={{ className: "bg-[#e6f1fb] text-ink" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+
       {open ? (
         <nav className="border-t border-line bg-surface lg:hidden" aria-label="Mobile">
           <ul className="mx-auto max-w-[1240px] divide-y divide-line px-5">
             {NAV.map((item) => (
               <li key={item.to}>
-                <Link to={item.to} onClick={() => setOpen(false)} className="block py-3.5 text-sm text-ink">
+                <Link to={item.to} onClick={() => setOpen(false)} className="block py-3.5 text-[16px] font-medium text-ink">
                   {item.label}
                 </Link>
               </li>
@@ -103,7 +132,7 @@ function Header() {
               <Link
                 to="/orders"
                 onClick={() => setOpen(false)}
-                className="block py-3.5 text-sm font-medium text-signal"
+                className="block py-3.5 text-[16px] font-semibold text-signal"
               >
                 Track an order
               </Link>
@@ -111,6 +140,7 @@ function Header() {
           </ul>
         </nav>
       ) : null}
+      <HalloweenStrip />
     </header>
   );
 }
@@ -118,24 +148,21 @@ function Header() {
 function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">{title}</h3>
-      <ul className="mt-4 space-y-2.5 text-sm text-white/75">{children}</ul>
+      <h3 className="ahe-display text-[18px] tracking-[0.03em] text-white">{title}</h3>
+      <ul className="mt-3 space-y-2 text-[15px] text-[#dcebfa]">{children}</ul>
     </div>
   );
 }
 
 function Footer() {
   return (
-    <footer className="mt-24 bg-band text-surface">
+    <footer className="mt-20 bg-band text-surface">
       <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <img
-            src="/assets/logo-reversed.webp"
-            alt="Affordable Home Electronics"
-            loading="lazy"
-            className="h-auto w-[250px]"
-          />
-          <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-white/60">
+          <Link to="/" aria-label={`${SITE.name} home`}>
+            <Lockup reversed />
+          </Link>
+          <p className="mt-4 max-w-[34ch] text-[15px] leading-relaxed text-[#dcebfa]">
             Security cameras, recorders and access control, sold and installed out of Rego Park since {SITE.since}.
           </p>
         </div>
@@ -203,42 +230,36 @@ function Footer() {
 
         <FooterColumn title="Reach us">
           <li className="flex items-start gap-2.5">
-            <IconPhone className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
-            <a href={SITE.phoneHref} className="ahe-onblue font-mono text-[13px]">
+            <IconPhone className="mt-[3px] h-4 w-4 shrink-0 text-[#9cc3e8]" />
+            <a href={SITE.phoneHref} className="ahe-onblue">
               {SITE.phone}
             </a>
           </li>
           <li className="flex items-start gap-2.5">
-            <IconMail className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
+            <IconMail className="mt-[3px] h-4 w-4 shrink-0 text-[#9cc3e8]" />
             <a href={SITE.emailHref} className="ahe-onblue break-all">
               {SITE.email}
             </a>
           </li>
           <li className="flex items-start gap-2.5">
-            <IconPin className="mt-[3px] h-4 w-4 shrink-0 text-white/40" />
+            <IconPin className="mt-[3px] h-4 w-4 shrink-0 text-[#9cc3e8]" />
             <span>
               {SITE.street}
               <br />
               {SITE.cityLine}
               <br />
-              <span className="text-white/50">{SITE.hours.plain}</span>
+              <span className="text-[#cfe1ef]">{SITE.hours.plain}</span>
             </span>
           </li>
         </FooterColumn>
       </div>
 
-      <div className="border-t border-line-dark">
-        <div className="mx-auto max-w-[1240px] px-5 py-6">
-          <PayMarks />
-        </div>
-      </div>
-
-      <div className="border-t border-line-dark">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-2 px-5 py-6 font-mono text-[11px] text-white/40 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-t border-white/20">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-5 py-5 text-[13px] text-[#cfe1ef] md:flex-row md:items-center md:justify-between">
           <span>
-            Copyright {SITE.since} to {new Date().getFullYear()} Affordable Home Electronics
+            © {SITE.since}–{new Date().getFullYear()} Affordable Home Electronics · Retail, wholesale and government orders welcome
           </span>
-          <span>Retail, wholesale and government orders welcome</span>
+          <PayMarks strip />
         </div>
       </div>
     </footer>
@@ -246,9 +267,10 @@ function Footer() {
 }
 
 export function SiteShell({ children }: { children: ReactNode }) {
+  const halloween = useHalloween();
   return (
     <CartProvider>
-      <div className="flex min-h-dvh flex-col bg-ground">
+      <div className={`flex min-h-dvh flex-col bg-ground ${halloween ? "ahe-hw" : ""}`}>
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

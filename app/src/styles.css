@@ -128,8 +128,16 @@
   --color-band: #1f66b8;
   --color-signal: #1f66b8;
   --color-teal: #3fb0d8;
-  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  /* Body: Figtree, chosen for easy reading at every age. Display: Barlow
+   * Condensed, the same tall lettering as the logo, for headings and prices.
+   * --font-mono is kept as a name so every existing class keeps working, but it
+   * now points at the readable body face; tiny typewriter labels were the
+   * main reason pages felt hard to read. */
+  --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Figtree", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
+  --color-tile: #ffffff;
+  --color-live: #19a974;
 }
 
 html.ahe, html.ahe body {
@@ -152,6 +160,76 @@ html.ahe :focus-visible {
   outline: 2px solid var(--color-signal);
   outline-offset: 2px;
 }
+/* ===================================================================
+ * Monitor wall, storefront-wide readability rules (2026-10 redesign).
+ * Unlayered, so they win over utility classes without !important. Scoped to
+ * the storefront: the admin carries .ahe-admin and is excluded.
+ * ------------------------------------------------------------------ */
+html.ahe body { font-size: 16px; line-height: 1.55; }
+html.ahe :where(body:not(:has(.ahe-admin))) .font-mono { font-variant-numeric: tabular-nums; letter-spacing: 0; }
+/* The small all-capitals labels: plain case, readable size, no wide tracking. */
+html.ahe :where(body:not(:has(.ahe-admin))) .font-mono.uppercase { text-transform: none; letter-spacing: 0; font-weight: 600; }
+html.ahe :where(body:not(:has(.ahe-admin))) .font-mono:is(.text-\[10px\], .text-\[11px\]) { font-size: 13px; }
+html.ahe :where(body:not(:has(.ahe-admin))) .text-xs { font-size: 13px; }
+/* Headings in the logo's lettering. */
+html.ahe body:not(:has(.ahe-admin)) main :is(h1, h2):not(.ahe-plain) { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.005em; line-height: 0.98; }
+html.ahe body:not(:has(.ahe-admin)) main h2:not(.ahe-plain) { line-height: 1.02; }
+.ahe-display { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.005em; }
+.ahe-price { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; line-height: 1; }
+/* Softer shapes across the storefront: controls get 10px corners, framed panels 14px. */
+html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="h-9"],
+html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="h-10"],
+html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="h-11"],
+html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="h-12"],
+html.ahe body:not(:has(.ahe-admin)) textarea { border-radius: 10px; }
+html.ahe body:not(:has(.ahe-admin)) main [class~="border"][class~="border-line"]:is([class~="bg-surface"], [class~="bg-white"]) { border-radius: 14px; border-color: #dbe7f3; }
+/* A white panel on the light blue page, the site's one card style. */
+.ahe-panel { background: var(--color-surface); border: 1px solid #dbe7f3; border-radius: 14px; }
+.ahe-live { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #11805a; }
+.ahe-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-live); }
+.ahe-live.is-out { color: #8a4b2e; }
+.ahe-live.is-out::before { background: #c9774f; }
+/* Photo frames: square, photo fills it edge to edge, no inner border. */
+.ahe-photo { position: relative; display: block; aspect-ratio: 1; overflow: hidden; border-radius: 10px; background: var(--color-tile); }
+.ahe-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+
+/* ---------- Halloween (Oct 15-31 only; see components/site/halloween.tsx) ---------- */
+.ahe-hw-strip { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; padding: 9px 20px; background: #1b2b45; color: #ffe9d2; font-size: 14px; font-weight: 500; text-align: center; }
+.ahe-hw-strip b { color: #ff9a3c; font-family: var(--font-display); font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; }
+.ahe-hw .ahe-hero { background: linear-gradient(180deg, #eef3fa 0%, #f6efe8 100%); overflow: hidden; }
+.ahe-hw .ahe-hero > div:first-child { padding-top: 110px; }
+@media (max-width: 1023px) { .ahe-hw .ahe-hero > div:first-child { padding-top: 56px; } }
+.ahe-hw .ahe-hero-accent { color: #e8761c; }
+.ahe-hw .ahe-kicker::before { background: #ff8a1f !important; box-shadow: 0 0 0 4px rgba(255,138,31,.2) !important; }
+.ahe-hw .ahe-wall { background: #1b2b45; box-shadow: 0 26px 50px -30px rgba(27,43,69,.8), 0 0 0 1px rgba(255,154,60,.35); }
+.ahe-hw .ahe-feed-tag::before { background: #ff9a3c !important; }
+.ahe-hw .ahe-feed-tag::after { content: "· Night vision"; color: #ffc48a; font-weight: 500; }
+.ahe-hw .ahe-feed-time { color: #e8761c !important; }
+.ahe-hw-moon { position: absolute; z-index: 0; width: 150px; height: 150px; right: 70px; top: -84px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff6dc 0%, #ffe3a3 55%, #f6c978 100%); box-shadow: 0 0 60px 20px rgba(255,214,140,.45), 0 0 140px 60px rgba(255,190,110,.18); pointer-events: none; }
+.ahe-hw-moon::before, .ahe-hw-moon::after { content: ""; position: absolute; border-radius: 50%; background: rgba(214,170,100,.28); }
+.ahe-hw-moon::before { width: 34px; height: 34px; left: 44px; top: 58px; }
+.ahe-hw-moon::after { width: 20px; height: 20px; left: 100px; top: 104px; }
+.ahe-hw-bats { position: absolute; inset: -90px 0 auto 0; height: 90px; pointer-events: none; z-index: 2; }
+.ahe-hw-bats svg { position: absolute; fill: #1b2b45; animation: ahe-hw-fly 7s ease-in-out infinite; }
+.ahe-hw-bats svg:nth-child(1) { width: 44px; top: 30px; right: 30%; opacity: .85; }
+.ahe-hw-bats svg:nth-child(2) { width: 26px; top: 12px; right: 40%; opacity: .7; animation-delay: -2s; }
+.ahe-hw-bats svg:nth-child(3) { width: 18px; top: 6px; right: 12%; opacity: .55; animation-delay: -4s; }
+@keyframes ahe-hw-fly { 0%, 100% { transform: translate(0, 0) rotate(-4deg); } 50% { transform: translate(14px, -10px) rotate(5deg); } }
+@media (max-width: 1023px) {
+  /* Phones and tablets: the wall sits under the buttons, so give the moon its own
+     room above the wall instead of letting it drift over the buttons. */
+  .ahe-hw .ahe-hero .ahe-wall-wrap { margin-top: 70px; }
+  .ahe-hw-moon { width: 96px; height: 96px; right: 18px; top: -62px; }
+  .ahe-hw-moon::after { display: none; }
+  .ahe-hw-moon::before { width: 20px; height: 20px; left: 26px; top: 38px; }
+  .ahe-hw-bats { inset: -64px 0 auto 0; height: 64px; }
+  .ahe-hw-bats svg:nth-child(1) { width: 30px; top: 20px; right: 40%; }
+  .ahe-hw-bats svg:nth-child(2) { width: 20px; top: 6px; right: 55%; }
+  .ahe-hw-bats svg:nth-child(3) { display: none; }
+}
+@media (max-width: 640px) { .ahe-hw .ahe-feed-tag::after { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ahe-hw-bats svg { animation: none; } }
+
 .ahe-rule { background-image: linear-gradient(to right, var(--color-line) 0 100%); }
 @keyframes ahe-rise { from { transform: translateY(14px); } to { transform: none; } }
 .ahe-rise { animation: ahe-rise 620ms cubic-bezier(.16,.84,.44,1) both; }

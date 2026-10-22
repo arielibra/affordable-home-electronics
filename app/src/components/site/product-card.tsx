@@ -15,6 +15,16 @@ export type CardProduct = {
   stock_tracked?: number;
 };
 
+/**
+ * The green status line. "In stock" only when the shop actually counts that
+ * item; uncounted items get the processing promise from the shipping policy
+ * instead, which is true whatever is on the shelf.
+ */
+export function stockLabel(p: { stock?: number; stock_tracked?: number }): string {
+  if (!isAvailable(p)) return "Out of stock";
+  return p.stock_tracked ? "In stock" : "Ships in 2 business days";
+}
+
 export function isAvailable(p: { stock?: number; stock_tracked?: number }): boolean {
   return !p.stock_tracked || (p.stock ?? 0) > 0;
 }
@@ -46,7 +56,7 @@ export function AddToCartButton({
   if (soldOut) {
     return (
       <span
-        className={`inline-flex h-11 items-center justify-center border border-line bg-transparent text-sm font-medium text-muted ${
+        className={`inline-flex h-11 items-center justify-center rounded-[10px] bg-[#e6eef6] text-[14px] font-semibold text-muted ${
           block ? "w-full" : "px-8"
         }`}
       >
@@ -60,15 +70,11 @@ export function AddToCartButton({
       type="button"
       onClick={onClick}
       disabled={state === "busy"}
-      className={`inline-flex h-11 items-center justify-center border text-sm font-medium transition-colors duration-200 ${
+      className={`inline-flex h-11 items-center justify-center rounded-[10px] text-[14px] font-semibold transition-colors duration-200 ${
         block ? "w-full" : "px-8"
-      } ${
-        state === "done"
-          ? "border-ink bg-ink text-surface"
-          : "border-line bg-surface text-ink hover:border-ink disabled:text-muted"
-      }`}
+      } ${state === "done" ? "bg-[#11805a] text-white" : "bg-ink text-surface hover:bg-ink-soft disabled:bg-line disabled:text-muted"}`}
     >
-      {state === "done" ? <span className="font-mono text-[13px] tracking-tight">In your cart</span> : "Add to cart"}
+      {state === "done" ? "✓ In your cart" : "Add to cart"}
     </button>
   );
 }
@@ -77,40 +83,30 @@ export function ProductCard({ p }: { p: CardProduct }) {
   const save = savings(p.price_cents, p.msrp_cents);
   const available = isAvailable(p);
   return (
-    <article className={`group flex flex-col border border-line bg-surface ${available ? "" : "opacity-75"}`}>
-      <Link to="/p/$slug" params={{ slug: p.slug }} className="relative block bg-white p-6">
-        {!available ? (
-          <span className="absolute left-0 top-0 bg-ink px-2 py-1 font-mono text-[11px] leading-none text-white">
-            Out of stock
-          </span>
-        ) : save ? (
-          <span className="absolute left-0 top-0 bg-signal px-2 py-1 font-mono text-[11px] leading-none text-white">
+    <article className="group flex min-w-0 flex-col rounded-[14px] border border-[#dbe7f3] bg-surface p-2.5 transition-[border-color,box-shadow] duration-200 hover:border-[#9db6cf] hover:shadow-[0_14px_30px_-22px_rgba(27,58,92,0.55)] sm:p-3">
+      <Link to="/p/$slug" params={{ slug: p.slug }} className="ahe-photo">
+        {save && available ? (
+          <span className="ahe-display absolute left-2 top-2 z-[1] rounded-md bg-signal px-2 py-0.5 text-[14px] leading-tight text-white sm:text-[16px]">
             Save {save}%
           </span>
         ) : null}
-        <img
-          src={p.image}
-          alt={p.name}
-          loading="lazy"
-          width={520}
-          height={520}
-          className="mx-auto h-40 w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.04]"
-        />
+        <img src={p.image} alt={p.name} loading="lazy" width={520} height={520} />
       </Link>
-      <div className="flex flex-1 flex-col border-t border-line p-4">
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{p.brand}</p>
-        <h3 className="mt-2 text-sm leading-snug text-ink">
+      <div className="flex flex-1 flex-col px-1 pt-3">
+        <p className="text-[12px] font-semibold text-signal sm:text-[13px]">{p.brand}</p>
+        <h3 className="mt-0.5 line-clamp-2 min-h-[2.7em] text-[13px] leading-snug text-ink sm:text-[14px]">
           <Link to="/p/$slug" params={{ slug: p.slug }} className="hover:text-signal">
             {p.name}
           </Link>
         </h3>
-        <div className="mt-3 flex flex-1 items-end gap-3">
-          <span className="font-mono text-lg leading-none tracking-tight text-ink">{money(p.price_cents)}</span>
+        <div className="mt-2 flex flex-1 flex-wrap items-end gap-x-2 gap-y-1">
+          <span className="ahe-price text-[21px] text-ink sm:text-[24px]">{money(p.price_cents)}</span>
           {p.msrp_cents && p.msrp_cents > p.price_cents ? (
-            <span className="font-mono text-[13px] leading-none text-muted line-through">{money(p.msrp_cents)}</span>
+            <span className="pb-0.5 text-[12px] text-muted line-through tabular-nums sm:text-[13px]">{money(p.msrp_cents)}</span>
           ) : null}
         </div>
-        <div className="mt-4">
+        <span className={`ahe-live mt-1 ${available ? "" : "is-out"}`}>{stockLabel(p)}</span>
+        <div className="mt-2.5">
           <AddToCartButton slug={p.slug} soldOut={!available} />
         </div>
       </div>

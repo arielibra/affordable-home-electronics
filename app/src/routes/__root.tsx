@@ -66,7 +66,7 @@ function buildHead(meta: AppMeta) {
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" as const },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap",
       },
       { rel: "apple-touch-icon", href: "/app-icon.png" },
       // Google needs a square icon that is a multiple of 48px, so the ICO

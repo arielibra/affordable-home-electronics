@@ -260,159 +260,167 @@ function CheckoutBody() {
   const shown = tabs.filter((t) => t.on);
   const needsAddress = method !== "card";
 
+  // Steps are numbered from what is actually on screen: card checkout collects
+  // the address on Stripe's page, so it has no address step here.
+  const stepPay = 1;
+  const stepAddress = needsAddress ? 2 : 0;
+  const stepReview = needsAddress ? 3 : 2;
+  const items = lines.reduce((n, l) => n + l.qty, 0);
+
   return (
-    <Shell className="py-12">
-      <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Checkout</h1>
-      <p className="mt-4 max-w-[62ch] text-base leading-relaxed text-muted">
+    <Shell className="py-8 md:py-10">
+      <h1 className="text-[40px] text-ink md:text-[56px]">Checkout</h1>
+      <p className="mt-2 max-w-[62ch] text-[16px] leading-relaxed text-muted">
         {cfg.payments || cfg.paypal
           ? "Pay by card or PayPal and the order goes straight through to the shop."
           : "Online payment is not switched on yet, so send the order through and the shop will call you back to confirm stock, shipping and the total."}
       </p>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px] lg:gap-14">
-        <div>
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">How would you like to pay?</h2>
-          <div className="mt-4 grid gap-2">
-            {shown.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => {
-                  setMethod(t.id);
-                  setError("");
-                }}
-                className={`flex items-start gap-3 border p-4 text-left transition-colors ${
-                  method === t.id ? "border-ink bg-surface" : "border-line bg-surface/60 hover:border-line-dark"
-                }`}
-              >
-                <span
-                  className={`mt-[3px] h-3.5 w-3.5 shrink-0 rounded-full border-2 ${
-                    method === t.id ? "border-signal bg-signal" : "border-line"
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
+        <form
+          ref={formRef}
+          onSubmit={sendPhoneOrder}
+          className="rounded-[14px] border border-[#dbe7f3] bg-surface px-4 sm:px-6"
+        >
+          <Step n={stepPay} title="How you'll pay">
+            <div className="grid gap-2.5">
+              {shown.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setMethod(t.id);
+                    setError("");
+                  }}
+                  aria-pressed={method === t.id}
+                  className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                    method === t.id
+                      ? "border-signal bg-ground shadow-[inset_0_0_0_1px_var(--color-signal)]"
+                      : "border-line bg-surface hover:border-line-dark"
                   }`}
-                />
-                <span>
-                  <span className="block text-sm font-medium text-ink">{t.label}</span>
-                  <span className="mt-0.5 block text-[13px] leading-snug text-muted">{t.note}</span>
-                </span>
-              </button>
-            ))}
-          </div>
+                >
+                  <span
+                    className={`mt-0.5 h-[18px] w-[18px] shrink-0 rounded-full border-2 ${
+                      method === t.id ? "border-[5px] border-signal" : "border-[#9db6cf]"
+                    }`}
+                  />
+                  <span>
+                    <span className="block text-[16px] font-semibold text-ink">{t.label}</span>
+                    <span className="mt-0.5 block text-[14px] leading-snug text-muted">{t.note}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Step>
 
-          <form ref={formRef} onSubmit={sendPhoneOrder} className="mt-8 space-y-5">
-            {needsAddress ? (
-              <>
-                <fieldset className="space-y-4 border-t border-line pt-6">
-                  <legend className="sr-only">Who you are</legend>
-                  <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Who you are</h2>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Full name" name="name">
-                      <TextInput id="name" name="name" required minLength={2} maxLength={120} autoComplete="name" />
-                    </Field>
-                    <Field label="Company" name="company" hint="Optional">
-                      <TextInput id="company" name="company" maxLength={120} autoComplete="organization" />
-                    </Field>
-                    <Field label="Email" name="email">
-                      <TextInput id="email" name="email" type="email" required maxLength={160} autoComplete="email" />
-                    </Field>
-                    <Field label="Phone" name="phone">
-                      <TextInput id="phone" name="phone" required minLength={7} maxLength={40} inputMode="tel" autoComplete="tel" />
-                    </Field>
-                  </div>
-                </fieldset>
+          {needsAddress ? (
+            <Step n={stepAddress} title="Where it's going">
+              <fieldset className="space-y-4">
+                <legend className="sr-only">Your details and delivery address</legend>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Full name" name="name">
+                    <TextInput id="name" name="name" required minLength={2} maxLength={120} autoComplete="name" />
+                  </Field>
+                  <Field label="Company" name="company" hint="Optional">
+                    <TextInput id="company" name="company" maxLength={120} autoComplete="organization" />
+                  </Field>
+                  <Field label="Email" name="email">
+                    <TextInput id="email" name="email" type="email" required maxLength={160} autoComplete="email" />
+                  </Field>
+                  <Field label="Phone" name="phone">
+                    <TextInput id="phone" name="phone" required minLength={7} maxLength={40} inputMode="tel" autoComplete="tel" />
+                  </Field>
+                </div>
+                <Field label="Street address" name="address1">
+                  <TextInput id="address1" name="address1" required minLength={3} maxLength={160} autoComplete="address-line1" />
+                </Field>
+                <Field label="Apartment, suite, floor" name="address2" hint="Optional">
+                  <TextInput id="address2" name="address2" maxLength={160} autoComplete="address-line2" />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Field label="City" name="city">
+                    <TextInput id="city" name="city" required minLength={2} maxLength={80} autoComplete="address-level2" />
+                  </Field>
+                  <Field label="State" name="state">
+                    <TextInput id="state" name="state" required minLength={2} maxLength={40} autoComplete="address-level1" />
+                  </Field>
+                  <Field label="ZIP code" name="zip">
+                    <TextInput id="zip" name="zip" required minLength={3} maxLength={16} autoComplete="postal-code" />
+                  </Field>
+                </div>
+              </fieldset>
+            </Step>
+          ) : null}
 
-                <fieldset className="space-y-4 border-t border-line pt-6">
-                  <legend className="sr-only">Where it goes</legend>
-                  <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Where it goes</h2>
-                      <Field label="Street address" name="address1">
-                        <TextInput id="address1" name="address1" required minLength={3} maxLength={160} autoComplete="address-line1" />
-                      </Field>
-                      <Field label="Apartment, suite, floor" name="address2" hint="Optional">
-                        <TextInput id="address2" name="address2" maxLength={160} autoComplete="address-line2" />
-                      </Field>
-                      <div className="grid gap-4 sm:grid-cols-3">
-                        <Field label="City" name="city">
-                          <TextInput id="city" name="city" required minLength={2} maxLength={80} autoComplete="address-level2" />
-                        </Field>
-                        <Field label="State" name="state">
-                          <TextInput id="state" name="state" required minLength={2} maxLength={40} autoComplete="address-level1" />
-                        </Field>
-                        <Field label="ZIP" name="zip">
-                          <TextInput id="zip" name="zip" required minLength={3} maxLength={16} autoComplete="postal-code" />
-                        </Field>
-                      </div>
-</fieldset>
-              </>
-            ) : null}
-
-            <fieldset className="space-y-4 border-t border-line pt-6">
-              <legend className="sr-only">Anything else</legend>
-              <Field label="Notes for the shop" name="notes" hint="Install request, delivery window, PO number, anything else.">
+          <Step n={stepReview} title={method === "phone" ? "Check and send" : "Check and pay"}>
+            <div className="space-y-4">
+              <Field label="Notes for the shop" name="notes" hint="Install request, delivery window, PO number, anything else. Optional.">
                 <TextArea id="notes" name="notes" rows={3} maxLength={1000} />
               </Field>
-            </fieldset>
 
-            <p className="border-t border-line pt-5 text-[13px] leading-relaxed text-muted">
-              Before you pay, our{" "}
-              <Link to="/returns" className="text-ink underline underline-offset-4 hover:text-signal">
-                returns and refunds policy
-              </Link>{" "}
-              and{" "}
-              <Link to="/shipping" className="text-ink underline underline-offset-4 hover:text-signal">
-                shipping policy
-              </Link>
-              . Ten days from delivery to return something, and we ship by UPS, which cannot deliver to a PO box.
-            </p>
+              <p className="max-w-[60ch] text-[14px] leading-relaxed text-muted">
+                Please read our{" "}
+                <Link to="/returns" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">
+                  returns policy
+                </Link>{" "}
+                and{" "}
+                <Link to="/shipping" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">
+                  shipping policy
+                </Link>{" "}
+                before paying. Returns are accepted within 10 days of delivery. We ship by UPS, which can't deliver to
+                PO boxes.
+              </p>
 
-            {error ? <Notice tone="bad">{error}</Notice> : null}
+              {error ? <Notice tone="bad">{error}</Notice> : null}
 
-            {method === "card" ? (
-              <>
+              {method === "card" ? (
+                <>
+                  <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink">
+                    You'll enter your card and shipping address on Stripe's secure page. Your card details never touch
+                    this website.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={payByCard}
+                    disabled={pending || lines.length === 0}
+                    className="inline-flex h-12 w-full max-w-[380px] items-center justify-center rounded-[10px] bg-ink px-8 text-[15px] font-semibold text-surface transition-transform duration-150 active:scale-[0.98] disabled:bg-line disabled:text-muted"
+                  >
+                    {pending ? "Opening secure checkout…" : "Pay by card"}
+                  </button>
+                </>
+              ) : null}
+
+              {method === "paypal" ? (
+                <div>
+                  <p className="mb-3.5 max-w-[58ch] text-[15px] leading-relaxed text-ink">
+                    PayPal opens in a secure window to finish. Shipping and sales tax are already added, so the amount
+                    you approve there is your final total.
+                  </p>
+                  <div ref={slot} className="max-w-[380px]" />
+                  {!sdk ? <p className="text-[14px] text-muted">Loading PayPal…</p> : null}
+                </div>
+              ) : null}
+
+              {method === "phone" ? (
                 <button
-                  type="button"
-                  onClick={payByCard}
+                  type="submit"
                   disabled={pending || lines.length === 0}
-                  className="group inline-flex h-12 items-center gap-3 bg-ink px-8 text-sm font-medium text-surface transition-transform duration-150 active:scale-[0.98] disabled:bg-line disabled:text-muted"
+                  className="inline-flex h-12 w-full max-w-[380px] items-center justify-center rounded-[10px] bg-ink px-8 text-[15px] font-semibold text-surface transition-transform duration-150 active:scale-[0.98] disabled:bg-line disabled:text-muted"
                 >
-                  <span className="h-2 w-2 bg-muted transition-colors duration-200 group-hover:bg-signal" />
-                  {pending ? "Opening secure checkout" : "Pay by card"}
+                  {pending ? "Sending the order…" : "Send the order"}
                 </button>
-                <p className="text-[13px] leading-relaxed text-muted">
-                  The card page is hosted by Stripe. Your card details never touch this website. You enter the shipping
-                  address there.
-                </p>
-              </>
-            ) : null}
+              ) : null}
 
-            {method === "paypal" ? (
-              <div>
-                <div ref={slot} className="max-w-[380px]" />
-                {!sdk ? <p className="text-[13px] text-muted">Loading PayPal.</p> : null}
-                <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                  Shipping and sales tax are worked out from the address above before PayPal asks you to confirm, so the
-                  amount you approve is the final amount.
-                </p>
-              </div>
-            ) : null}
+            </div>
+          </Step>
+        </form>
 
-            {method === "phone" ? (
-              <button
-                type="submit"
-                disabled={pending || lines.length === 0}
-                className="group inline-flex h-12 items-center gap-3 bg-ink px-8 text-sm font-medium text-surface transition-transform duration-150 active:scale-[0.98] disabled:bg-line disabled:text-muted"
-              >
-                <span className="h-2 w-2 bg-muted transition-colors duration-200 group-hover:bg-signal" />
-                {pending ? "Sending the order" : "Send the order"}
-              </button>
-            ) : null}
-          </form>
-        </div>
-
-        <aside className="h-fit border border-line bg-surface p-6">
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">In this order</h2>
+        <aside className="h-fit rounded-[14px] border border-[#dbe7f3] bg-surface p-5 lg:sticky lg:top-[150px]">
+          <h2 className="text-[26px] text-ink">Your order</h2>
           {!ready ? (
-            <p className="mt-5 text-sm text-muted">Loading your cart.</p>
+            <p className="mt-4 text-[15px] text-muted">Loading your cart…</p>
           ) : lines.length === 0 ? (
-            <p className="mt-5 text-sm text-muted">
+            <p className="mt-4 text-[15px] text-muted">
               Your cart is empty.{" "}
               <Link to="/shop" className="text-ink underline underline-offset-4 hover:text-signal">
                 Add something first
@@ -420,43 +428,60 @@ function CheckoutBody() {
               .
             </p>
           ) : (
-            <ul className="mt-4 divide-y divide-line border-y border-line">
+            <ul className="mt-3 space-y-3">
               {lines.map((l) => (
-                <li key={l.slug} className="flex justify-between gap-4 py-3 text-sm">
-                  <span className="max-w-[22ch] leading-snug text-ink">
-                    {l.name}
-                    <span className="ml-2 font-mono text-[11px] text-muted">x{l.qty}</span>
+                <li key={l.slug} className="flex items-center gap-3">
+                  <span className="ahe-photo h-14 w-14 shrink-0 border border-[#e3edf7]">
+                    {l.image ? <img src={l.image} alt="" /> : null}
                   </span>
-                  <span className="shrink-0 font-mono text-ink">{money(l.price_cents * l.qty)}</span>
+                  <span className="min-w-0 flex-1 text-[14px] leading-snug text-ink">
+                    <span className="line-clamp-2">{l.name}</span>
+                    <span className="text-muted">Qty {l.qty}</span>
+                  </span>
+                  <span className="shrink-0 text-[14px] tabular-nums text-ink">{money(l.price_cents * l.qty)}</span>
                 </li>
               ))}
             </ul>
           )}
-          <div className="mt-5 space-y-1.5 text-sm">
+          <dl className="mt-4 space-y-1.5 border-t border-[#dbe7f3] pt-4 text-[15px]">
             <div className="flex justify-between">
-              <span className="text-muted">Subtotal</span>
-              <span className="font-mono text-ink">{money(subtotal)}</span>
+              <dt className="text-muted">
+                {items} {items === 1 ? "item" : "items"}
+              </dt>
+              <dd className="tabular-nums text-ink">{money(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted">Shipping</span>
-              <span className="font-mono text-ink">{shipping === 0 ? "Free" : money(shipping)}</span>
+              <dt className="text-muted">Shipping</dt>
+              <dd className="tabular-nums text-ink">{shipping === 0 ? "Free" : money(shipping)}</dd>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted">Sales tax</span>
-              <span className="font-mono text-muted">Worked out at payment</span>
+              <dt className="text-muted">Sales tax</dt>
+              <dd className="text-ink">Added at payment</dd>
             </div>
+          </dl>
+          <div className="mt-3 flex items-baseline justify-between border-t border-[#dbe7f3] pt-3">
+            <span className="text-[17px] font-bold text-ink">Total before tax</span>
+            <span className="ahe-price text-[28px] text-ink">{money(subtotal + shipping)}</span>
           </div>
-          <p className="mt-5 text-[13px] leading-relaxed text-muted">
-            Free shipping over {money(cfg.freeShippingOverCents)}.
-          </p>
-          <div className="mt-6 border-t border-line pt-5">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Accepted here</p>
-            <div className="mt-3">
-              <PayMarks label={null} />
-            </div>
+          <p className="mt-2 text-[13px] text-muted">Free shipping over {money(cfg.freeShippingOverCents)}.</p>
+          <div className="mt-4 border-t border-[#dbe7f3] pt-4">
+            <PayMarks label={null} />
           </div>
         </aside>
       </div>
     </Shell>
+  );
+}
+
+/** One numbered step of checkout. */
+function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+  return (
+    <section className="grid grid-cols-[36px_minmax(0,1fr)] gap-3 border-b border-[#dbe7f3] py-5 last:border-b-0 sm:gap-4">
+      <span className="ahe-display grid h-8 w-8 place-items-center rounded-lg bg-ink text-[19px] text-white">{n}</span>
+      <div className="min-w-0">
+        <h2 className="mb-3 mt-0.5 text-[24px] text-ink">{title}</h2>
+        {children}
+      </div>
+    </section>
   );
 }
