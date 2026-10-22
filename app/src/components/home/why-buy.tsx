@@ -13,7 +13,7 @@ export function WhyBuy() {
         <div className="mt-10 grid gap-px border border-line bg-line lg:grid-cols-3 lg:grid-rows-2">
           <figure className="bg-white lg:row-span-2">
             <img
-              src="/assets/sealed-cartons.png"
+              src="/assets/sealed-cartons.webp"
               alt="Three sealed manufacturer cartons with the factory tape intact"
               width={1168}
               height={880}

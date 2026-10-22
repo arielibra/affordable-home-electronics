@@ -62,7 +62,7 @@ export async function storeImage(data: ArrayBuffer, contentType: string): Promis
  * as ours, never linked. Rejects anything that is not actually an image, since
  * a mistyped address usually returns an HTML error page rather than a 404.
  */
-export async function storeImageFromUrl(raw: string): Promise<Stored> {
+export async function fetchImageFromUrl(raw: string): Promise<{ data: ArrayBuffer; type: string }> {
   let url: URL;
   try {
     url = new URL(raw.trim());
@@ -103,7 +103,26 @@ export async function storeImageFromUrl(raw: string): Promise<Stored> {
     throw new Error(`That image is ${(declared / 1048576).toFixed(1)} MB. The limit is 8 MB.`);
   }
 
-  return storeImage(await res.arrayBuffer(), type);
+  const data = await res.arrayBuffer();
+  if (data.byteLength > MAX_BYTES) {
+    throw new Error(`That image is ${(data.byteLength / 1048576).toFixed(1)} MB. The limit is 8 MB.`);
+  }
+  return { data, type };
+}
+
+export async function storeImageFromUrl(raw: string): Promise<Stored> {
+  const { data, type } = await fetchImageFromUrl(raw);
+  return storeImage(data, type);
+}
+
+/** Size and type of a stored photo, or null if it is not ours or not there. */
+export async function imageInfo(url: string): Promise<{ bytes: number; contentType: string } | null> {
+  if (!url.startsWith("/media/")) return null;
+  const key = url.slice("/media/".length);
+  if (!/^p_[a-z0-9-]+\.[a-z0-9]+$/i.test(key)) return null;
+  const head = await bucket().head(key);
+  if (!head) return null;
+  return { bytes: head.size, contentType: head.httpMetadata?.contentType ?? "" };
 }
 
 /** Only ours, and only if nothing else is still pointing at it. */

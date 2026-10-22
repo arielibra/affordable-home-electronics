@@ -88,10 +88,10 @@ function About() {
         <section className="mt-14 grid gap-8 border-t border-line pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">
           <figure className="flex items-center justify-center border border-line bg-surface p-8">
             <img
-              src="/assets/logo-stacked.png"
+              src="/assets/logo-stacked.webp"
               alt="Affordable Home Electronics"
-              width={1200}
-              height={805}
+              width={880}
+              height={590}
               className="h-auto w-full max-w-[440px]"
             />
           </figure>

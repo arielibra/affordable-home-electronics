@@ -30,7 +30,7 @@ const STORE = {
   name: SITE.name,
   url: ORIGIN,
   logo: `${ORIGIN}/app-icon.png`,
-  image: `${ORIGIN}/assets/hero-storefront.png`,
+  image: `${ORIGIN}/assets/hero-storefront.jpg`,
   description:
     "Security cameras, NVR and DVR recorders, access control, smart locks and home electronics, sold online and installed across New York City since 2003.",
   telephone: "+1-718-275-9343",

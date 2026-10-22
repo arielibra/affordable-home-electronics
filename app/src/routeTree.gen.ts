@@ -51,6 +51,7 @@ import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/product
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
 import { Route as ApiAdminOrderCancelRouteImport } from './routes/api/admin/order-cancel'
 import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
+import { Route as ApiAdminMediaRouteImport } from './routes/api/admin/media'
 import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
 import { Route as ApiAdminCategoriesRouteImport } from './routes/api/admin/categories'
@@ -266,6 +267,11 @@ const ApiAdminMessagesRoute = ApiAdminMessagesRouteImport.update({
   path: '/api/admin/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminMediaRoute = ApiAdminMediaRouteImport.update({
+  id: '/api/admin/media',
+  path: '/api/admin/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminLogoutRoute = ApiAdminLogoutRouteImport.update({
   id: '/api/admin/logout',
   path: '/api/admin/logout',
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/media': typeof ApiAdminMediaRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
   '/api/admin/order-cancel': typeof ApiAdminOrderCancelRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
@@ -369,6 +376,7 @@ export interface FileRoutesByTo {
   '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/media': typeof ApiAdminMediaRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
   '/api/admin/order-cancel': typeof ApiAdminOrderCancelRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
@@ -418,6 +426,7 @@ export interface FileRoutesById {
   '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/media': typeof ApiAdminMediaRoute
   '/api/admin/messages': typeof ApiAdminMessagesRoute
   '/api/admin/order-cancel': typeof ApiAdminOrderCancelRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/api/admin/categories'
     | '/api/admin/login'
     | '/api/admin/logout'
+    | '/api/admin/media'
     | '/api/admin/messages'
     | '/api/admin/order-cancel'
     | '/api/admin/orders'
@@ -516,6 +526,7 @@ export interface FileRouteTypes {
     | '/api/admin/categories'
     | '/api/admin/login'
     | '/api/admin/logout'
+    | '/api/admin/media'
     | '/api/admin/messages'
     | '/api/admin/order-cancel'
     | '/api/admin/orders'
@@ -564,6 +575,7 @@ export interface FileRouteTypes {
     | '/api/admin/categories'
     | '/api/admin/login'
     | '/api/admin/logout'
+    | '/api/admin/media'
     | '/api/admin/messages'
     | '/api/admin/order-cancel'
     | '/api/admin/orders'
@@ -613,6 +625,7 @@ export interface RootRouteChildren {
   ApiAdminCategoriesRoute: typeof ApiAdminCategoriesRoute
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
   ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
+  ApiAdminMediaRoute: typeof ApiAdminMediaRoute
   ApiAdminMessagesRoute: typeof ApiAdminMessagesRoute
   ApiAdminOrderCancelRoute: typeof ApiAdminOrderCancelRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
@@ -924,6 +937,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminMessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/media': {
+      id: '/api/admin/media'
+      path: '/api/admin/media'
+      fullPath: '/api/admin/media'
+      preLoaderRoute: typeof ApiAdminMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/logout': {
       id: '/api/admin/logout'
       path: '/api/admin/logout'
@@ -989,6 +1009,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCategoriesRoute: ApiAdminCategoriesRoute,
   ApiAdminLoginRoute: ApiAdminLoginRoute,
   ApiAdminLogoutRoute: ApiAdminLogoutRoute,
+  ApiAdminMediaRoute: ApiAdminMediaRoute,
   ApiAdminMessagesRoute: ApiAdminMessagesRoute,
   ApiAdminOrderCancelRoute: ApiAdminOrderCancelRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { uploadFile, uploadFromLink } from "../../lib/shrink-image";
 import { input, label } from "./ui";
 
 const MAX = 20;
@@ -42,13 +43,6 @@ export function GalleryField({
     onChange(merged);
   }
 
-  async function upload(init: RequestInit): Promise<string | null> {
-    const res = await fetch("/api/admin/upload", { method: "POST", ...init });
-    const data = (await res.json()) as { ok: boolean; url?: string; error?: string };
-    if (!data.ok || !data.url) throw new Error(data.error ?? "That image could not be saved.");
-    return data.url;
-  }
-
   /** Files go up one at a time on purpose: twenty at once would be twenty
    *  parallel writes, and one failure in the middle would leave him guessing
    *  which ones landed. This way the count is honest. */
@@ -60,9 +54,7 @@ export function GalleryField({
     let failed = 0;
     for (const f of files.slice(0, room)) {
       try {
-        const body = new FormData();
-        body.append("file", f);
-        const url = await upload({ body });
+        const url = await uploadFile(f);
         if (url) got.push(url);
       } catch {
         failed += 1;
@@ -82,10 +74,7 @@ export function GalleryField({
     setError("");
     setDone("");
     try {
-      const url = await upload({
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: u }),
-      });
+      const url = await uploadFromLink(u);
       if (url) add([url]);
       setLink("");
       setDone("Saved our own copy.");

@@ -25,7 +25,7 @@ export function Hero() {
             <div className="relative">
               <span className="absolute left-0 top-0 z-10 h-3 w-3 bg-signal" />
               <img
-                src="/assets/hero-storefront.png"
+                src="/assets/hero-storefront.webp"
                 alt="A dome security camera mounted under the soffit of a brick row house in Queens"
                 width={1024}
                 height={688}

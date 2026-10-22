@@ -72,7 +72,7 @@ function SecurityCameras() {
           </div>
           <figure className="border border-line bg-surface p-2.5">
             <img
-              src="/assets/hero-counter.png"
+              src="/assets/hero-counter.webp"
               alt="Two white bullet cameras on a wall bracket above a slim network video recorder"
               width={1024}
               height={688}

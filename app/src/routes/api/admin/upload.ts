@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
-import { mediaEnabled, storeImage, storeImageFromUrl } from "../../../lib/media.server";
+import { fetchImageFromUrl, mediaEnabled, storeImage, storeImageFromUrl } from "../../../lib/media.server";
 
 /**
  * Takes a photo two ways and answers the same either way: a file picked off
@@ -11,6 +11,23 @@ import { mediaEnabled, storeImage, storeImageFromUrl } from "../../../lib/media.
 export const Route = createFileRoute("/api/admin/upload")({
   server: {
     handlers: {
+      /**
+       * Fetch-through without storing: hands a manufacturer's image back to
+       * the admin's browser so it can be shrunk before it is kept. Signed-in
+       * only, or it would be an open proxy billed to the shop.
+       */
+      GET: async ({ request }) => {
+        if (!(await isSignedIn(request))) return denied();
+        const from = new URL(request.url).searchParams.get("url") ?? "";
+        if (!from) return Response.json({ ok: false, error: "No address given." }, { status: 400 });
+        try {
+          const { data, type } = await fetchImageFromUrl(from);
+          return new Response(data, { headers: { "Content-Type": type, "Cache-Control": "no-store" } });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "That image could not be fetched.";
+          return Response.json({ ok: false, error: message }, { status: 400 });
+        }
+      },
       POST: async ({ request }) => {
         if (!(await isSignedIn(request))) return denied();
         if (!mediaEnabled()) {

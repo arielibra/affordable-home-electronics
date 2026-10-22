@@ -114,7 +114,7 @@ function Confirmed() {
         )}
 
         <img
-          src="/assets/empty-box.png"
+          src="/assets/empty-box.webp"
           alt=""
           width={1168}
           height={880}

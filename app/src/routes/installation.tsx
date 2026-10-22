@@ -60,7 +60,7 @@ function Installation() {
       <JsonLd json={INSTALL_JSON} />
       <section className="relative border-b border-line">
         <img
-          src="/assets/install-ladder.png"
+          src="/assets/install-ladder.webp"
           alt="An installer on a step ladder mounting a camera under the eave of a New York row house"
           width={1344}
           height={752}

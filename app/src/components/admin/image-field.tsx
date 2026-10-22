@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { uploadFile, uploadFromLink } from "../../lib/shrink-image";
 import { btnLink, input, label } from "./ui";
 
 /**
@@ -23,21 +24,15 @@ export function ImageField({
   const [link, setLink] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  async function send(init: RequestInit, which: "file" | "link") {
+  async function send(save: () => Promise<string>, which: "file" | "link") {
     setBusy(which);
     setError("");
     try {
-      const res = await fetch("/api/admin/upload", { method: "POST", ...init });
-      const data = (await res.json()) as { ok: boolean; url?: string; error?: string };
-      if (!data.ok || !data.url) {
-        setError(data.error ?? "That image could not be saved.");
-        return;
-      }
-      onChange(data.url);
+      onChange(await save());
       setLink("");
       if (fileRef.current) fileRef.current.value = "";
-    } catch {
-      setError("Could not reach the site. Check the connection.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "That image could not be saved.");
     } finally {
       setBusy("");
     }
@@ -68,9 +63,7 @@ export function ImageField({
               onChange={(e) => {
                 const file = e.currentTarget.files?.[0];
                 if (!file) return;
-                const body = new FormData();
-                body.append("file", file);
-                void send({ body }, "file");
+                void send(() => uploadFile(file), "file");
               }}
               className="block w-full text-[13px] text-muted file:mr-3 file:h-8 file:border file:border-line file:bg-surface file:px-3 file:text-[13px] file:text-ink hover:file:border-ink"
             />
@@ -86,10 +79,7 @@ export function ImageField({
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || !link.trim()) return;
                 e.preventDefault();
-                void send(
-                  { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: link.trim() }) },
-                  "link",
-                );
+                void send(() => uploadFromLink(link.trim()), "link");
               }}
               className={input}
             />
@@ -97,10 +87,7 @@ export function ImageField({
               type="button"
               disabled={busy !== "" || !link.trim()}
               onClick={() =>
-                void send(
-                  { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: link.trim() }) },
-                  "link",
-                )
+                void send(() => uploadFromLink(link.trim()), "link")
               }
               className="h-9 shrink-0 border border-[color:var(--admin-hairline)] px-3 text-[13px] font-medium text-ink hover:border-ink disabled:text-muted"
             >

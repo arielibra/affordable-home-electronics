@@ -24,7 +24,7 @@ export function WhatWeDo() {
     <section className="grid border-b border-line lg:grid-cols-2">
       <div className="relative min-h-[320px] bg-ink lg:min-h-[560px]">
         <img
-          src="/assets/monitor-wall.png"
+          src="/assets/monitor-wall.webp"
           alt="A wall mounted pair of monitors above a network video recorder with neatly dressed cabling"
           width={1344}
           height={752}

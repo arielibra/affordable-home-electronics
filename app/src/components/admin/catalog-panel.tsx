@@ -6,6 +6,7 @@ import { ORIGIN, money } from "../../lib/site";
 import { slugify } from "../../lib/slug";
 import { GalleryField } from "./gallery-field";
 import { RichTextArea } from "./rich-textarea";
+import { ShrinkPhotos } from "./shrink-photos";
 import { btnLink, card, cardQuiet, input, label } from "./ui";
 
 export type CatalogProduct = {
@@ -647,6 +648,8 @@ export function CatalogPanel() {
           />
         </div>
       ) : null}
+
+      {editing === null ? <ShrinkPhotos onDone={() => void load()} /> : null}
 
       {loadError ? (
         <p className="mt-5 border border-[color:var(--admin-hairline)] bg-ground p-3 text-sm text-[color:var(--color-signal)]">{loadError}</p>

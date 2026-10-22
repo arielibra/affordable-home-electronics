@@ -130,7 +130,7 @@ function Footer() {
       <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <img
-            src="/assets/logo-reversed.png"
+            src="/assets/logo-reversed.webp"
             alt="Affordable Home Electronics"
             loading="lazy"
             className="h-auto w-[250px]"
