@@ -34,7 +34,7 @@ const HELP: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         Look it up on the{" "}
-        <Link to="/orders" className="text-ink underline underline-offset-4 hover:text-signal">order tracking page</Link>{" "}
+        <Link to="/orders" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">order tracking page</Link>{" "}
         with your order reference and email. Orders leave within two business days, and the tracking number appears
         there as soon as it ships.
       </>
@@ -46,7 +46,7 @@ const HELP: { q: string; a: React.ReactNode }[] = [
       <>
         Ask for a return authorization number first, by phone, email or the form here. The return address comes with it.
         Returns without a number cannot be accepted. The full rules are on the{" "}
-        <Link to="/returns" className="text-ink underline underline-offset-4 hover:text-signal">returns page</Link>.
+        <Link to="/returns" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">returns page</Link>.
       </>
     ),
   },
@@ -56,7 +56,7 @@ const HELP: { q: string; a: React.ReactNode }[] = [
       <>
         Everything we sell is genuine USA stock with the full manufacturer warranty, and we take the claim to the
         manufacturer for you. Email the order reference, the model number and what it is doing. See the{" "}
-        <Link to="/warranty" className="text-ink underline underline-offset-4 hover:text-signal">warranty page</Link>.
+        <Link to="/warranty" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">warranty page</Link>.
       </>
     ),
   },
@@ -66,7 +66,7 @@ const HELP: { q: string; a: React.ReactNode }[] = [
       <>
         We install camera systems, recorders and access control across the five boroughs. Tell us the property type and
         roughly how many cameras and we will come back with a quote. More on the{" "}
-        <Link to="/installation" className="text-ink underline underline-offset-4 hover:text-signal">installation page</Link>.
+        <Link to="/installation" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">installation page</Link>.
       </>
     ),
   },
@@ -76,7 +76,7 @@ const HELP: { q: string; a: React.ReactNode }[] = [
       <>
         We ship across the United States and to Canada by UPS, which cannot deliver to PO boxes or APO/FPO addresses.
         Oversized items and Canadian orders are covered on the{" "}
-        <Link to="/shipping" className="text-ink underline underline-offset-4 hover:text-signal">shipping page</Link>.
+        <Link to="/shipping" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">shipping page</Link>.
       </>
     ),
   },
@@ -133,65 +133,65 @@ function Contact() {
   return (
     <SiteShell>
       <JsonLd json={pageJsonLd({ type: "ContactPage", path: "/contact", name: "Contact Affordable Home Electronics", description: "Phone, WhatsApp, email, fax, address and opening hours.", about: { "@id": STORE_ID } })} />
-      <Shell className="py-14">
+      <Shell className="py-10 md:py-12">
         <Eyebrow>Contact</Eyebrow>
-        <h1 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
+        <h1 className="mt-2 max-w-[15ch] text-[40px] text-ink md:text-[56px]">
           Call the shop. Someone picks up.
         </h1>
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8">
           <div>
-            <dl className="border-t border-line">
-              <div className="flex gap-4 border-b border-line py-6">
-                <IconPhone className="mt-1 h-5 w-5 shrink-0 text-ink" />
+            <dl className="rounded-[14px] border border-[#dbe7f3] bg-surface px-5">
+              <div className="flex gap-4 border-b border-[#e6eef6] py-5 last:border-b-0">
+                <IconPhone className="mt-0.5 h-5 w-5 shrink-0 text-signal" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Phone</dt>
+                  <dt className="text-[14px] font-semibold text-muted">Phone</dt>
                   <dd className="mt-2">
-                    <a href={SITE.phoneHref} className="font-mono text-2xl tracking-tight text-ink hover:text-signal">
+                    <a href={SITE.phoneHref} className="ahe-price text-[30px] text-ink hover:text-signal">
                       {SITE.phone}
                     </a>
                   </dd>
                 </div>
               </div>
-              <div className="flex gap-4 border-b border-line py-6">
-                <IconPhone className="mt-1 h-5 w-5 shrink-0 text-ink" />
+              <div className="flex gap-4 border-b border-[#e6eef6] py-5 last:border-b-0">
+                <IconPhone className="mt-0.5 h-5 w-5 shrink-0 text-signal" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">WhatsApp</dt>
+                  <dt className="text-[14px] font-semibold text-muted">WhatsApp</dt>
                   <dd className="mt-2">
-                    <a href={SITE.whatsappHref} className="font-mono text-lg tracking-tight text-ink hover:text-signal">
+                    <a href={SITE.whatsappHref} className="ahe-price text-[22px] text-ink hover:text-signal">
                       {SITE.whatsapp}
                     </a>
                   </dd>
                 </div>
               </div>
-              <div className="flex gap-4 border-b border-line py-6">
-                <IconMail className="mt-1 h-5 w-5 shrink-0 text-ink" />
+              <div className="flex gap-4 border-b border-[#e6eef6] py-5 last:border-b-0">
+                <IconMail className="mt-0.5 h-5 w-5 shrink-0 text-signal" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Email and fax</dt>
+                  <dt className="text-[14px] font-semibold text-muted">Email and fax</dt>
                   <dd className="mt-2 space-y-1">
-                    <a href={SITE.emailHref} className="block break-all text-base text-ink hover:text-signal">
+                    <a href={SITE.emailHref} className="block break-all text-[16px] font-semibold text-ink hover:text-signal">
                       {SITE.email}
                     </a>
-                    <span className="block font-mono text-sm text-muted">Fax {SITE.fax}</span>
+                    <span className="block text-[15px] text-muted">Fax {SITE.fax}</span>
                   </dd>
                 </div>
               </div>
-              <div className="flex gap-4 border-b border-line py-6">
-                <IconPin className="mt-1 h-5 w-5 shrink-0 text-ink" />
+              <div className="flex gap-4 border-b border-[#e6eef6] py-5 last:border-b-0">
+                <IconPin className="mt-0.5 h-5 w-5 shrink-0 text-signal" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">The counter</dt>
-                  <dd className="mt-2 text-base leading-relaxed text-ink">
+                  <dt className="text-[14px] font-semibold text-muted">The counter</dt>
+                  <dd className="mt-2 text-[16px] leading-relaxed text-ink">
                     {SITE.street}
                     <br />
                     {SITE.cityLine}
                   </dd>
                 </div>
               </div>
-              <div className="flex gap-4 border-b border-line py-6">
-                <IconClock className="mt-1 h-5 w-5 shrink-0 text-ink" />
+              <div className="flex gap-4 border-b border-[#e6eef6] py-5 last:border-b-0">
+                <IconClock className="mt-0.5 h-5 w-5 shrink-0 text-signal" />
                 <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Opening hours</dt>
-                  <dd className="mt-2 text-base leading-relaxed text-ink">
+                  <dt className="text-[14px] font-semibold text-muted">Opening hours</dt>
+                  <dd className="mt-2 text-[16px] leading-relaxed text-ink">
                     {SITE.hours.plain}
                     <br />
                     <span className="text-muted">{SITE.hours.closed}</span>
@@ -201,13 +201,13 @@ function Contact() {
             </dl>
           </div>
 
-          <div className="border border-line bg-surface p-6 sm:p-8">
+          <div className="rounded-[14px] border border-[#dbe7f3] bg-surface p-6 sm:p-8">
             {done ? (
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-ink">Message received.</h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
+                <h2 className="ahe-display text-[26px] text-ink">Message received.</h2>
+                <p className="mt-3 text-[15px] leading-relaxed text-muted">
                   We will get back to you. If it is urgent, the shop line is{" "}
-                  <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+                  <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4">
                     {SITE.phone}
                   </a>
                   .
@@ -215,7 +215,7 @@ function Contact() {
               </div>
             ) : (
               <form onSubmit={onSubmit} className="space-y-4">
-                <h2 className="text-xl font-semibold tracking-tight text-ink">Send a message</h2>
+                <h2 className="ahe-display text-[26px] text-ink">Send a message</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Your name" name="name">
                     <TextInput id="name" name="name" required minLength={2} maxLength={120} autoComplete="name" />
@@ -251,18 +251,18 @@ function Contact() {
           </div>
         </div>
 
-        <section className="mt-20" aria-labelledby="help-heading">
-          <h2 id="help-heading" className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">
+        <section className="mt-12" aria-labelledby="help-heading">
+          <h2 id="help-heading" className="text-[32px] text-ink md:text-[40px]">
             Quicker answers to common questions
           </h2>
-          <p className="mt-3 max-w-[62ch] text-base leading-relaxed text-muted">
+          <p className="mt-2 max-w-[62ch] text-[16px] leading-relaxed text-muted">
             Most messages are about one of these. If yours is, the answer may already be here.
           </p>
-          <dl className="mt-8 grid gap-px border-y border-line bg-line md:grid-cols-2 lg:grid-cols-3">
+          <dl className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {HELP.map((h) => (
-              <div key={h.q} className="bg-ground p-6">
-                <dt className="text-base font-medium text-ink">{h.q}</dt>
-                <dd className="mt-2 text-sm leading-relaxed text-muted">{h.a}</dd>
+              <div key={h.q} className="rounded-[14px] border border-[#dbe7f3] bg-surface p-5">
+                <dt className="text-[17px] font-bold text-ink">{h.q}</dt>
+                <dd className="mt-2 text-[15px] leading-relaxed text-muted">{h.a}</dd>
               </div>
             ))}
           </dl>

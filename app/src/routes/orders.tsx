@@ -117,18 +117,18 @@ function TrackOrder() {
   const state = order ? describe(order.status) : null;
 
   return (
-    <Shell className="py-14">
+    <Shell className="py-10 md:py-12">
       <Eyebrow>Order status</Eyebrow>
-      <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-6xl">
+      <h1 className="mt-2 max-w-[18ch] text-[40px] text-ink md:text-[56px]">
         Find your order.
       </h1>
-      <p className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted">
+      <p className="mt-3 max-w-[58ch] text-[17px] leading-relaxed text-muted">
         Your order number is on the confirmation screen and in the receipt email. It looks like{" "}
         <span className="font-mono text-ink">AHE-1A2B3C</span>. No account needed.
       </p>
 
-      <div className="mt-10 grid gap-12 lg:grid-cols-[380px_1fr] lg:gap-16">
-        <form onSubmit={onSubmit} className="h-fit space-y-4 border border-line bg-surface p-6">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[380px_1fr] lg:gap-8">
+        <form onSubmit={onSubmit} className="h-fit space-y-4 rounded-[14px] border border-[#dbe7f3] bg-surface p-6">
           <Field label="Order number" name="reference">
             <TextInput id="reference" name="reference" required placeholder="AHE-1A2B3C" maxLength={40} className="font-mono" />
           </Field>
@@ -139,13 +139,13 @@ function TrackOrder() {
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex h-12 w-full items-center justify-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98] disabled:bg-line disabled:text-muted"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98] disabled:bg-line disabled:text-muted"
           >
             {pending ? "Looking" : "Find my order"}
           </button>
           <p className="text-xs leading-relaxed text-muted">
             Cannot find the number? Call{" "}
-            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+            <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4">
               {SITE.phone}
             </a>{" "}
             and we will look it up from your name.
@@ -156,7 +156,7 @@ function TrackOrder() {
           {!order ? (
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center border border-line bg-surface p-10 text-center">
               <Mark empty className="h-16 w-[91px] text-ink" />
-              <p className="mt-6 max-w-[36ch] text-sm leading-relaxed text-muted">
+              <p className="mt-6 max-w-[36ch] text-[15px] leading-relaxed text-muted">
                 Enter the order number and email and the full order will appear here.
               </p>
             </div>
@@ -164,13 +164,13 @@ function TrackOrder() {
             <article>
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
                 <div>
-                  <p className="font-mono text-lg tracking-tight text-ink">{order.reference}</p>
-                  <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+                  <p className="ahe-price text-lg tracking-tight text-ink">{order.reference}</p>
+                  <p className="mt-1 text-[14px] font-semibold text-muted">
                     Placed {when(order.created_at)}
                   </p>
                 </div>
                 <span
-                  className={`px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] ${
+                  className={`px-2.5 py-1.5 text-[13px] font-semibold ${
                     order.status === "paid" ? "bg-ink text-surface" : "border border-line text-muted"
                   }`}
                 >
@@ -178,11 +178,11 @@ function TrackOrder() {
                 </span>
               </div>
 
-              <p className="mt-5 max-w-[62ch] text-base leading-relaxed text-muted">{state?.body}</p>
+              <p className="mt-5 max-w-[62ch] text-[16px] leading-relaxed text-muted">{state?.body}</p>
 
               {order.tracking_number ? (
                 <div className="mt-6 max-w-[460px] border border-line bg-surface p-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+                  <p className="text-[14px] font-semibold text-muted">
                     {carrierName(order.carrier) || "Tracking"}
                   </p>
                   <p className="mt-2 break-all font-mono text-sm text-ink">{order.tracking_number}</p>
@@ -191,7 +191,7 @@ function TrackOrder() {
                       href={trackingUrl(order.carrier, order.tracking_number)}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-3 inline-flex h-10 items-center bg-ink px-5 text-sm font-medium text-surface"
+                      className="mt-3 inline-flex h-11 items-center rounded-[10px] bg-ink px-5 text-[15px] font-semibold text-surface"
                     >
                       Track it with {carrierName(order.carrier)}
                     </a>
@@ -204,7 +204,7 @@ function TrackOrder() {
 
               {order.items.length > 0 ? (
                 <>
-                  <h2 className="mt-10 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">What is on it</h2>
+                  <h2 className="mt-10 text-[24px] text-ink">What is on it</h2>
                   <ul className="mt-3 border-t border-line">
                     {order.items.map((it, i) => (
                       <li key={`${it.name}-${i}`} className="flex justify-between gap-6 border-b border-line py-3 text-sm">
@@ -235,7 +235,7 @@ function TrackOrder() {
 
               {order.address1 ? (
                 <>
-                  <h2 className="mt-10 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Going to</h2>
+                  <h2 className="mt-10 text-[24px] text-ink">Going to</h2>
                   <address className="mt-3 text-sm not-italic leading-relaxed text-ink">
                     {order.name}
                     <br />
@@ -252,9 +252,9 @@ function TrackOrder() {
                 </>
               ) : null}
 
-              <p className="mt-10 max-w-[58ch] text-sm leading-relaxed text-muted">
+              <p className="mt-10 max-w-[58ch] text-[15px] leading-relaxed text-muted">
                 Need to change or cancel this order? Call{" "}
-                <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+                <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4">
                   {SITE.phone}
                 </a>{" "}
                 with the order number. If it has not shipped, we can usually sort it on the phone.

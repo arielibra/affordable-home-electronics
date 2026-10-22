@@ -218,16 +218,16 @@ function CheckoutBody() {
 
   if (done) {
     return (
-      <Shell className="py-16">
+      <Shell className="py-10 md:py-12">
         <div className="max-w-[620px]">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-signal">
+          <p className="text-[14px] font-semibold text-signal">
             {done.paid ? "Payment received" : "Order received"}
           </p>
-          <h1 className="mt-4 text-4xl font-semibold leading-[1.02] tracking-tighter text-ink md:text-5xl">
+          <h1 className="mt-4 text-[40px] text-ink md:text-[56px]">
             {done.paid ? "Paid. Reference " : "We have it. Reference "}
             {done.reference}.
           </h1>
-          <p className="mt-5 text-base leading-relaxed text-muted">
+          <p className="mt-5 text-[16px] leading-relaxed text-muted">
             {done.paid
               ? "PayPal has taken the payment and the shop has the order. Someone will call to confirm the shipping date, and you will get a PayPal receipt by email."
               : "Someone from the shop will call to confirm stock, shipping and the final total. Nothing has been charged to you, and nothing ships until you say go."}
@@ -245,10 +245,10 @@ function CheckoutBody() {
             ) : null}
           </dl>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/shop" className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]">
+            <Link to="/shop" className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]">
               Keep browsing
             </Link>
-            <Link to="/orders" className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
+            <Link to="/orders" className="inline-flex h-12 items-center rounded-[10px] px-6 text-[15px] font-semibold text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] hover:bg-surface">
               Track this order
             </Link>
           </div>

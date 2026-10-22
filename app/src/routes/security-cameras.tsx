@@ -54,52 +54,52 @@ function SecurityCameras() {
   return (
     <SiteShell>
       <JsonLd json={pageJsonLd({ type: "CollectionPage", path: "/security-cameras", name: "Security cameras", description: "Security cameras, NVR and DVR recorders and complete systems from authorized brands.", mainEntity: { "@type": "ItemList", numberOfItems: products.length, itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, url: `${ORIGIN}/p/${p.slug}`, name: p.name })) } })} />
-      <section className="border-b border-line bg-ground">
-        <Shell className="grid items-center gap-12 py-14 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:py-20">
+      <section className="bg-ground">
+        <Shell className="grid items-center gap-12 py-10 lg:grid-cols-[1fr_0.9fr] lg:gap-12 lg:py-14">
           <div>
             <Eyebrow>Security and surveillance</Eyebrow>
-            <h1 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[0.98] tracking-tighter text-ink md:text-6xl">
+            <h1 className="mt-2 max-w-[18ch] text-[40px] text-ink md:text-[56px]">
               The camera is easy. The system is the job.
             </h1>
-            <p className="mt-6 max-w-[54ch] text-base leading-relaxed text-muted md:text-lg">
+            <p className="mt-3 max-w-[54ch] text-[17px] leading-relaxed text-muted">
               We have been specifying CCTV since {SITE.since}, for row houses, delis, warehouses and buildings with a super
               who needs it simple. Tell us the property and we will tell you what it takes.
             </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <ShopCta category="cameras">Shop cameras</ShopCta>
               <CallCta phone={SITE.phone} href={SITE.phoneHref} />
             </div>
           </div>
-          <figure className="border border-line bg-surface p-2.5">
+          <figure className="overflow-hidden rounded-2xl bg-ink p-2.5 shadow-[0_26px_50px_-30px_rgba(27,58,92,0.7)]">
             <img
               src="/assets/hero-counter.webp"
               alt="Two white bullet cameras on a wall bracket above a slim network video recorder"
               width={1024}
               height={688}
-              className="block w-full object-cover"
+              className="block w-full rounded-lg object-cover"
             />
           </figure>
         </Shell>
       </section>
 
-      <section className="bg-surface py-16">
+      <section className="bg-surface py-12 md:py-16">
         <Shell>
-          <h2 className="max-w-[22ch] text-3xl font-semibold leading-[1.04] tracking-tighter text-ink md:text-4xl">
+          <h2 className="max-w-[22ch] text-[30px] text-ink md:text-[38px]">
             What actually matters when you pick.
           </h2>
-          <div className="mt-10 grid gap-px border border-line bg-line sm:grid-cols-2">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {TYPES.map((t) => (
-              <div key={t.name} className="bg-surface p-7">
-                <t.icon className="h-7 w-7 text-ink" />
-                <h3 className="mt-5 text-lg font-medium leading-snug text-ink">{t.name}</h3>
-                <p className="mt-2 max-w-[50ch] text-sm leading-relaxed text-muted">{t.body}</p>
+              <div key={t.name} className="rounded-[14px] border border-[#dbe7f3] bg-ground p-5">
+                <span className="grid h-10 w-10 place-items-center rounded-[10px] bg-[#e6f1fb] text-signal"><t.icon className="h-6 w-6" /></span>
+                <h3 className="mt-3 text-[17px] font-bold leading-snug text-ink">{t.name}</h3>
+                <p className="mt-2 max-w-[50ch] text-[15px] leading-relaxed text-muted">{t.body}</p>
               </div>
             ))}
           </div>
         </Shell>
       </section>
 
-      <section className="bg-ground py-16">
+      <section className="bg-ground py-12 md:py-16">
         <Shell>
           <SectionHead
             title="Cameras on the shelf"
@@ -108,13 +108,13 @@ function SecurityCameras() {
               <Link
                 to="/shop/$category"
                 params={{ category: "cameras" }}
-                className="border-b border-signal pb-0.5 text-sm text-ink hover:text-signal"
+                className="text-[15px] font-semibold text-signal hover:text-ink"
               >
                 All cameras
               </Link>
             }
           />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {products.slice(0, 8).map((p) => (
               <ProductCard key={p.slug} p={p} />
             ))}

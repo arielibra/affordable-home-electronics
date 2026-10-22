@@ -77,24 +77,24 @@ function Confirmed() {
   }, [sessionId, refresh]);
 
   return (
-    <Shell className="py-16">
+    <Shell className="py-10 md:py-12">
       <div className="max-w-[640px]">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-signal">
+        <p className="text-[14px] font-semibold text-signal">
           {state === "ready" ? "Payment received" : "Thank you"}
         </p>
-        <h1 className="mt-4 text-4xl font-semibold leading-[1.02] tracking-tighter text-ink md:text-5xl">
+        <h1 className="mt-4 text-[40px] text-ink md:text-[56px]">
           {state === "ready" ? `Paid. Reference ${order?.reference}.` : "Your order is going through."}
         </h1>
 
         {state === "loading" ? (
-          <p className="mt-5 text-base leading-relaxed text-muted">Confirming the payment with our card processor.</p>
+          <p className="mt-5 text-[16px] leading-relaxed text-muted">Confirming the payment with our card processor.</p>
         ) : state === "ready" ? (
           <>
-            <p className="mt-5 text-base leading-relaxed text-muted">
+            <p className="mt-5 text-[16px] leading-relaxed text-muted">
               A receipt is on its way to {order?.email || "your email"}. We pick, pack and confirm the ship date from the
               counter, and you will hear from us if anything on the order needs a word first.
             </p>
-            <dl className="mt-8 border-y border-line text-sm">
+            <dl className="mt-6 rounded-[14px] border border-[#dbe7f3] bg-surface px-5 py-2 text-[15px]">
               <Row label="Reference" value={order?.reference ?? ""} mono />
               <Row label="Items" value={money(order?.subtotal_cents ?? 0)} mono />
               <Row label="Shipping" value={(order?.shipping_cents ?? 0) === 0 ? "Free" : money(order?.shipping_cents ?? 0)} mono />
@@ -103,10 +103,10 @@ function Confirmed() {
             </dl>
           </>
         ) : (
-          <p className="mt-5 text-base leading-relaxed text-muted">
+          <p className="mt-5 text-[16px] leading-relaxed text-muted">
             The payment went through, and the confirmation is taking a moment to reach us. Nothing is lost. If you do not
             see a receipt by email shortly, call the shop on{" "}
-            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+            <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4">
               {SITE.phone}
             </a>{" "}
             and we will find it.
@@ -121,7 +121,7 @@ function Confirmed() {
           className="mt-10 h-44 w-auto object-contain"
         />
 
-        <p className="mt-8 max-w-[58ch] text-sm leading-relaxed text-muted">
+        <p className="mt-8 max-w-[58ch] text-[15px] leading-relaxed text-muted">
           You can check this order any time at{" "}
           <Link to="/orders" className="text-ink underline underline-offset-4 hover:text-signal">
             the order tracker
@@ -130,10 +130,10 @@ function Confirmed() {
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/shop" className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]">
+          <Link to="/shop" className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]">
             Keep browsing
           </Link>
-          <a href={SITE.phoneHref} className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
+          <a href={SITE.phoneHref} className="inline-flex h-12 items-center rounded-[10px] px-6 text-[15px] font-semibold text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] hover:bg-surface">
             Call {SITE.phone}
           </a>
         </div>
@@ -146,7 +146,7 @@ function Row({ label, value, mono, strong }: { label: string; value: string; mon
   return (
     <div className={`flex justify-between border-b border-line py-3 last:border-b-0 ${strong ? "font-medium" : ""}`}>
       <dt className="text-muted">{label}</dt>
-      <dd className={`text-ink ${mono ? "font-mono" : ""}`}>{value}</dd>
+      <dd className={`text-ink ${mono ? "font-semibold tabular-nums" : ""}`}>{value}</dd>
     </div>
   );
 }

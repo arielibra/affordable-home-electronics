@@ -255,7 +255,7 @@ function ProductPage() {
                 <p className="mt-2 text-[14px] font-semibold text-signal">Only {product.stock} left</p>
               ) : null}
               {!available ? (
-                <p className="mt-3 text-sm leading-relaxed text-muted">
+                <p className="mt-3 text-[15px] leading-relaxed text-muted">
                   Call the shop and we will tell you when the next shipment lands, or find you an equivalent.
                 </p>
               ) : null}

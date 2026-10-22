@@ -98,12 +98,12 @@ function CartBody() {
               <div className="rounded-[14px] border border-[#dbe7f3] bg-surface p-10 text-center">
                 <Mark empty className="mx-auto h-20 w-[114px] text-ink" />
                 <p className="mt-7 text-base text-ink">Nothing in the cart yet.</p>
-                <p className="mt-2 text-sm text-muted">Start with the cameras, or tell us the building and we will spec it.</p>
+                <p className="mt-2 text-[15px] text-muted">Start with the cameras, or tell us the building and we will spec it.</p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
-                  <Link to="/shop" className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]">
+                  <Link to="/shop" className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]">
                     Browse the catalog
                   </Link>
-                  <Link to="/installation" className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
+                  <Link to="/installation" className="inline-flex h-12 items-center rounded-[10px] px-6 text-[15px] font-semibold text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] hover:bg-surface">
                     Ask for a quote
                   </Link>
                 </div>
@@ -180,7 +180,7 @@ function CartBody() {
             <div className="mt-6">
               <CheckoutCta disabled={lines.length === 0} />
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-muted">
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">
               In a hurry? Call{" "}
               <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4 hover:text-signal">
                 {SITE.phone}

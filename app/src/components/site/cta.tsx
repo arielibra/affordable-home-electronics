@@ -29,10 +29,10 @@ export function CallCta({ phone, href }: { phone: string; href: string }) {
   return (
     <a
       href={href}
-      className="inline-flex h-12 items-center gap-3 border border-line bg-transparent px-6 text-sm font-medium text-ink transition-colors duration-200 hover:bg-surface active:scale-[0.98]"
+      className="inline-flex h-12 items-center gap-3 rounded-[10px] px-6 text-[15px] font-semibold text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] transition-colors duration-200 hover:bg-surface active:scale-[0.98]"
     >
       <span>Call the shop</span>
-      <span className="font-mono text-[13px] tracking-tight text-muted">{phone}</span>
+      <span className="tabular-nums text-muted">{phone}</span>
     </a>
   );
 }
@@ -40,7 +40,7 @@ export function CallCta({ phone, href }: { phone: string; href: string }) {
 /** Installation band: signal field, white label, arrow steps right. */
 export function QuoteCta({ children = "Get a quote", href }: { children?: ReactNode; href?: string }) {
   const cls =
-    "group inline-flex h-12 items-center gap-3 bg-teal px-7 text-sm font-semibold text-[#0d2338] transition-transform duration-150 active:scale-[0.98]";
+    "group inline-flex h-12 items-center gap-3 rounded-[10px] bg-signal px-7 text-[15px] font-semibold text-white transition-transform duration-150 hover:bg-ink active:scale-[0.98]";
   const inner = (
     <>
       <span>{children}</span>
@@ -74,10 +74,7 @@ export function CheckoutCta({ disabled = false }: { disabled?: boolean }) {
           : "bg-ink text-surface active:scale-[0.98]"
       }`}
     >
-      {disabled ? null : (
-        <span className="h-2 w-2 bg-white/40 transition-colors duration-200 group-hover:bg-teal" />
-      )}
-      <span>{disabled ? "Add something first" : "Place the order"}</span>
+      <span>{disabled ? "Add something first" : "Go to checkout"}</span>
     </Link>
   );
 }
@@ -88,11 +85,9 @@ export function SendCta({ label, pending }: { label: string; pending: boolean })
     <button
       type="submit"
       disabled={pending}
-      className="group relative inline-flex h-12 items-center border border-ink px-8 text-sm font-medium text-ink transition-colors duration-200 hover:bg-ink hover:text-surface disabled:cursor-not-allowed disabled:border-line disabled:text-muted disabled:hover:bg-transparent"
+      className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-ink px-8 text-[15px] font-semibold text-surface transition-colors duration-200 hover:bg-ink-soft disabled:cursor-not-allowed disabled:bg-line disabled:text-muted sm:w-auto"
     >
-      <span className="pointer-events-none absolute left-[-1px] top-[-1px] h-2 w-2 border-l-2 border-t-2 border-signal opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100" />
-      <span className="pointer-events-none absolute bottom-[-1px] right-[-1px] h-2 w-2 border-b-2 border-r-2 border-signal opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100" />
-      {pending ? "Sending" : label}
+      {pending ? "Sending…" : label}
     </button>
   );
 }

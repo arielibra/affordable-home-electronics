@@ -39,7 +39,7 @@ function StarPicker({ name, value, onChange }: { name: string; value: number; on
   const shown = hover || value;
   return (
     <fieldset>
-      <legend className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Your rating</legend>
+      <legend className="mb-1.5 block text-[14px] font-semibold text-muted">Your rating</legend>
       <div className="flex items-center gap-3">
         <div className="flex" onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map((n) => (
@@ -69,7 +69,7 @@ function StarPicker({ name, value, onChange }: { name: string; value: number; on
             </label>
           ))}
         </div>
-        <span className="text-sm text-muted">{shown ? WORDS[shown] : "Pick 1 to 5"}</span>
+        <span className="text-[15px] text-muted">{shown ? WORDS[shown] : "Pick 1 to 5"}</span>
       </div>
     </fieldset>
   );
@@ -189,9 +189,9 @@ export function ReviewWriter({ token, only, onCancel }: { token?: string; only?:
 
   if (done) {
     return (
-      <div className="border border-line bg-surface p-6">
+      <div className="rounded-[14px] border border-[#dbe7f3] bg-surface p-6">
         <p className="text-lg font-semibold tracking-tight text-ink">Thank you.</p>
-        <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-muted">
+        <p className="mt-2 max-w-[58ch] text-[15px] leading-relaxed text-muted">
           {done === 1 ? "Your review has" : `Your ${done} reviews have`} been sent to the shop. We read every one before it
           goes up, which usually takes a day or two.
         </p>
@@ -207,12 +207,12 @@ export function ReviewWriter({ token, only, onCancel }: { token?: string; only?:
           <ReviewWriter only={only} />
         </div>
       ) : (
-        <p className="text-sm text-muted">Finding your order.</p>
+        <p className="text-[15px] text-muted">Finding your order.</p>
       );
     }
     return (
       <form
-        className="border border-line bg-surface p-6"
+        className="rounded-[14px] border border-[#dbe7f3] bg-surface p-6"
         onSubmit={(e) => {
           e.preventDefault();
           const f = new FormData(e.currentTarget);
@@ -220,7 +220,7 @@ export function ReviewWriter({ token, only, onCancel }: { token?: string; only?:
         }}
       >
         <p className="text-lg font-semibold tracking-tight text-ink">Bought this from us?</p>
-        <p className="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-muted">
+        <p className="mt-1.5 max-w-[60ch] text-[15px] leading-relaxed text-muted">
           Reviews come from verified buyers only. Enter your order number (it starts AHE) and the email you ordered with.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -240,12 +240,12 @@ export function ReviewWriter({ token, only, onCancel }: { token?: string; only?:
           <button
             type="submit"
             disabled={pending}
-            className="bg-ink px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-signal disabled:opacity-60"
+            className="h-12 rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-white transition-colors hover:bg-ink-soft disabled:opacity-60"
           >
             {pending ? "Checking" : "Continue"}
           </button>
           {onCancel ? (
-            <button type="button" onClick={onCancel} className="text-sm text-muted underline underline-offset-4 hover:text-ink">
+            <button type="button" onClick={onCancel} className="text-[15px] text-signal underline underline-offset-4 hover:text-ink">
               Cancel
             </button>
           ) : null}
@@ -256,21 +256,21 @@ export function ReviewWriter({ token, only, onCancel }: { token?: string; only?:
 
   return (
     <form onSubmit={submit} className="space-y-6">
-      {reference ? <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Order {reference}</p> : null}
+      {reference ? <p className="text-[14px] font-semibold text-muted">Order {reference}</p> : null}
       {products.map((p) => {
         const d = drafts[p.slug];
         const set = (patch: Partial<Draft>) => setDrafts((all) => ({ ...all, [p.slug]: { ...all[p.slug], ...patch } }));
         return (
-          <fieldset key={p.slug} className="border border-line bg-surface p-5 md:p-6">
+          <fieldset key={p.slug} className="rounded-[14px] border border-[#dbe7f3] bg-surface p-5 md:p-6">
             <legend className="sr-only">{p.name}</legend>
             <div className="flex items-start gap-4">
               {p.image ? (
-                <img src={p.image} alt="" className="h-16 w-16 shrink-0 border border-line bg-white object-contain p-1" />
+                <img src={p.image} alt="" className="h-16 w-16 shrink-0 rounded-[10px] border border-[#e3edf7] bg-white object-contain" />
               ) : null}
               <div className="min-w-0">
-                <p className="text-sm font-medium leading-snug text-ink">{p.name}</p>
+                <p className="text-[15px] font-semibold leading-snug text-ink">{p.name}</p>
                 {p.existing ? (
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-[13px] text-muted">
                     You reviewed this already{p.existing.status === "pending" ? " (waiting for approval)" : ""}. Saving again
                     replaces it.
                   </p>
@@ -315,17 +315,17 @@ export function ReviewWriter({ token, only, onCancel }: { token?: string; only?:
         <button
           type="submit"
           disabled={pending}
-          className="bg-ink px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-signal disabled:opacity-60"
+          className="h-12 rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-white transition-colors hover:bg-ink-soft disabled:opacity-60"
         >
           {pending ? "Sending" : products.length > 1 ? "Send reviews" : "Send review"}
         </button>
         {onCancel ? (
-          <button type="button" onClick={onCancel} className="text-sm text-muted underline underline-offset-4 hover:text-ink">
+          <button type="button" onClick={onCancel} className="text-[15px] text-signal underline underline-offset-4 hover:text-ink">
             Cancel
           </button>
         ) : null}
       </div>
-      <p className="max-w-[64ch] text-xs leading-relaxed text-muted">
+      <p className="max-w-[64ch] text-[13px] leading-relaxed text-muted">
         Every review is read by the shop before it appears. We publish honest reviews good or bad, and only remove ones
         that are abusive, off-topic or share personal details.
       </p>
@@ -352,16 +352,16 @@ export function ProductReviews({ slug, data }: { slug: string; data: ReviewData 
   const { summary, reviews } = data;
 
   return (
-    <section id="reviews" className="border-t border-line py-14" aria-labelledby="reviews-title">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
-        <h2 id="reviews-title" className="text-2xl font-semibold leading-none tracking-tighter text-ink">
+    <section id="reviews" className="py-10" aria-labelledby="reviews-title">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-4">
+        <h2 id="reviews-title" className="text-[32px] text-ink">
           Customer reviews
         </h2>
         {!writing ? (
           <button
             type="button"
             onClick={() => setWriting(true)}
-            className="border border-ink px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-white"
+            className="rounded-[10px] border border-ink px-5 py-2.5 text-[15px] font-semibold text-ink transition-colors hover:bg-ink hover:text-white"
           >
             Write a review
           </button>
@@ -376,27 +376,27 @@ export function ProductReviews({ slug, data }: { slug: string; data: ReviewData 
 
       {summary.count === 0 ? (
         !writing ? (
-          <p className="mt-6 max-w-[60ch] text-sm leading-relaxed text-muted">
+          <p className="mt-6 max-w-[60ch] text-[15px] leading-relaxed text-muted">
             No reviews yet. If you bought this from us, you can be the first. Reviews come from verified buyers only.
           </p>
         ) : null
       ) : (
         <div className="mt-8 grid gap-10 lg:grid-cols-[260px_1fr]">
           <div>
-            <p className="font-mono text-5xl leading-none tracking-tighter text-ink">{summary.average.toFixed(1)}</p>
+            <p className="ahe-price text-5xl leading-none tracking-tighter text-ink">{summary.average.toFixed(1)}</p>
             <div className="mt-3">
               <Stars value={summary.average} size={20} />
             </div>
-            <p className="mt-2 text-sm text-muted">
+            <p className="mt-2 text-[15px] text-muted">
               {summary.count} verified {summary.count === 1 ? "review" : "reviews"}
             </p>
             <ul className="mt-5 space-y-1.5">
               {[5, 4, 3, 2, 1].map((n) => {
                 const c = summary.breakdown[n - 1] ?? 0;
                 return (
-                  <li key={n} className="flex items-center gap-3 text-xs text-muted">
+                  <li key={n} className="flex items-center gap-3 text-[13px] text-muted">
                     <span className="w-12 shrink-0 whitespace-nowrap font-mono">{n} star</span>
-                    <span className="h-1.5 flex-1 bg-line">
+                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-[#e6eef6]">
                       <span className="block h-full bg-[#e8a317]" style={{ width: `${summary.count ? (c / summary.count) * 100 : 0}%` }} />
                     </span>
                     <span className="w-6 text-right font-mono">{c}</span>
@@ -412,11 +412,11 @@ export function ProductReviews({ slug, data }: { slug: string; data: ReviewData 
                   <Stars value={r.rating} />
                   {r.title ? <p className="text-base font-semibold tracking-tight text-ink">{r.title}</p> : null}
                 </div>
-                <p className="mt-1.5 text-xs text-muted">
+                <p className="mt-1.5 text-[13px] text-muted">
                   {r.author} · <span className="text-ink">Verified buyer</span> · {when(r.date)}
                 </p>
                 {r.body ? (
-                  <p className="mt-3 max-w-[72ch] whitespace-pre-wrap text-sm leading-relaxed text-ink">{r.body}</p>
+                  <p className="mt-3 max-w-[72ch] whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{r.body}</p>
                 ) : null}
               </li>
             ))}

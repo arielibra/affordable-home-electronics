@@ -1,4 +1,4 @@
-import { Shell } from "../site/section";
+import { SectionHead, Shell } from "../site/section";
 
 const QUOTES = [
   {
@@ -18,22 +18,21 @@ const QUOTES = [
   },
 ];
 
+/** Customer words, three even quote cards. */
 export function Testimonials() {
   return (
-    <section className="border-t border-line bg-surface py-16">
+    <section className="bg-surface py-12 md:py-16">
       <Shell>
-        <h2 className="text-2xl font-semibold leading-none tracking-tighter text-ink">In their words</h2>
-        <div className="mt-10 grid gap-px bg-line lg:grid-cols-3">
+        <SectionHead title="In their words" />
+        <div className="mt-6 grid gap-3 lg:grid-cols-3">
           {QUOTES.map((q) => (
-            <figure key={q.name} className="bg-surface lg:px-8 lg:first:pl-0 lg:last:pr-0">
-              <span className="block h-2 w-2 bg-signal" aria-hidden="true" />
-              <blockquote className="mt-5 max-w-[40ch] text-lg leading-snug tracking-tight text-ink">
-                &ldquo;{q.body}&rdquo;
-              </blockquote>
-              <figcaption className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-                {q.name}
-                <span className="mx-2 text-line">/</span>
-                {q.role}
+            <figure key={q.name} className="flex flex-col rounded-[14px] border border-[#dbe7f3] bg-ground p-6">
+              <span className="ahe-display text-[48px] leading-[0.6] text-signal" aria-hidden="true">
+                &ldquo;
+              </span>
+              <blockquote className="mt-3 text-[18px] leading-snug text-ink">{q.body}</blockquote>
+              <figcaption className="mt-auto pt-5 text-[14px] text-muted">
+                <b className="font-semibold text-ink">{q.name}</b> · {q.role}
               </figcaption>
             </figure>
           ))}

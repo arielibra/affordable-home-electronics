@@ -195,6 +195,14 @@ html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="
 html.ahe body:not(:has(.ahe-admin)) :is(a, button, input, select, span)[class~="h-12"],
 html.ahe body:not(:has(.ahe-admin)) textarea { border-radius: 10px; }
 html.ahe body:not(:has(.ahe-admin)) main [class~="border"][class~="border-line"]:is([class~="bg-surface"], [class~="bg-white"]) { border-radius: 14px; border-color: #dbe7f3; }
+/* Old hairline grids (gap-px over a line-coloured fill) become separate white
+   cards with breathing room, everywhere on the storefront at once. */
+html.ahe body:not(:has(.ahe-admin)) main .gap-px.bg-line { gap: 12px !important; background: transparent !important; border: 0 !important; }
+html.ahe body:not(:has(.ahe-admin)) main .gap-px.bg-line > * { border-radius: 14px; border: 1px solid #dbe7f3; background-color: var(--color-surface); padding: 20px !important; }
+/* The old square bullets become round dots. */
+html.ahe body:not(:has(.ahe-admin)) main :is(span, i)[class~="bg-signal"]:is([class~="h-2"], [class~="h-1.5"], [class~="h-3"]) { border-radius: 999px; }
+/* Hairline-separated stacks inside sections: a touch more air. */
+html.ahe body:not(:has(.ahe-admin)) main dl > div, html.ahe body:not(:has(.ahe-admin)) main ul > li { line-height: 1.55; }
 /* Breadcrumb links: a taller tap area on phones. */
 nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 /* A white panel on the light blue page, the site's one card style. */

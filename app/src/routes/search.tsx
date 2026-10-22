@@ -28,8 +28,8 @@ function SearchPage() {
     <SiteShell>
       <div className="border-b border-line bg-surface py-12">
         <Shell>
-          <h1 className="text-4xl font-semibold leading-none tracking-tighter text-ink md:text-5xl">Find the part.</h1>
-          <p className="mt-4 max-w-[58ch] text-base leading-relaxed text-muted">
+          <h1 className="text-[40px] text-ink md:text-[56px]">Find the part.</h1>
+          <p className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-muted">
             Search by model, part number or brand. If it is not listed, call the shop and we will check what we can order.
           </p>
           <form
@@ -48,11 +48,11 @@ function SearchPage() {
               onChange={(e) => setTerm(e.target.value)}
               placeholder="LTS CMIP, Anviz C2, 8 channel NVR"
               maxLength={80}
-              className="h-12 w-full border border-line bg-surface px-4 text-sm text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none"
+              className="h-12 w-full rounded-[10px] border-[1.5px] border-[#c6d9ec] bg-surface px-4 text-[16px] text-ink placeholder:text-muted/70 focus:border-signal focus:outline-none"
             />
             <button
               type="submit"
-              className="inline-flex h-12 shrink-0 items-center gap-2 bg-ink px-6 text-sm font-medium text-surface active:scale-[0.98]"
+              className="inline-flex h-12 shrink-0 items-center gap-2 rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]"
             >
               <IconSearch className="h-4 w-4" /> Search
             </button>
@@ -62,12 +62,12 @@ function SearchPage() {
 
       <Shell className="py-12">
         {q.trim().length < 2 ? (
-          <p className="text-sm text-muted">Type at least two characters to search the catalog.</p>
+          <p className="text-[15px] text-muted">Type at least two characters to search the catalog.</p>
         ) : products.length === 0 ? (
           <div className="border border-line bg-surface p-10 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">No match</p>
-            <p className="mt-4 text-2xl font-semibold tracking-tight text-ink">Nothing matched &ldquo;{q}&rdquo;.</p>
-            <p className="mt-2 text-sm text-muted">
+            <p className="text-[14px] font-semibold text-muted">No match</p>
+            <p className="mt-4 ahe-display text-[26px] text-ink">Nothing matched &ldquo;{q}&rdquo;.</p>
+            <p className="mt-2 text-[15px] text-muted">
               Try a shorter term, or{" "}
               <Link to="/shop" className="text-ink underline underline-offset-4 hover:text-signal">
                 browse the catalog
@@ -77,7 +77,7 @@ function SearchPage() {
           </div>
         ) : (
           <>
-            <p className="border-b border-line pb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+            <p className="border-b border-line pb-4 text-[14px] font-semibold text-muted">
               {products.length} {products.length === 1 ? "match" : "matches"} for {q}
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

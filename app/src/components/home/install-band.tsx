@@ -4,7 +4,7 @@ import { submitQuote } from "../../lib/api/store.functions";
 import { SITE } from "../../lib/site";
 import { SendCta } from "../site/cta";
 import { Field, Notice, Select, TextArea, TextInput } from "../site/form";
-import { Shell } from "../site/section";
+import { Eyebrow, Shell } from "../site/section";
 
 const BOROUGHS = ["Queens", "Brooklyn", "Manhattan", "The Bronx", "Staten Island", "Nassau or Westchester"];
 const PROPERTIES = ["House", "Apartment building", "Store or restaurant", "Warehouse or garage", "Office"];
@@ -41,42 +41,40 @@ export function InstallBand() {
   }
 
   return (
-    <section id="quote" className="bg-band py-16 text-surface lg:py-20">
-      <Shell className="grid gap-12 lg:grid-cols-[1fr_460px] lg:gap-16">
-        <div>
-          <h2 className="max-w-[17ch] text-3xl font-semibold leading-[1.02] tracking-tighter md:text-4xl">
-            We come out and install it ourselves.
-          </h2>
-          <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-white/65">
+    <section id="quote" className="bg-surface py-12 md:py-16">
+      <Shell className="grid items-start gap-8 lg:grid-cols-[1fr_460px] lg:gap-12">
+        <div className="rounded-2xl bg-band p-6 text-white md:p-8">
+          <p className="text-[14px] font-semibold text-[#cfe1ef]">Installation in New York City</p>
+          <h2 className="mt-2 max-w-[17ch] text-[32px] md:text-[44px]">We come out and install it ourselves.</h2>
+          <p className="mt-3 max-w-[54ch] text-[16px] leading-relaxed text-[#dcebfa]">
             Cable run, mounting, aiming, the recorder configured and your phone showing the cameras before we pack up.
             One trip, one bill, no subscription.
           </p>
 
-          <div className="mt-10 border-t border-line-dark pt-8">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">Where we work</p>
-            <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
+          <div className="mt-6 border-t border-white/20 pt-5">
+            <p className="text-[14px] font-semibold text-[#cfe1ef]">Where we work</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
               {SITE.areas.map((a) => (
-                <li key={a} className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 bg-signal" aria-hidden="true" />
+                <li key={a} className="rounded-full bg-white/12 px-3 py-1.5 text-[14px] font-medium text-white">
                   {a}
                 </li>
               ))}
             </ul>
-            <p className="mt-6 max-w-[48ch] text-sm leading-relaxed text-white/55">
+            <p className="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-[#dcebfa]">
               Outside the city we ship the same gear anywhere in the United States, and we answer install questions on the
               phone at no charge.
             </p>
           </div>
         </div>
 
-        <div className="border border-line-dark bg-surface p-6 text-ink sm:p-8">
+        <div className="rounded-2xl border border-[#dbe7f3] bg-surface p-6 text-ink shadow-[0_18px_34px_-26px_rgba(27,58,92,0.4)] sm:p-7">
           {done ? (
             <div>
-              <h3 className="text-xl font-semibold tracking-tight">We have it. Expect a call.</h3>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
+              <h3 className="ahe-display text-[28px] text-ink">We have it. Expect a call.</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted">
                 Someone from the shop will call you back to walk through the building and give you a number. If you would
                 rather talk now, the shop line is{" "}
-                <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
+                <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4">
                   {SITE.phone}
                 </a>
                 .
@@ -84,7 +82,7 @@ export function InstallBand() {
             </div>
           ) : (
             <form onSubmit={onSubmit} className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">Ask for a quote</h3>
+              <h3 className="ahe-display text-[28px] text-ink">Ask for a quote</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Your name" name="name">
                   <TextInput id="name" name="name" required minLength={2} maxLength={120} autoComplete="name" />
@@ -93,7 +91,7 @@ export function InstallBand() {
                   <TextInput id="phone" name="phone" required minLength={7} maxLength={40} inputMode="tel" autoComplete="tel" />
                 </Field>
               </div>
-              <Field label="Email" name="email" hint="Optional. We call first.">
+              <Field label="Email" name="email" hint="Optional">
                 <TextInput id="email" name="email" type="email" maxLength={160} autoComplete="email" />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">

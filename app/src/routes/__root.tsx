@@ -80,10 +80,10 @@ function buildHead(meta: AppMeta) {
 function Centered({ eyebrow, title, body, children }: { eyebrow: string; title: string; body: string; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ground px-6 text-center">
-      <Mark detail="full" className="h-12 w-[68px] text-ink" />
-      <p className="mt-8 font-mono text-xs uppercase tracking-[0.18em] text-signal">{eyebrow}</p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tighter text-ink md:text-5xl">{title}</h1>
-      <p className="mt-3 max-w-[46ch] text-base leading-relaxed text-muted">{body}</p>
+      <Mark className="h-16 w-[82px] text-ink" />
+      <p className="mt-6 text-[15px] font-semibold text-signal">{eyebrow}</p>
+      <h1 className="ahe-display mt-2 text-[40px] leading-none text-ink md:text-[56px]">{title}</h1>
+      <p className="mt-3 max-w-[46ch] text-[17px] leading-relaxed text-muted">{body}</p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">{children}</div>
     </div>
   );
@@ -98,11 +98,11 @@ function NotFoundComponent() {
     >
       <Link
         to="/shop"
-        className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface transition-transform active:scale-[0.98]"
+        className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface transition-transform active:scale-[0.98]"
       >
         Browse the catalog
       </Link>
-      <Link to="/" className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
+      <Link to="/" className="inline-flex h-12 items-center rounded-[10px] px-6 text-[15px] font-semibold text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] hover:bg-surface">
         Go home
       </Link>
     </Centered>
@@ -127,11 +127,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           router.invalidate();
           reset();
         }}
-        className="inline-flex h-11 items-center bg-ink px-6 text-sm font-medium text-surface transition-transform active:scale-[0.98]"
+        className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface transition-transform active:scale-[0.98]"
       >
         Try again
       </button>
-      <a href="/" className="inline-flex h-11 items-center border border-line px-6 text-sm font-medium text-ink hover:bg-surface">
+      <a href="/" className="inline-flex h-12 items-center rounded-[10px] px-6 text-[15px] font-semibold text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] hover:bg-surface">
         Go home
       </a>
     </Centered>

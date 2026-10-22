@@ -1,19 +1,19 @@
 import { Link } from "@tanstack/react-router";
 
 import { ProductCard, type CardProduct } from "../site/product-card";
-import { SectionHead, Shell } from "../site/section";
+import { MoreLink, SectionHead, Shell } from "../site/section";
 
 export function Featured({ products }: { products: CardProduct[] }) {
   if (products.length === 0) return null;
   return (
-    <section className="bg-ground py-16 lg:py-20">
+    <section className="bg-ground py-12 md:py-16">
       <Shell>
         <SectionHead
           title="On the counter this week"
           lead="Real stock at the price we sell it for, with the manufacturer list price beside it so you can see the difference."
           aside={
-            <Link to="/shop" className="border-b border-signal pb-0.5 text-sm text-ink hover:text-signal">
-              See all {products.length > 0 ? "products" : ""}
+            <Link to="/shop">
+              <MoreLink>See all products</MoreLink>
             </Link>
           }
         />

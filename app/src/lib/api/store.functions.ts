@@ -28,7 +28,7 @@ const id = z.string().min(8).max(64);
 const slug = z.string().min(1).max(120);
 
 export const getStorefront = createServerFn({ method: "GET" }).handler(async () => {
-  const [categories, counts, featured] = await Promise.all([listCategories(), categoryCounts(), featuredProducts(8)]);
+  const [categories, counts, featured] = await Promise.all([listCategories(), categoryCounts(), featuredProducts(9)]);
   return { categories, counts, featured };
 });
 

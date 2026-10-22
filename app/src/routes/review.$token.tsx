@@ -30,13 +30,13 @@ function ReviewPage() {
   const { token } = Route.useParams();
   return (
     <SiteShell>
-      <Shell className="py-14 md:py-20">
+      <Shell className="py-10 md:py-12">
         <div className="max-w-3xl">
           <Eyebrow>Verified buyer review</Eyebrow>
-          <h1 className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tighter text-ink md:text-5xl">
+          <h1 className="mt-4 text-[40px] text-ink md:text-[56px]">
             How did it work out?
           </h1>
-          <p className="mt-4 max-w-[58ch] text-base leading-relaxed text-muted">
+          <p className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-muted">
             A star rating is all it takes. A line or two about how you use it helps the next buyer even more. Rate as many or
             as few as you like.
           </p>

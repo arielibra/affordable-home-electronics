@@ -1,4 +1,4 @@
-import { Eyebrow } from "../site/section";
+import { Eyebrow, Shell } from "../site/section";
 
 const STEPS = [
   {
@@ -19,44 +19,38 @@ const STEPS = [
   },
 ];
 
+/** How the shop works: a real sequence, so the steps are numbered. */
 export function WhatWeDo() {
   return (
-    <section className="grid border-b border-line lg:grid-cols-2">
-      <div className="relative min-h-[320px] bg-ink lg:min-h-[560px]">
-        <img
-          src="/assets/monitor-wall.webp"
-          alt="A wall mounted pair of monitors above a network video recorder with neatly dressed cabling"
-          width={1344}
-          height={752}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      </div>
+    <section className="bg-ground py-12 md:py-16">
+      <Shell className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12">
+        <div className="overflow-hidden rounded-2xl bg-ink p-2.5 shadow-[0_26px_50px_-30px_rgba(27,58,92,0.7)]">
+          <img
+            src="/assets/monitor-wall.webp"
+            alt="A wall mounted pair of monitors above a network video recorder with neatly dressed cabling"
+            width={1344}
+            height={752}
+            loading="lazy"
+            className="aspect-[4/3] w-full rounded-lg object-cover"
+          />
+        </div>
 
-      <div className="bg-ground px-5 py-14 sm:px-10 lg:py-20">
-        <div className="mx-auto max-w-[560px] lg:mx-0">
+        <div>
           <Eyebrow>How the shop works</Eyebrow>
-          <h2 className="mt-5 max-w-[16ch] text-3xl font-semibold leading-[1.02] tracking-tighter text-ink md:text-4xl">
-            Four things, done properly.
-          </h2>
-          <ul className="mt-10">
+          <h2 className="mt-2 text-[32px] text-ink md:text-[40px]">Four things, done properly.</h2>
+          <ol className="mt-6 grid gap-3 sm:grid-cols-2">
             {STEPS.map((s, i) => (
-              <li key={s.title} className="border-t border-line py-6 last:border-b">
-                <div className="flex gap-5">
-                  <span className="mt-[7px] h-2 w-2 shrink-0 bg-signal" aria-hidden="true" />
-                  <div>
-                    <h3 className="text-base font-medium leading-snug text-ink">
-                      <span className="mr-3 font-mono text-[13px] text-muted">{String(i + 1).padStart(2, "0")}</span>
-                      {s.title}
-                    </h3>
-                    <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted">{s.body}</p>
-                  </div>
-                </div>
+              <li key={s.title} className="rounded-[14px] border border-[#dbe7f3] bg-surface p-5">
+                <span className="ahe-display grid h-8 w-8 place-items-center rounded-lg bg-ink text-[19px] text-white">
+                  {i + 1}
+                </span>
+                <h3 className="mt-3 text-[17px] font-bold leading-snug text-ink">{s.title}</h3>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-muted">{s.body}</p>
               </li>
             ))}
-          </ul>
+          </ol>
         </div>
-      </div>
+      </Shell>
     </section>
   );
 }

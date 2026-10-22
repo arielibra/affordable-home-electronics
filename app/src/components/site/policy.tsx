@@ -28,34 +28,38 @@ export function PolicyPage({
   return (
     <SiteShell>
       {path ? <JsonLd json={pageJsonLd({ path, name, description: lead, mainEntity })} /> : null}
-      <Shell className="py-14">
+      <Shell className="py-10 md:py-12">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="mt-5 max-w-[20ch] text-4xl font-semibold leading-[0.99] tracking-tighter text-ink md:text-5xl">
-          {title}
-        </h1>
-        <p className="mt-6 max-w-[62ch] text-base leading-relaxed text-muted">{lead}</p>
+        <h1 className="mt-2 max-w-[20ch] text-[40px] text-ink md:text-[56px]">{title}</h1>
+        <p className="mt-3 max-w-[62ch] text-[17px] leading-relaxed text-muted">{lead}</p>
 
-        <div className="mt-12 max-w-[68ch]">{children}</div>
+        <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="rounded-[14px] border border-[#dbe7f3] bg-surface px-5 py-2 md:px-8">{children}</div>
 
-        <div className="mt-16 border-t border-line pt-8">
-          <p className="max-w-[62ch] text-sm leading-relaxed text-muted">
-            Anything here you want explained, call the shop on{" "}
-            <a href={SITE.phoneHref} className="font-mono text-ink underline underline-offset-4">
-              {SITE.phone}
-            </a>
-            . A person answers.
-          </p>
-          <nav className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <Link to="/shipping" className="text-ink underline underline-offset-4 hover:text-signal">
-              Shipping
-            </Link>
-            <Link to="/returns" className="text-ink underline underline-offset-4 hover:text-signal">
-              Returns and refunds
-            </Link>
-            <Link to="/warranty" className="text-ink underline underline-offset-4 hover:text-signal">
-              Warranty
-            </Link>
-          </nav>
+          <aside className="grid gap-3 lg:sticky lg:top-[150px]">
+            <nav aria-label="Policies" className="rounded-[14px] border border-[#dbe7f3] bg-surface p-3">
+              {[
+                ["/shipping", "Shipping"],
+                ["/returns", "Returns and refunds"],
+                ["/warranty", "Warranty"],
+              ].map(([to, label]) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="block rounded-lg px-3 py-2.5 text-[15px] font-semibold text-ink-soft hover:bg-ground hover:text-ink"
+                  activeProps={{ className: "bg-[#e6f1fb] text-ink" }}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+            <div className="rounded-[14px] bg-ink p-5 text-white">
+              <p className="text-[15px] leading-relaxed text-[#dcebfa]">Anything here you want explained? A person answers.</p>
+              <a href={SITE.phoneHref} className="ahe-price mt-2 block text-[28px] text-white hover:text-[#9cd8ff]">
+                {SITE.phone}
+              </a>
+            </div>
+          </aside>
         </div>
       </Shell>
     </SiteShell>
@@ -64,9 +68,9 @@ export function PolicyPage({
 
 export function Clause({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-t border-line py-7 first:border-t-0 first:pt-0">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{title}</h2>
-      <div className="mt-3 space-y-3 text-base leading-relaxed text-ink [&_a]:underline [&_a]:underline-offset-4 [&_li]:mt-2 [&_ul]:list-disc [&_ul]:pl-5">
+    <section className="border-t border-[#e6eef6] py-6 first:border-t-0">
+      <h2 className="text-[24px] text-ink">{title}</h2>
+      <div className="mt-2 max-w-[68ch] space-y-3 text-[16px] leading-relaxed text-ink-soft [&_a]:font-semibold [&_a]:text-signal [&_a]:underline [&_a]:underline-offset-4 [&_li]:mt-2 [&_ul]:list-disc [&_ul]:pl-5">
         {children}
       </div>
     </section>
