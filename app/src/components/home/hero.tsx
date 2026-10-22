@@ -42,8 +42,8 @@ function Screen({ f }: { f: Feed }) {
 export function Hero() {
   return (
     <section className="ahe-hero border-b border-line bg-ground">
-      <Shell className="grid items-center gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:py-16">
-        <div className="ahe-rise">
+      <Shell className="grid items-start gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:py-16">
+        <div className="ahe-rise lg:pt-6">
           <p className="ahe-kicker inline-flex items-center gap-2 text-[14px] font-semibold text-ink-soft before:h-2 before:w-2 before:rounded-full before:bg-[#19a974] before:shadow-[0_0_0_4px_rgba(25,169,116,0.18)] before:content-['']">
             Rego Park, Queens · since {SITE.since}
           </p>
