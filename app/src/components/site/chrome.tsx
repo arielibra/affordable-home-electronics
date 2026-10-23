@@ -68,17 +68,12 @@ function Header() {
                   <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="#ffd27a" />
                 </svg>
                 <b className="ahe-display shrink-0 text-[16px] tracking-[0.04em] text-[#ff9a3c]">Happy Halloween</b>
-                <span className="hidden truncate md:inline">· Authorized dealer. Full USA warranty on every item.</span>
+                <span className="hidden truncate sm:inline">· Authorized dealer. Full USA warranty on every item.</span>
               </>
             ) : (
-              <span className="hidden truncate sm:inline">Authorized dealer. Full USA warranty on every item.</span>
+              <span className="truncate">Authorized dealer. Full USA warranty on every item.</span>
             )}
           </span>
-          <div className="flex shrink-0 items-center gap-5">
-            <a href={SITE.phoneHref} className="ahe-onblue">
-              {SITE.phone}
-            </a>
-          </div>
         </div>
       </div>
 
