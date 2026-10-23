@@ -206,8 +206,6 @@ html.ahe body:not(:has(.ahe-admin)) main :is(span, i)[class~="bg-signal"]:is([cl
 html.ahe body:not(:has(.ahe-admin)) main dl > div, html.ahe body:not(:has(.ahe-admin)) main ul > li { line-height: 1.55; }
 /* Breadcrumb links: a taller tap area on phones. */
 nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
-/* A white panel on the light blue page, the site's one card style. */
-.ahe-panel { background: var(--color-surface); border: 1px solid #dbe7f3; border-radius: 14px; }
 .ahe-live { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #11805a; }
 .ahe-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-live); }
 .ahe-live.is-out { color: #8a4b2e; }
