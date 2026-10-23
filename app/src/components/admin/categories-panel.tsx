@@ -187,8 +187,6 @@ export function CategoriesPanel() {
           <div key={c.slug} className="ahe-row flex flex-wrap items-center gap-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm text-ink">{c.name}</p>
-              <p className="mt-0.5 font-mono text-[13px] text-muted">/shop/{c.slug}</p>
-              {c.blurb ? <p className="mt-1 truncate text-[13px] text-muted">{c.blurb}</p> : null}
             </div>
             <p className="shrink-0 font-mono text-[13px] text-muted">
               {c.products} product{c.products === 1 ? "" : "s"}
