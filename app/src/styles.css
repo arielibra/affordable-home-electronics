@@ -628,3 +628,44 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
   .ahe-slide-sub { font-size: 2.6cqw; }
   .ahe-slide-points { display: none; }
 }
+
+/* Brand wall on /brands (components/site/brand-tile.tsx). */
+.ahe-brand-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 640px) { .ahe-brand-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+@media (min-width: 1024px) { .ahe-brand-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
+.ahe-brand-tile { --mx: 50%; --my: 40%; container-type: inline-size; position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; isolation: isolate;
+  border-radius: 16px; background: var(--color-surface); border: 1px solid #dbe7f3; text-decoration: none;
+  transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease, border-color .35s ease; }
+.ahe-brand-glow { position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .3s ease;
+  background: radial-gradient(260px circle at var(--mx) var(--my), rgba(42,163,255,.16), rgba(42,163,255,0) 70%); }
+.ahe-brand-mark { position: absolute; inset: 0 0 18% 0; display: flex; align-items: center; justify-content: center; padding: 0 14%; transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+.ahe-brand-mark img { max-width: 100%; max-height: 58%; object-fit: contain; filter: grayscale(1) contrast(.9); opacity: .62; transition: filter .4s ease, opacity .4s ease; }
+.ahe-brand-word { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: min(11cqw, 40px); line-height: 1; letter-spacing: .02em; color: var(--color-muted); text-align: center; white-space: nowrap; transition: color .4s ease; }
+.ahe-brand-cta { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  height: 44px; padding: 0 14px; border-radius: 11px; background: var(--color-band); color: #fff; font-size: 15px; font-weight: 600;
+  transform: translateY(calc(100% + 14px)); transition: transform .4s cubic-bezier(.2,.7,.2,1); }
+.ahe-brand-cta > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ahe-brand-count { font-weight: 500; opacity: .85; }
+.ahe-brand-cta svg { width: 18px; height: 18px; flex: none; transition: transform .3s ease; }
+.ahe-brand-tile:hover, .ahe-brand-tile:focus-visible { transform: translateY(-4px); border-color: #9db6cf; box-shadow: 0 22px 40px -26px rgba(27,58,92,.55); }
+.ahe-brand-tile:hover .ahe-brand-glow, .ahe-brand-tile:focus-visible .ahe-brand-glow { opacity: 1; }
+.ahe-brand-tile:hover .ahe-brand-mark, .ahe-brand-tile:focus-visible .ahe-brand-mark { transform: translateY(-6px) scale(1.04); }
+.ahe-brand-tile:hover .ahe-brand-mark img, .ahe-brand-tile:focus-visible .ahe-brand-mark img { filter: none; opacity: 1; }
+.ahe-brand-tile:hover .ahe-brand-word, .ahe-brand-tile:focus-visible .ahe-brand-word { color: var(--color-ink); }
+.ahe-brand-tile:hover .ahe-brand-cta, .ahe-brand-tile:focus-visible .ahe-brand-cta { transform: translateY(0); }
+.ahe-brand-tile:hover .ahe-brand-cta svg { transform: translateX(3px); }
+.ahe-brand-tile:focus-visible { outline: 3px solid var(--color-signal); outline-offset: 3px; }
+.ahe-brand-tile:active { transform: translateY(-1px) scale(.99); }
+/* Touch screens have no hover: show logos in colour and keep the bar visible. */
+@media (hover: none) {
+  .ahe-brand-mark img { filter: none; opacity: 1; }
+  .ahe-brand-word { color: var(--color-ink); }
+  .ahe-brand-cta { transform: none; height: 36px; font-size: 13px; padding: 0 10px; left: 8px; right: 8px; bottom: 8px; border-radius: 9px; }
+  .ahe-brand-count { display: none; }
+  .ahe-brand-mark { inset: 0 0 22% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ahe-brand-tile, .ahe-brand-mark, .ahe-brand-cta, .ahe-brand-cta svg { transition: none; }
+  .ahe-brand-tile:hover, .ahe-brand-tile:focus-visible { transform: none; }
+  .ahe-brand-tile:hover .ahe-brand-mark, .ahe-brand-tile:focus-visible .ahe-brand-mark { transform: none; }
+}

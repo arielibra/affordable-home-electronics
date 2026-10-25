@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { allProducts, categoryCounts, listCategories } from "../lib/store.server";
+import { allProducts, categoryCounts, listBrands, listCategories } from "../lib/store.server";
 
 /**
  * The pages worth telling Google about.
@@ -52,6 +52,12 @@ export const Route = createFileRoute("/sitemap.xml")({
           // Empty aisles are noindex, so they stay out of the sitemap too.
           const [cats, counts] = await Promise.all([listCategories(), categoryCounts()]);
           for (const c of cats) if ((counts[c.slug] ?? 0) > 0) rows.push(entry(`/shop/${c.slug}`, "0.8", "weekly"));
+        } catch {
+          // keep whatever we have
+        }
+        try {
+          // Only brands with something listed, the same rule as /brands.
+          for (const b of await listBrands()) rows.push(entry(`/brands/${b.slug}`, "0.7", "weekly"));
         } catch {
           // keep whatever we have
         }

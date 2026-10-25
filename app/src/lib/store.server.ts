@@ -156,6 +156,25 @@ export async function listBrands(): Promise<BrandListing[]> {
   return (r.results ?? []).filter((b) => b.n > 0);
 }
 
+/** One brand's page: the brand row (active only) and everything listed under it. */
+export async function getBrand(slug: string): Promise<BrandListing | null> {
+  return await db()
+    .prepare(
+      `SELECT b.name AS brand, b.slug AS slug, b.blurb AS blurb, b.logo AS logo,
+              (SELECT COUNT(*) FROM products p WHERE p.brand_slug = b.slug AND p.active = 1) AS n
+         FROM brands b WHERE b.slug = ?1 AND b.active = 1`,
+    )
+    .bind(slug)
+    .first<BrandListing>();
+}
+
+export async function productsByBrand(slug: string, sort = "featured"): Promise<Product[]> {
+  const order =
+    sort === "price-asc" ? "price_cents ASC" : sort === "price-desc" ? "price_cents DESC" : sort === "name" ? "name ASC" : "featured DESC, category, price_cents ASC";
+  const r = await db().prepare(`SELECT ${PUBLIC} FROM products WHERE brand_slug = ?1 AND active = 1 ORDER BY ${order}`).bind(slug).all<Product>();
+  return r.results ?? [];
+}
+
 export async function cartLines(cartId: string): Promise<CartLine[]> {
   if (!cartId) return [];
   const r = await db()

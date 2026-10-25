@@ -33,6 +33,7 @@ import { Route as ShopCategoryRouteImport } from './routes/shop/$category'
 import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as MediaKeyRouteImport } from './routes/media/$key'
+import { Route as BrandsBrandRouteImport } from './routes/brands_.$brand'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
 import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
 import { Route as ApiPaypalWebhookRouteImport } from './routes/api/paypal-webhook'
@@ -177,6 +178,11 @@ const MediaKeyRoute = MediaKeyRouteImport.update({
   path: '/media/$key',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BrandsBrandRoute = BrandsBrandRouteImport.update({
+  id: '/brands_/$brand',
+  path: '/brands/$brand',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe-webhook',
   path: '/api/stripe-webhook',
@@ -318,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/reviews': typeof ApiReviewsRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
+  '/brands/$brand': typeof BrandsBrandRoute
   '/media/$key': typeof MediaKeyRoute
   '/p/$slug': typeof PSlugRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -367,6 +374,7 @@ export interface FileRoutesByTo {
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/reviews': typeof ApiReviewsRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
+  '/brands/$brand': typeof BrandsBrandRoute
   '/media/$key': typeof MediaKeyRoute
   '/p/$slug': typeof PSlugRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/reviews': typeof ApiReviewsRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
+  '/brands_/$brand': typeof BrandsBrandRoute
   '/media/$key': typeof MediaKeyRoute
   '/p/$slug': typeof PSlugRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/api/paypal-webhook'
     | '/api/reviews'
     | '/api/stripe-webhook'
+    | '/brands/$brand'
     | '/media/$key'
     | '/p/$slug'
     | '/review/$token'
@@ -517,6 +527,7 @@ export interface FileRouteTypes {
     | '/api/paypal-webhook'
     | '/api/reviews'
     | '/api/stripe-webhook'
+    | '/brands/$brand'
     | '/media/$key'
     | '/p/$slug'
     | '/review/$token'
@@ -566,6 +577,7 @@ export interface FileRouteTypes {
     | '/api/paypal-webhook'
     | '/api/reviews'
     | '/api/stripe-webhook'
+    | '/brands_/$brand'
     | '/media/$key'
     | '/p/$slug'
     | '/review/$token'
@@ -616,6 +628,7 @@ export interface RootRouteChildren {
   ApiPaypalWebhookRoute: typeof ApiPaypalWebhookRoute
   ApiReviewsRoute: typeof ApiReviewsRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
+  BrandsBrandRoute: typeof BrandsBrandRoute
   MediaKeyRoute: typeof MediaKeyRoute
   PSlugRoute: typeof PSlugRoute
   ReviewTokenRoute: typeof ReviewTokenRoute
@@ -811,6 +824,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MediaKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/brands_/$brand': {
+      id: '/brands_/$brand'
+      path: '/brands/$brand'
+      fullPath: '/brands/$brand'
+      preLoaderRoute: typeof BrandsBrandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stripe-webhook': {
       id: '/api/stripe-webhook'
       path: '/api/stripe-webhook'
@@ -1000,6 +1020,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPaypalWebhookRoute: ApiPaypalWebhookRoute,
   ApiReviewsRoute: ApiReviewsRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
+  BrandsBrandRoute: BrandsBrandRoute,
   MediaKeyRoute: MediaKeyRoute,
   PSlugRoute: PSlugRoute,
   ReviewTokenRoute: ReviewTokenRoute,

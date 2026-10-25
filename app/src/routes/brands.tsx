@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { BrandTile } from "../components/site/brand-tile";
 import { SiteShell } from "../components/site/chrome";
 import { Eyebrow, Shell } from "../components/site/section";
 import { getBrandIndex } from "../lib/api/store.functions";
@@ -45,27 +46,10 @@ function Brands() {
         </p>
 
         <h2 className="mt-8 text-[26px] text-ink">In stock now</h2>
-        <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="ahe-brand-grid mt-4">
           {brands.map((b) => (
             <li key={b.slug}>
-              <Link
-                to="/search"
-                search={{ q: b.brand }}
-                className="flex h-full items-center justify-between gap-4 rounded-[14px] border border-[#dbe7f3] bg-surface p-4 transition-[border-color,box-shadow] hover:border-[#9db6cf] hover:shadow-[0_14px_30px_-22px_rgba(27,58,92,0.55)]"
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  {b.logo ? (
-                    <img src={b.logo} alt="" loading="lazy" className="h-8 w-8 shrink-0 object-contain" />
-                  ) : null}
-                  <span className="min-w-0">
-                    <span className="ahe-display block text-[22px] leading-tight text-ink">{b.brand}</span>
-                    {b.blurb ? <span className="mt-0.5 block truncate text-[14px] text-muted">{b.blurb}</span> : null}
-                  </span>
-                </span>
-                <span className="ahe-live shrink-0">
-                  {b.n} {b.n === 1 ? "item" : "items"}
-                </span>
-              </Link>
+              <BrandTile b={b} />
             </li>
           ))}
         </ul>

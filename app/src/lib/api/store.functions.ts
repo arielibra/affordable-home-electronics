@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import {
   addToCart,
+  getBrand,
+  productsByBrand,
   allProducts,
   cartLines,
   categoryCounts,
@@ -78,6 +80,13 @@ export const searchCatalog = createServerFn({ method: "GET" })
     const q = data.q.trim();
     const [categories, products] = await Promise.all([listCategories(), q.length > 1 ? searchProducts(q) : Promise.resolve([])]);
     return { categories, products, q };
+  });
+
+export const getBrandPage = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ slug, sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
+  .handler(async ({ data }) => {
+    const [brand, products] = await Promise.all([getBrand(data.slug), productsByBrand(data.slug, data.sort)]);
+    return { brand, products };
   });
 
 export const getBrandIndex = createServerFn({ method: "GET" }).handler(async () => ({ brands: await listBrands() }));
