@@ -4,57 +4,26 @@ import { SITE } from "../../lib/site";
 import { HalloweenSky } from "../site/halloween";
 import { ShopCta } from "../site/cta";
 import { Shell } from "../site/section";
-
-type Feed = { src: string; label: string; contain?: boolean; tint?: string };
-
-/**
- * The monitor wall: four screens the way a recorder shows them, each with a
- * live label and a running clock. Two are photos of real installs, two are
- * products from the shop. The clock is a fixed reading on purpose; a ticking
- * one would be motion for its own sake.
- */
-const FEEDS: Feed[] = [
-  { src: "/assets/monitor-wall.webp", label: "Storefront" },
-  { src: "/media/p_7417980f-0115-480a-997a-2683a9d6b02d.webp", label: "LTS 4MP turret", contain: true },
-  { src: "/media/p_bf84a8d7-e2c5-4033-b6a2-e8cb5776b454.webp", label: "Anviz VF30 Pro", contain: true, tint: "#cfe1ef" },
-  { src: "/assets/hero-storefront.webp", label: "Back office" },
-];
-
-function Screen({ f }: { f: Feed }) {
-  return (
-    <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-white" style={f.tint ? { background: f.tint } : undefined}>
-      <img
-        src={f.src}
-        alt=""
-        loading="eager"
-        className={`absolute inset-0 h-full w-full ${f.contain ? "object-contain p-2" : "object-cover"}`}
-      />
-      <span className="ahe-feed-time absolute right-2 top-2 rounded bg-white/85 px-1.5 py-0.5 font-[family-name:var(--font-display)] text-[13px] font-semibold tabular-nums text-ink">
-        02:14:07
-      </span>
-      <span className="ahe-feed-tag absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-md bg-ink/80 px-2 py-1 text-[12px] font-semibold text-white before:h-1.5 before:w-1.5 before:rounded-full before:bg-[#3fe0a0] before:content-['']">
-        {f.label}
-      </span>
-    </div>
-  );
-}
+import { HeroSlides } from "./hero-slides";
 
 export function Hero() {
   return (
     <section className="ahe-hero border-b border-line bg-ground">
-      <Shell className="grid items-start gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:py-16">
-        <div className="ahe-rise lg:pt-6">
-          <p className="ahe-kicker inline-flex items-center gap-2 text-[14px] font-semibold text-ink-soft before:h-2 before:w-2 before:rounded-full before:bg-[#19a974] before:shadow-[0_0_0_4px_rgba(25,169,116,0.18)] before:content-['']">
-            Rego Park, Queens · since {SITE.since}
-          </p>
-          <h1 className="mt-3 max-w-[14ch] text-[44px] text-ink md:text-[66px]">
-            Eyes on every <span className="text-signal ahe-hero-accent">door</span>, day and night.
-          </h1>
-          <p className="mt-5 max-w-[46ch] text-[17px] leading-relaxed text-muted">
-            Cameras, recorders and access control from the brands installers trust. Genuine USA stock, full
-            manufacturer warranty, shipped nationwide or installed across New York City.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+      <Shell className="pt-10 pb-8 lg:pt-12 lg:pb-10">
+        <div className="ahe-rise grid items-end gap-6 lg:grid-cols-[1fr_auto] lg:gap-10">
+          <div>
+            <p className="ahe-kicker inline-flex items-center gap-2 text-[14px] font-semibold text-ink-soft before:h-2 before:w-2 before:rounded-full before:bg-[#19a974] before:shadow-[0_0_0_4px_rgba(25,169,116,0.18)] before:content-['']">
+              Rego Park, Queens · since {SITE.since}
+            </p>
+            <h1 className="mt-3 max-w-[22ch] text-[40px] text-ink md:text-[58px]">
+              Eyes on every <span className="text-signal ahe-hero-accent">door</span>, day and night.
+            </h1>
+            <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-muted">
+              Cameras, recorders and access control from the brands installers trust. Genuine USA stock, full
+              manufacturer warranty, shipped nationwide or installed across New York City.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 lg:pb-1">
             <ShopCta />
             <Link
               to="/installation"
@@ -65,12 +34,10 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="ahe-wall-wrap relative mt-6 lg:mt-0">
+        <div className="ahe-wall-wrap relative mt-8">
           <HalloweenSky />
-          <div className="ahe-wall relative z-[1] grid grid-cols-2 gap-2.5 rounded-2xl bg-ink p-2.5 shadow-[0_26px_50px_-30px_rgba(27,58,92,0.7)]">
-            {FEEDS.map((f) => (
-              <Screen key={f.label} f={f} />
-            ))}
+          <div className="relative z-[1]">
+            <HeroSlides />
           </div>
         </div>
       </Shell>

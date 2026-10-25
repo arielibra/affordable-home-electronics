@@ -218,8 +218,8 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 .ahe-hw-strip { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; padding: 9px 20px; background: #1b2b45; color: #ffe9d2; font-size: 14px; font-weight: 500; text-align: center; }
 .ahe-hw-strip b { color: #ff9a3c; font-family: var(--font-display); font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; }
 .ahe-hw .ahe-hero { background: linear-gradient(180deg, #eef3fa 0%, #f6efe8 100%); overflow: hidden; }
-.ahe-hw .ahe-hero > div:first-child { padding-top: 110px; }
-@media (max-width: 1023px) { .ahe-hw .ahe-hero > div:first-child { padding-top: 56px; } }
+/* The moon and bats sit just above the slideshow, so give them room there. */
+.ahe-hw .ahe-hero .ahe-wall-wrap { margin-top: 100px; }
 .ahe-hw .ahe-hero-accent { color: #e8761c; }
 .ahe-hw .ahe-kicker::before { background: #ff8a1f !important; box-shadow: 0 0 0 4px rgba(255,138,31,.2) !important; }
 .ahe-hw .ahe-wall { background: #1b2b45; box-shadow: 0 26px 50px -30px rgba(27,43,69,.8), 0 0 0 1px rgba(255,154,60,.35); }
@@ -239,7 +239,7 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 @media (max-width: 1023px) {
   /* Phones and tablets: the wall sits under the buttons, so give the moon its own
      room above the wall instead of letting it drift over the buttons. */
-  .ahe-hw .ahe-hero .ahe-wall-wrap { margin-top: 70px; }
+  .ahe-hw .ahe-hero .ahe-wall-wrap { margin-top: 76px; }
   .ahe-hw-moon { width: 96px; height: 96px; right: 18px; top: -62px; }
   .ahe-hw-moon::after { display: none; }
   .ahe-hw-moon::before { width: 20px; height: 20px; left: 26px; top: 38px; }
@@ -589,3 +589,18 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Homepage slideshow (components/home/hero-slides.tsx). Slides are shown whole
+   at their own shape, so nothing printed on them is ever cropped. */
+.ahe-slides-view { position: relative; width: 100%; max-width: 100%; overflow: hidden; border-radius: 16px; background: #0d1a2b; box-shadow: 0 26px 50px -30px rgba(27,58,92,.7); }
+.ahe-slides-track { display: flex; height: 100%; }
+.ahe-slides-animate { transition: transform .8s cubic-bezier(.65,0,.35,1); }
+.ahe-slide { flex: 0 0 100%; height: 100%; }
+.ahe-slide img, .ahe-slide a { display: block; width: 100%; height: 100%; }
+.ahe-slide img { object-fit: cover; user-select: none; }
+.ahe-slides-dots { display: flex; justify-content: center; gap: 10px; padding-top: 14px; }
+.ahe-slides-dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 999px; background: #9db6cf; cursor: pointer; transition: width .3s ease, background-color .3s ease; }
+.ahe-slides-dots button[aria-current="true"] { width: 28px; background: var(--color-signal); }
+.ahe-slides-dots button:focus-visible { outline: 2px solid var(--color-signal); outline-offset: 3px; }
+@media (max-width: 640px) { .ahe-slides-view { border-radius: 12px; } }
+@media (prefers-reduced-motion: reduce) { .ahe-slides-dots button { transition: none; } }
