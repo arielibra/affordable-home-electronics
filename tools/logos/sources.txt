@@ -1,0 +1,14 @@
+alibi https://www.alibisecurity.com/pub/media/logo/alibi-security-logo.png
+ens https://enssecurity.com/wp-content/uploads/2024/03/ENS-Logo@200x.webp
+lts https://media.ltsecurityinc.com/athlete2/default/logo1_a2_1_2x_1.png
+lorex https://www.lorex.com/cdn/shop/files/lorex-35-logo.png?width=900
+dahua https://www.dahuasecurity.com/logo.png
+dahua-svg https://materialfile.dahuasecurity.com/assets/img/footer_logo.svg
+fingertec https://www.fingertec.com/templates/layout/img/logo-fingertec.png
+fingertec-svg https://www.fingertec.com/templates/layout/img/svg/logo-fingertec-white-byttc-25.svg
+hamiltonbuhl https://cdn11.bigcommerce.com/s-5ytt2ax1qa/images/stencil/original/logo_1647888174__51413.original.jpg
+anviz https://www.anviz.com/file/files/4768/anvizlogo.jpg
+ultraloq-utec https://u-tec.com/cdn/shop/files/u-tec_2024_new_logo.svg
+stkr https://stkrconcepts.com/cdn/shop/files/STKR_logo_white.svg
+3xlogic https://3xlogic.com/wp-content/uploads/2024/08/Logo-White.svg
+acesonic https://acesonic.com/index_files/acesonic-logo_small.png

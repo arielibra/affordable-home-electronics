@@ -1,0 +1,28 @@
+# One-off helper: downloads brand logos and renders SVGs to PNG so they can be
+# reviewed and committed. Runs only on the tools/fetch-logos branch; never deploys.
+name: Fetch brand logos
+on:
+  push:
+    branches: [tools/fetch-logos]
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin >/dev/null
+      - name: Download
+        run: |
+          mkdir -p out
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          while read -r name url; do
+            [ -z "$name" ] && continue
+            ext="${url%%\?*}"; ext="${ext##*.}"
+            if curl -fsSL -A "$UA" -o "out/$name.$ext" "$url"; then echo "ok $name"; else echo "FAILED $name $url"; fi
+          done < tools/logos/sources.txt
+          cp tools/logos/*.svg out/ 2>/dev/null || true
+          for f in out/*.svg; do rsvg-convert -w 1200 -o "${f%.svg}.png" "$f" && echo "rendered $f" || echo "render FAILED $f"; done
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: logos
+          path: out
