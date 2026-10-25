@@ -6,6 +6,7 @@ import { undeliverableReason } from "../lib/address";
 import { SiteShell } from "../components/site/chrome";
 import { Field, Notice, TextArea, TextInput } from "../components/site/form";
 import { PayMarks } from "../components/site/pay-marks";
+import { HeardAbout } from "../components/site/heard-about";
 import { Shell } from "../components/site/section";
 import { getCheckoutConfig, placeOrder } from "../lib/api/store.functions";
 import { ORIGIN, SITE, money } from "../lib/site";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 type Method = "card" | "paypal" | "phone";
-type Done = { reference: string; paid: boolean; total?: number } | null;
+type Done = { reference: string; paid: boolean; total?: number; proof: string } | null;
 
 function CheckoutPage() {
   return (
@@ -115,7 +116,7 @@ function CheckoutBody() {
         setError("The cart emptied before the order went through. Add the items again, or call the shop.");
         return;
       }
-      setDone({ reference: r.reference, paid: false, total: r.subtotal });
+      setDone({ reference: r.reference, paid: false, total: r.subtotal, proof: d.email });
       await refresh().catch(() => undefined);
     } catch {
       setError(`That did not go through. Call ${SITE.phone} and we will take the order on the phone.`);
@@ -190,7 +191,7 @@ function CheckoutBody() {
             setError(String(r.error ?? "PayPal did not complete the payment."));
             return;
           }
-          setDone({ reference: r.reference, paid: true });
+          setDone({ reference: r.reference, paid: true, proof: data.orderID });
           await refresh().catch(() => undefined);
         } catch {
           // The approval reached PayPal but our confirmation call did not come
@@ -244,6 +245,7 @@ function CheckoutBody() {
               </div>
             ) : null}
           </dl>
+          <HeardAbout reference={done.reference} proof={done.proof} />
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop" className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]">
               Keep browsing

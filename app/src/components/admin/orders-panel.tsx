@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { CARRIERS, CHANNELS, STATE_LABEL, carrierName, channelName, shopMayEmailBuyer, trackingUrl, type OrderState } from "../../lib/orders";
+import { heardAboutLabel } from "../../lib/heard-about";
 import { AddOrder } from "./add-order";
 import { OrderEditor } from "./order-editor";
 import { money } from "../../lib/site";
@@ -39,6 +40,7 @@ export type AdminOrder = {
   cancel_reason?: string;
   cancelled_at?: string | null;
   cancel_notified_at?: string | null;
+  heard_about?: string;
   items: Item[];
 };
 
@@ -192,6 +194,17 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
             </p>
             {order.notes ? (
               <p className="mt-3 border-l-2 border-line pl-3 text-[15px] leading-[1.55] text-muted">{order.notes}</p>
+            ) : null}
+
+            {(order.channel ?? "site") === "site" ? (
+              <p className="mt-5 text-sm">
+                <span className="font-semibold text-ink">How they heard about us:</span>{" "}
+                {order.heard_about ? (
+                  <span className="text-ink">{heardAboutLabel(order.heard_about)}</span>
+                ) : (
+                  <span className="text-muted">Not answered</span>
+                )}
+              </p>
             ) : null}
           </div>
 

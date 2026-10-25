@@ -22,6 +22,7 @@ import { productReviews } from "../reviews.server";
 import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../email.server";
 import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
+import { HEARD_ABOUT_IDS } from "../heard-about";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
 
 const id = z.string().min(8).max(64);
@@ -256,4 +257,40 @@ export const getPaidOrder = createServerFn({ method: "POST" })
       }>();
     if (!row) return { found: false as const };
     return { found: true as const, ...row };
+  });
+
+// "How did you hear about us?" from the confirmation page.
+//
+// Saved onto the order and nowhere else: no email goes to the customer or the
+// shop. The answer shows at the bottom of the order in the back office.
+//
+// Only the buyer can answer, and only once. The request must carry something
+// that only the person who just checked out has: the Stripe session id (card),
+// the PayPal order id (PayPal), or the email they typed (callback orders). It
+// is accepted only for two days after the order was raised, and never
+// overwrites an answer already given.
+export const saveHeardAbout = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      reference: z.string().min(4).max(40),
+      proof: z.string().min(3).max(200),
+      answer: z.enum(HEARD_ABOUT_IDS),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const DB = bindings().DB;
+    if (!DB) return { ok: false as const };
+    const proof = data.proof.trim();
+    const r = await DB.prepare(
+      `UPDATE orders SET heard_about = ?1
+        WHERE reference = ?2
+          AND heard_about = ''
+          AND created_at >= datetime('now', '-2 days')
+          AND (stripe_session_id = ?3
+               OR paypal_order_id = ?3
+               OR (email <> '' AND lower(email) = lower(?3)))`,
+    )
+      .bind(data.answer, data.reference, proof)
+      .run();
+    return { ok: (r.meta?.changes ?? 0) > 0 };
   });
