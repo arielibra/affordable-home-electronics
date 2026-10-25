@@ -150,7 +150,7 @@ export async function listBrands(): Promise<BrandListing[]> {
               (SELECT COUNT(*) FROM products p WHERE p.brand_slug = b.slug AND p.active = 1) AS n
          FROM brands b
         WHERE b.active = 1
-        ORDER BY b.position, b.name`,
+        ORDER BY b.position, n DESC, b.name COLLATE NOCASE`,
     )
     .all<BrandListing>();
   return (r.results ?? []).filter((b) => b.n > 0);
