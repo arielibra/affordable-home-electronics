@@ -592,10 +592,10 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 
 /* Homepage slideshow (components/home/hero-slides.tsx). Slides are shown whole
    at their own shape, so nothing printed on them is ever cropped. */
-.ahe-slides-view { position: relative; width: 100%; max-width: 100%; overflow: hidden; border-radius: 16px; background: #0d1a2b; box-shadow: 0 26px 50px -30px rgba(27,58,92,.7); }
+.ahe-slides-view { container-type: inline-size; position: relative; width: 100%; max-width: 100%; overflow: hidden; border-radius: 16px; background: #0d1a2b; box-shadow: 0 26px 50px -30px rgba(27,58,92,.7); }
 .ahe-slides-track { display: flex; height: 100%; }
 .ahe-slides-animate { transition: transform .8s cubic-bezier(.65,0,.35,1); }
-.ahe-slide { flex: 0 0 100%; height: 100%; }
+.ahe-slide { position: relative; flex: 0 0 100%; height: 100%; }
 .ahe-slide img, .ahe-slide a { display: block; width: 100%; height: 100%; }
 .ahe-slide img { object-fit: cover; user-select: none; }
 .ahe-slides-dots { display: flex; justify-content: center; gap: 10px; padding-top: 14px; }
@@ -604,3 +604,27 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 .ahe-slides-dots button:focus-visible { outline: 2px solid var(--color-signal); outline-offset: 3px; }
 @media (max-width: 640px) { .ahe-slides-view { border-radius: 12px; } }
 @media (prefers-reduced-motion: reduce) { .ahe-slides-dots button { transition: none; } }
+
+/* Text set over a slide. Sized in container units so it scales with the
+   slide exactly like the words printed on the other slides. The fade keeps it
+   readable over bright windows without hiding the scene. */
+.ahe-slide-text { position: absolute; inset: 0 auto 0 0; width: 46%; padding: 5.2cqw 0 0 4.4cqw; pointer-events: none; color: #fff; isolation: isolate; }
+/* The fade sits behind the text and thins out toward the bottom, so the car
+   and the man lower down stay bright. */
+.ahe-slide-text::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, rgba(7,16,31,.88) 0%, rgba(7,16,31,.72) 55%, rgba(7,16,31,0) 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 48%, transparent 88%); mask-image: linear-gradient(180deg, #000 48%, transparent 88%); }
+.ahe-slide-h { margin: 0; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 4.6cqw; line-height: .95; letter-spacing: .005em; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+.ahe-slide-h span { display: block; }
+.ahe-slide-h2 { color: #2aa3ff; }
+.ahe-slide-sub { margin: 1.3cqw 0 0; font-family: var(--font-display); font-weight: 600; text-transform: uppercase; font-size: 1.75cqw; letter-spacing: .01em; }
+.ahe-slide-points { list-style: none; margin: 2.4cqw 0 0; padding: 0; display: grid; gap: 1.1cqw; font-size: 1.45cqw; font-weight: 500; }
+.ahe-slide-points li { display: flex; align-items: center; gap: .9cqw; }
+.ahe-slide-points svg { width: 1.9cqw; height: 1.9cqw; flex: none; color: #2aa3ff; }
+/* Phones: the three short lines would be too small to read, so keep the headline only. */
+@container (max-width: 560px) {
+  .ahe-slide-text { width: 58%; padding: 6cqw 0 0 5cqw; }
+  .ahe-slide-h { font-size: 6cqw; }
+  .ahe-slide-sub { font-size: 2.6cqw; }
+  .ahe-slide-points { display: none; }
+}

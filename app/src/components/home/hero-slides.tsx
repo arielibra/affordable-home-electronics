@@ -14,12 +14,29 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * dots jump to any slide. With reduced motion turned on it never moves by
  * itself and changes slide without the sliding animation.
  */
-type Slide = { name: string; alt: string; href?: string };
+type Overlay = {
+  /** Headline, first line white, second line blue, like the plate slide. */
+  lines: [string, string];
+  sub: string;
+  points: { icon: "person" | "light" | "bell"; text: string }[];
+};
+type Slide = { name: string; alt: string; href?: string; overlay?: Overlay };
 
 const SLIDES: Slide[] = [
   {
     name: "night-watch",
     alt: "An Alibi camera with its spotlight on, catching a man breaking into a car on a city street at night",
+    // Set as real text rather than baked into the picture: always spelled
+    // right, sharp at any size, and readable by search engines.
+    overlay: {
+      lines: ["It knows a thief", "from a passerby."],
+      sub: "AI detection cameras by Alibi",
+      points: [
+        { icon: "person", text: "Spots people, not shadows or trees" },
+        { icon: "light", text: "Lights up the moment someone lingers" },
+        { icon: "bell", text: "Alerts your phone instantly" },
+      ],
+    },
   },
   {
     name: "warranty",
@@ -113,6 +130,7 @@ export function HeroSlides() {
                 aria-label={`${i + 1} of ${n}`}
                 aria-hidden={i !== index}
               >
+                {s.overlay ? <SlideText o={s.overlay} /> : null}
                 {s.href ? (
                   <a href={s.href} tabIndex={i === index ? 0 : -1}>
                     {img}
@@ -139,6 +157,34 @@ export function HeroSlides() {
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+const ICONS: Record<Overlay["points"][number]["icon"], string> = {
+  person: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0",
+  light: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.4.3.6.8.6 1.2v1h6v-1c0-.5.2-.9.6-1.2A6 6 0 0 0 12 3Z",
+  bell: "M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2Zm4 4a2 2 0 0 0 4 0",
+};
+
+function SlideText({ o }: { o: Overlay }) {
+  return (
+    <div className="ahe-slide-text">
+      <p className="ahe-slide-h">
+        <span>{o.lines[0]}</span>
+        <span className="ahe-slide-h2">{o.lines[1]}</span>
+      </p>
+      <p className="ahe-slide-sub">{o.sub}</p>
+      <ul className="ahe-slide-points">
+        {o.points.map((p) => (
+          <li key={p.text}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d={ICONS[p.icon]} />
+            </svg>
+            {p.text}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
