@@ -47,12 +47,32 @@ function Brands() {
 
         <h2 className="mt-8 text-[26px] text-ink">In stock now</h2>
         <ul className="ahe-brand-grid mt-4">
-          {brands.map((b) => (
-            <li key={b.slug}>
-              <BrandTile b={b} />
-            </li>
-          ))}
+          {brands
+            .filter((b) => b.logo)
+            .map((b) => (
+              <li key={b.slug}>
+                <BrandTile b={b} />
+              </li>
+            ))}
         </ul>
+        {/* Brands with no logo uploaded yet: kept off the logo wall, listed quietly
+            so their products can still be found. Adding a logo in Admin → Brands
+            moves a brand up onto the wall. */}
+        {brands.some((b) => !b.logo) ? (
+          <p className="mt-5 text-[15px] leading-relaxed text-muted">
+            <span className="font-semibold text-ink">More on the shelf: </span>
+            {brands
+              .filter((b) => !b.logo)
+              .map((b, i, all) => (
+                <span key={b.slug}>
+                  <Link to="/brands/$brand" params={{ brand: b.slug }} className="text-ink-soft underline-offset-4 hover:text-signal hover:underline">
+                    {b.brand}
+                  </Link>
+                  {i < all.length - 1 ? " · " : ""}
+                </span>
+              ))}
+          </p>
+        ) : null}
 
         <h2 className="mt-10 text-[26px] text-ink">
           Also available to order

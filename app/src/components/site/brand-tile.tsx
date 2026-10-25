@@ -16,6 +16,13 @@ import type { MouseEvent } from "react";
  */
 export type BrandTileData = { brand: string; slug: string; logo: string; n: number };
 
+/** Square and stacked logos look far bigger than wide ones at the same height,
+ *  so they get less room, which evens the wall out. Runs on load, or at once if
+ *  the picture finished loading before the page came to life. */
+function shape(i: HTMLImageElement) {
+  if (i.naturalWidth && i.naturalWidth / Math.max(i.naturalHeight, 1) < 2) i.dataset.shape = "tall";
+}
+
 export function BrandTile({ b }: { b: BrandTileData }) {
   function track(e: MouseEvent<HTMLAnchorElement>) {
     const r = e.currentTarget.getBoundingClientRect();
@@ -36,7 +43,16 @@ export function BrandTile({ b }: { b: BrandTileData }) {
       <span className="ahe-brand-glow" aria-hidden="true" />
       <span className="ahe-brand-mark">
         {b.logo ? (
-          <img src={b.logo} alt="" loading="lazy" decoding="async" />
+          <img
+            src={b.logo}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            ref={(i) => {
+              if (i?.complete) shape(i);
+            }}
+            onLoad={(e) => shape(e.currentTarget)}
+          />
         ) : (
           <span className="ahe-brand-word">{b.brand}</span>
         )}
