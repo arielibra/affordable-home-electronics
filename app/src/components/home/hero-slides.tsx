@@ -44,7 +44,7 @@ const SLIDES: Slide[] = [
   },
   {
     name: "plate-recognition",
-    alt: "Two Alibi license plate cameras on a garage wall reading a car's plate as the gate opens. Every car. Every plate.",
+    alt: "Two Alibi license plate cameras on a highway overpass picking out one car's plate, KXT 4821, from heavy night traffic. Every car. Every plate. NDAA compliant, starlight chipset, motorized varifocal lens, database allow/block features.",
   },
 ];
 
