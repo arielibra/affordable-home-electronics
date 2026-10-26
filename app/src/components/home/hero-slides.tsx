@@ -43,7 +43,7 @@ const SLIDES: Slide[] = [
     alt: "Access control terminals, Lorex and ENS cameras and a recorder, with a 3 year included and 6 year extended warranty",
   },
   {
-    name: "plate-recognition",
+    name: "plate-overpass",
     alt: "Two Alibi license plate cameras on a highway overpass picking out one car's plate, KXT 4821, from heavy night traffic. Every car. Every plate. NDAA compliant, starlight chipset, motorized varifocal lens, database allow/block features.",
   },
 ];
