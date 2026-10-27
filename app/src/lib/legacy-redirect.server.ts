@@ -39,22 +39,70 @@ const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 /** Below this, a prefix proves nothing ("lts" is a prefix of half the shop). */
 const MIN_MATCH = 12;
 
+/**
+ * Old section pages that other sites still link to, found in the backlink
+ * report (2026-10-27). Each has an obvious home here, so a 301 carries the
+ * link across instead of a 410 throwing it away. Keys are squashed names.
+ */
+const OLD_SECTIONS: Record<string, string> = {
+  domecameras: "/shop/cameras",
+  bulletcameras: "/shop/cameras",
+  securitycameras: "/security-cameras",
+  affordablehomeelectronicsmanufacturerslistandpartners: "/brands",
+  manufacturers: "/brands",
+  aboutus: "/about",
+  contactus: "/contact",
+};
+
+/**
+ * Two old address shapes:
+ *   /<name>.aspx                                  the last cart
+ *   /browseproducts/<Brand>---<MODEL>---<Name>.HTML  the one before it
+ * Old product photos (/ProductImages/...) are deliberately not handled.
+ */
+const ASPX = /\.aspx?$/i;
+const BROWSE = /^\/browseproducts\/[^/]+\.html?$/i;
+
+export const isLegacyPath = (pathname: string) => ASPX.test(pathname) || BROWSE.test(pathname);
+
+/** The part number in a /browseproducts/ name: the piece between the first two "---". */
+function browseModel(seg: string): string | null {
+  const pieces = seg.split("---").map((p) => p.trim()).filter(Boolean);
+  // "STE-1000--Tracking-Device": a double hyphen ends the part number too.
+  const second = pieces[1]?.split("--")[0].trim();
+  if (second && second.length >= 3) return second;
+  // No "---": the first hyphen piece after the brand carrying a letter and a
+  // digit, keeping a short letter prefix before it ("LX" + "4PRO" = LX-4PRO).
+  const toks = seg.split("-").filter(Boolean);
+  for (let i = 1; i < toks.length; i++) {
+    const t = toks[i];
+    if (t.length >= 3 && /[a-z]/i.test(t) && /\d/.test(t)) {
+      const prev = toks[i - 1];
+      return i > 1 && /^[a-z]{1,3}$/i.test(prev) ? `${prev}-${t}` : t;
+    }
+  }
+  return null;
+}
+
 export function matchLegacy(
   pathname: string,
   products: { slug: string }[],
   categories: { slug: string; name: string }[],
 ): LegacyTarget | null {
-  if (!/\.aspx?$/i.test(pathname)) return null;
+  if (!isLegacyPath(pathname)) return null;
+  const browse = BROWSE.test(pathname);
   let decoded = pathname;
   try {
     decoded = decodeURIComponent(pathname);
   } catch {
     // keep it raw
   }
-  const seg = decoded.replace(/\.aspx?$/i, "").split("/").filter(Boolean).pop() ?? "";
+  const seg = decoded.replace(/\.(aspx?|html?)$/i, "").split("/").filter(Boolean).pop() ?? "";
   const key = squash(seg);
 
   if (!key || key === "default" || key === "index" || key === "home") return { path: "/", permanent: true };
+
+  if (!browse && OLD_SECTIONS[key]) return { path: OLD_SECTIONS[key], permanent: true };
 
   for (const c of categories) {
     if (squash(c.slug) === key || squash(c.name) === key) return { path: `/shop/${c.slug}`, permanent: true };
@@ -72,6 +120,11 @@ export function matchLegacy(
       const best = hits.filter((p) => key.startsWith(squash(p.slug)));
       if (best.length === 1) return { path: `/p/${best[0].slug}`, permanent: true };
     }
+  }
+
+  if (browse) {
+    const model = browseModel(seg);
+    return model ? { path: `/search?q=${encodeURIComponent(model.slice(0, 40))}`, permanent: false } : { gone: true };
   }
 
   // Not something we carry now. The part number is the second hyphenated
@@ -157,7 +210,7 @@ async function productRedirect(url: URL): Promise<Response | null> {
 
 export async function legacyRedirect(url: URL): Promise<Response | null> {
   if (url.pathname.startsWith("/p/")) return productRedirect(url);
-  if (!/\.aspx?$/i.test(url.pathname)) return null;
+  if (!isLegacyPath(url.pathname)) return null;
 
   if (!cache || Date.now() - cache.at > 5 * 60_000) {
     const db = bindings().DB;
