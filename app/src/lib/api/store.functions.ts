@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { cleanOptions, type ResolvedOption } from "../options";
 
 import {
   addToCart,
   getBrand,
   productsByBrand,
   allProducts,
+  addonProducts,
   cartLines,
   categoryCounts,
   clearCart,
@@ -65,11 +67,19 @@ export const getProductPage = createServerFn({ method: "GET" })
       productImages(product.slug, product.image),
       productReviews(product.slug),
     ]);
+    // Drop-downs with each choice's current name and price. A choice whose
+    // add-on product is missing is left out rather than shown at $0.
+    const opts = cleanOptions(product.options);
+    const addons = opts.length ? await addonProducts(opts.flatMap((o) => o.choices)) : new Map();
+    const options: ResolvedOption[] = opts
+      .map((o) => ({ label: o.label, help: o.help, choices: o.choices.map((c) => addons.get(c)).filter((c): c is { slug: string; name: string; price_cents: number } => !!c) }))
+      .filter((o) => o.choices.length > 0);
     return {
       product,
       images,
       reviews,
       related,
+      options,
       categoryName: categories.find((c) => c.slug === product.category)?.name ?? "",
     };
   });

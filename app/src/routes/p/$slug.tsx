@@ -13,6 +13,7 @@ import { ORIGIN, SITE, money, savings } from "../../lib/site";
 import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
 import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
 import { parseBadges, parseHighlights, type Badge } from "../../lib/badges";
+import type { ResolvedOption } from "../../lib/options";
 import { STORE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data";
 
 /**
@@ -178,7 +179,9 @@ export const Route = createFileRoute("/p/$slug")({
 });
 
 function ProductPage() {
-  const { product, images, related, categoryName, reviews } = Route.useLoaderData();
+  const { product, images, related, categoryName, reviews, options } = Route.useLoaderData();
+  // The add-on picked in each drop-down ("" = none), by drop-down position.
+  const [picked, setPicked] = useState<string[]>([]);
   const shots = images && images.length > 0 ? images : product?.image ? [product.image] : [];
   const [shown, setShown] = useState(0);
   if (!product) return null;
@@ -272,8 +275,16 @@ function ProductPage() {
               ) : null}
             </div>
             <span className={`ahe-live ${available ? "" : "is-out"}`}>{stockLabel(product)}</span>
+            {options && options.length ? (
+              <AddOnPicker
+                options={options}
+                picked={picked}
+                onPick={(i, v) => setPicked((prev) => Object.assign([...prev], { [i]: v }))}
+                basePrice={product.price_cents}
+              />
+            ) : null}
             <div className="max-w-[420px]">
-              <AddToCartButton slug={product.slug} soldOut={!available} />
+              <AddToCartButton slug={product.slug} soldOut={!available} extras={picked.filter(Boolean)} />
               {available && product.stock_tracked === 1 && product.stock <= 3 ? (
                 <p className="mt-2 text-[14px] font-semibold text-signal">Only {product.stock} left</p>
               ) : null}
@@ -429,13 +440,14 @@ function FeatureBadges({ badges }: { badges: Badge[] }) {
       {badges.map((b) => (
         <li key={b.label} title={b.detail || b.label} className="flex w-[64px] flex-col items-center text-center">
           {b.icon ? (
-            <img src={b.icon} alt="" width={44} height={44} loading="lazy" className="h-11 w-11 object-contain" />
+            <img src={b.icon} alt="" width={56} height={51} loading="lazy" className="h-[51px] w-[56px] object-contain" />
           ) : (
             <span className="grid h-11 w-11 place-items-center rounded-full bg-[#e6f1fb] text-[11px] font-bold text-signal">
               {b.label.slice(0, 4)}
             </span>
           )}
-          <span className="mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink">{b.label}</span>
+          {/* Manufacturer icons print their own caption; only text badges need one. */}
+          <span className={b.icon ? "sr-only" : "mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink"}>{b.label}</span>
           {b.detail ? <span className="sr-only">: {b.detail}</span> : null}
         </li>
       ))}
@@ -483,5 +495,47 @@ function Overview({ text }: { text: string }) {
         <div className="max-w-[75ch] text-[16px] leading-relaxed text-muted">{renderRichText(text)}</div>
       </Shell>
     </section>
+  );
+}
+
+/** Add-on drop-downs ("Add a Hard Drive"), with the total including what is picked. */
+function AddOnPicker({
+  options,
+  picked,
+  onPick,
+  basePrice,
+}: {
+  options: ResolvedOption[];
+  picked: string[];
+  onPick: (index: number, slug: string) => void;
+  basePrice: number;
+}) {
+  const extra = options.reduce((sum, o, i) => sum + (o.choices.find((c) => c.slug === picked[i])?.price_cents ?? 0), 0);
+  return (
+    <div className="grid gap-3">
+      {options.map((o, i) => (
+        <label key={o.label} className="block">
+          <span className="text-[15px] font-semibold text-ink">{o.label}</span>
+          {o.help ? <span className="mt-0.5 block text-[14px] leading-relaxed text-muted">{o.help}</span> : null}
+          <select
+            value={picked[i] ?? ""}
+            onChange={(e) => onPick(i, e.target.value)}
+            className="mt-1.5 h-11 w-full max-w-[420px] rounded-[10px] border border-[#cfdcea] bg-white px-3 text-[15px] text-ink focus:border-signal focus:outline-none"
+          >
+            <option value="">None selected</option>
+            {o.choices.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name} + {money(c.price_cents)}
+              </option>
+            ))}
+          </select>
+        </label>
+      ))}
+      {extra > 0 ? (
+        <p className="text-[15px] text-ink">
+          Total with add-ons: <span className="ahe-price text-[20px]">{money(basePrice + extra)}</span>
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -34,10 +34,13 @@ export function AddToCartButton({
   slug,
   block = true,
   soldOut = false,
+  extras = [],
 }: {
   slug: string;
   block?: boolean;
   soldOut?: boolean;
+  /** Add-ons chosen in the product page's drop-downs, added alongside. */
+  extras?: string[];
 }) {
   const { add } = useCart();
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
@@ -46,6 +49,7 @@ export function AddToCartButton({
     setState("busy");
     try {
       await add(slug, 1);
+      for (const extra of extras) await add(extra, 1);
       setState("done");
       window.setTimeout(() => setState("idle"), 1800);
     } catch {

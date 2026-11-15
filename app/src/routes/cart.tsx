@@ -118,15 +118,26 @@ function CartBody() {
               <ul className="rounded-[14px] border border-[#dbe7f3] bg-surface px-4 sm:px-5">
                 {lines.map((l) => (
                   <li key={l.slug} className="flex gap-4 border-b border-[#eef3f8] py-4 last:border-b-0 sm:gap-5">
-                    <Link to="/p/$slug" params={{ slug: l.slug }} className="ahe-photo h-[72px] w-[72px] shrink-0 border border-[#e3edf7] sm:h-[88px] sm:w-[88px]">
-                      <img src={l.image} alt={l.name} width={96} height={96} />
-                    </Link>
+                    {/* Add-ons (a hard drive for a recorder) have no page of their own. */}
+                    {l.addon ? (
+                      <span className="ahe-photo h-[72px] w-[72px] shrink-0 border border-[#e3edf7] sm:h-[88px] sm:w-[88px]">
+                        <img src={l.image} alt={l.name} width={96} height={96} />
+                      </span>
+                    ) : (
+                      <Link to="/p/$slug" params={{ slug: l.slug }} className="ahe-photo h-[72px] w-[72px] shrink-0 border border-[#e3edf7] sm:h-[88px] sm:w-[88px]">
+                        <img src={l.image} alt={l.name} width={96} height={96} />
+                      </Link>
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-semibold text-signal">{l.brand}</p>
                       <h2 className="ahe-plain mt-0.5 max-w-[46ch] text-[15px] leading-snug text-ink">
-                        <Link to="/p/$slug" params={{ slug: l.slug }} className="hover:text-signal">
-                          {l.name}
-                        </Link>
+                        {l.addon ? (
+                          l.name
+                        ) : (
+                          <Link to="/p/$slug" params={{ slug: l.slug }} className="hover:text-signal">
+                            {l.name}
+                          </Link>
+                        )}
                       </h2>
                       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
                         <QtyStepper slug={l.slug} qty={l.qty} onChange={(slug, q) => void setQty(slug, q)} />

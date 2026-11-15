@@ -15,6 +15,7 @@ export type Product = {
   specs?: string;
   highlights?: string;
   badges?: string;
+  options?: string;
   /** Hand-set search text; blank means automatic. Single-product query only. */
   meta_title?: string;
   meta_description?: string;
@@ -43,6 +44,8 @@ export type CartLine = {
   qty: number;
   stock: number;
   stock_tracked: number;
+  /** 1 for a drop-down add-on (a hard drive for a recorder); it has no page of its own. */
+  addon: number;
 };
 
 function db(): D1Database {
@@ -120,9 +123,25 @@ export async function productFeatureIndex(): Promise<Map<string, { mpn: string; 
   return new Map((r.results ?? []).map((x) => [x.slug, x]));
 }
 
+/** The add-on products a set of drop-downs names, for pricing the choices. */
+export async function addonProducts(slugs: string[]): Promise<Map<string, { slug: string; name: string; price_cents: number }>> {
+  const out = new Map<string, { slug: string; name: string; price_cents: number }>();
+  const list = [...new Set(slugs)];
+  // D1 caps bound parameters at 100, so ask in batches.
+  for (let i = 0; i < list.length; i += 50) {
+    const part = list.slice(i, i + 50);
+    const r = await db()
+      .prepare(`SELECT slug, name, price_cents FROM products WHERE addon = 1 AND slug IN (${part.map((_, k) => `?${k + 1}`).join(",")})`)
+      .bind(...part)
+      .all<{ slug: string; name: string; price_cents: number }>();
+    for (const x of r.results ?? []) out.set(x.slug, x);
+  }
+  return out;
+}
+
 export async function getProduct(slug: string): Promise<Product | null> {
   return await db()
-    .prepare(`SELECT ${PUBLIC}, blurb, specs, highlights, badges, meta_title, meta_description, meta_keywords, gtin, mpn FROM products WHERE slug = ?1 AND active = 1`)
+    .prepare(`SELECT ${PUBLIC}, blurb, specs, highlights, badges, options, meta_title, meta_description, meta_keywords, gtin, mpn FROM products WHERE slug = ?1 AND active = 1`)
     .bind(slug)
     .first<Product>();
 }
@@ -192,7 +211,7 @@ export async function cartLines(cartId: string): Promise<CartLine[]> {
   if (!cartId) return [];
   const r = await db()
     .prepare(
-      "SELECT p.slug, p.name, p.image, p.brand, p.price_cents, p.stock, p.stock_tracked, c.qty FROM cart_items c JOIN products p ON p.slug = c.product_slug WHERE c.cart_id = ?1 AND p.active = 1 ORDER BY p.name",
+      "SELECT p.slug, p.name, p.image, p.brand, p.price_cents, p.stock, p.stock_tracked, p.addon, c.qty FROM cart_items c JOIN products p ON p.slug = c.product_slug WHERE c.cart_id = ?1 AND (p.active = 1 OR p.addon = 1) ORDER BY p.addon, p.name",
     )
     .bind(cartId)
     .all<CartLine>();
@@ -202,10 +221,11 @@ export async function cartLines(cartId: string): Promise<CartLine[]> {
 export async function addToCart(cartId: string, slug: string, qty: number) {
   const d = db();
   const p = await d
-    .prepare("SELECT stock, stock_tracked, active FROM products WHERE slug = ?1")
+    .prepare("SELECT stock, stock_tracked, active, addon FROM products WHERE slug = ?1")
     .bind(slug)
-    .first<{ stock: number; stock_tracked: number; active: number }>();
-  if (!p || p.active === 0 || !inStock(p)) return;
+    .first<{ stock: number; stock_tracked: number; active: number; addon: number }>();
+  // Add-ons are kept unlisted (active = 0) but can still be bought.
+  if (!p || (p.active === 0 && p.addon !== 1) || !inStock(p)) return;
 
   const existing = await d
     .prepare("SELECT qty FROM cart_items WHERE cart_id = ?1 AND product_slug = ?2")
@@ -257,7 +277,7 @@ export async function unavailableInCart(cartId: string): Promise<string[]> {
   const r = await db()
     .prepare(
       `SELECT p.name FROM cart_items c JOIN products p ON p.slug = c.product_slug
-        WHERE c.cart_id = ?1 AND (p.active = 0 OR (p.stock_tracked = 1 AND p.stock < c.qty))`,
+        WHERE c.cart_id = ?1 AND ((p.active = 0 AND p.addon = 0) OR (p.stock_tracked = 1 AND p.stock < c.qty))`,
     )
     .bind(cartId)
     .all<{ name: string }>();

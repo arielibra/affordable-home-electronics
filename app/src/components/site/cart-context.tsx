@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { getCart, mutateCart } from "../../lib/api/store.functions";
 import { ensureCartId } from "../../lib/cart-id";
 
-export type Line = { slug: string; name: string; image: string; brand: string; price_cents: number; qty: number };
+export type Line = { slug: string; name: string; image: string; brand: string; price_cents: number; qty: number; addon?: number };
 
 type CartValue = {
   lines: Line[];
