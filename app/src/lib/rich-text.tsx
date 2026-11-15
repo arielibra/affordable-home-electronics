@@ -437,6 +437,26 @@ export function specLinkLabel(url: string): string {
     // leave it blank; the generic label still works
   }
   const pdf = /\.pdf(?:$|[?#])/i.test(url);
+  // A product can carry several links (data sheet, manual, install guide\u2026),
+  // so name each one by what its address says it is. Otherwise every link
+  // reads the same and the customer cannot tell which is which.
+  let path = "";
+  try {
+    path = decodeURIComponent(new URL(url).pathname).toLowerCase();
+  } catch {
+    path = url.toLowerCase();
+  }
+  const KINDS: [RegExp, string][] = [
+    [/data[-_ ]?sheet|spec[-_ ]?sheet/, "Data sheet"],
+    [/install|quick[-_ ]?start|qsg/, "Installation guide"],
+    [/manual/, "User manual"],
+    [/firmware/, "Firmware downloads"],
+    [/matrix|accessor/, "Product matrix & accessory guide"],
+    [/power[-_ ]?distance/, "Power distance guide"],
+    [/catalog/, "Product catalog"],
+  ];
+  const kind = KINDS.find(([re]) => re.test(path))?.[1];
+  if (kind) return pdf ? `${kind} (PDF)` : host ? `${kind} on ${host}` : kind;
   if (pdf) return "Download the spec sheet (PDF)";
   return host ? `Manufacturer\u2019s page on ${host}` : "Manufacturer\u2019s page";
 }
