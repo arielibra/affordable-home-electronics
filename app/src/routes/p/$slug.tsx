@@ -12,6 +12,7 @@ import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../../lib/sh
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
 import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
 import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
+import { parseBadges, parseHighlights, type Badge } from "../../lib/badges";
 import { STORE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data";
 
 /**
@@ -43,8 +44,20 @@ function specProperties(text: string | null | undefined) {
   return out;
 }
 
+/**
+ * Feature badges and key features as PropertyValues too, ahead of the spec
+ * rows, so "NDAA compliant: Yes" or a headline feature is the first thing a
+ * search engine or AI assistant reads about the product.
+ */
+function featureProperties(p: { badges?: string | null; highlights?: string | null }) {
+  const out: { "@type": "PropertyValue"; name: string; value: string }[] = [];
+  for (const b of parseBadges(p.badges)) out.push({ "@type": "PropertyValue", name: b.label, value: b.detail || "Yes" });
+  for (const h of parseHighlights(p.highlights)) out.push({ "@type": "PropertyValue", name: "Key feature", value: h });
+  return out;
+}
+
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string; specs?: string | null },
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string; specs?: string | null; highlights?: string | null; badges?: string | null },
   categoryName: string,
   shots: string[],
   available: boolean,
@@ -57,7 +70,10 @@ function productJsonLd(
     name: p.name,
     url,
     sku: p.mpn || p.slug,
-    ...(specProperties(p.specs).length ? { additionalProperty: specProperties(p.specs) } : {}),
+    ...(() => {
+      const props = [...featureProperties(p), ...specProperties(p.specs)].slice(0, 90);
+      return props.length ? { additionalProperty: props } : {};
+    })(),
     ...(categoryName ? { category: categoryName } : {}),
     image: (shots.length ? shots : [p.image]).filter(Boolean).slice(0, 10).map(abs),
     description: pageDescription(p),
@@ -169,6 +185,11 @@ function ProductPage() {
   const main = shots[shown] ?? product.image;
   const save = savings(product.price_cents, product.msrp_cents);
   const available = isAvailable(product);
+  const badges = parseBadges(product.badges);
+  const highlights = parseHighlights(product.highlights);
+  // A long manufacturer write-up would push the price below the fold, so it
+  // moves to its own Overview section under the buy box. Short ones stay put.
+  const longBlurb = (product.blurb ?? "").length > 700;
 
   return (
     <SiteShell>
@@ -232,7 +253,9 @@ function ProductPage() {
               </span>
             </a>
           ) : null}
-          {product.blurb ? (
+          {badges.length ? <FeatureBadges badges={badges} /> : null}
+          {highlights.length ? <KeyFeatures items={highlights} /> : null}
+          {product.blurb && !longBlurb ? (
             <div className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
           ) : null}
 
@@ -292,6 +315,8 @@ function ProductPage() {
           </p>
         </div>
       </Shell>
+
+      {product.blurb && longBlurb ? <Overview text={product.blurb} /> : null}
 
       {product.specs ? <Specifications text={product.specs} /> : null}
 
@@ -391,6 +416,71 @@ function Specifications({ text }: { text: string }) {
             ) : null}
           </div>
         ) : null}
+      </Shell>
+    </section>
+  );
+}
+
+/** Feature icons (NDAA, Starlight, IP67…). The meaning shows on hover and is
+ *  also written out for screen readers. */
+function FeatureBadges({ badges }: { badges: Badge[] }) {
+  return (
+    <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-3" aria-label="Features">
+      {badges.map((b) => (
+        <li key={b.label} title={b.detail || b.label} className="flex w-[64px] flex-col items-center text-center">
+          {b.icon ? (
+            <img src={b.icon} alt="" width={44} height={44} loading="lazy" className="h-11 w-11 object-contain" />
+          ) : (
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-[#e6f1fb] text-[11px] font-bold text-signal">
+              {b.label.slice(0, 4)}
+            </span>
+          )}
+          <span className="mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink">{b.label}</span>
+          {b.detail ? <span className="sr-only">: {b.detail}</span> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const KEY_FEATURES_PREVIEW = 5;
+
+/** The manufacturer's key-feature list, first few showing, the rest behind See more. */
+function KeyFeatures({ items }: { items: string[] }) {
+  const [open, setOpen] = useState(false);
+  const foldable = items.length > KEY_FEATURES_PREVIEW + 1;
+  const shown = foldable && !open ? items.slice(0, KEY_FEATURES_PREVIEW) : items;
+  return (
+    <div className="mt-4 max-w-[60ch]">
+      <h2 className="text-[15px] font-semibold text-ink">Key features</h2>
+      <ul className="mt-2 grid list-disc gap-1 pl-5 text-[15px] leading-relaxed text-muted marker:text-signal">
+        {shown.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+      {foldable ? (
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          className="mt-1.5 text-[14px] font-semibold text-signal underline-offset-4 hover:underline"
+        >
+          {open ? "See less" : `See all ${items.length} features`}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/** The full manufacturer write-up, below the buy box. */
+function Overview({ text }: { text: string }) {
+  return (
+    <section className="pb-6 pt-2" aria-labelledby="overview-title">
+      <Shell>
+        <h2 id="overview-title" className="pb-3 text-[32px] text-ink">
+          Overview
+        </h2>
+        <div className="max-w-[75ch] text-[16px] leading-relaxed text-muted">{renderRichText(text)}</div>
       </Shell>
     </section>
   );

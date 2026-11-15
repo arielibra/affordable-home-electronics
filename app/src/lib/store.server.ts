@@ -13,6 +13,8 @@ export type Product = {
   blurb?: string;
   /** Same as blurb: only the single-product query selects it. */
   specs?: string;
+  highlights?: string;
+  badges?: string;
   /** Hand-set search text; blank means automatic. Single-product query only. */
   meta_title?: string;
   meta_description?: string;
@@ -107,9 +109,20 @@ export async function searchProducts(q: string, limit = 60): Promise<Product[]> 
   return r.results ?? [];
 }
 
+/**
+ * Part number, feature badges and key features for every live product, for
+ * /llms.txt. Kept apart from PUBLIC so shop grids do not carry them.
+ */
+export async function productFeatureIndex(): Promise<Map<string, { mpn: string; badges: string; highlights: string }>> {
+  const r = await db()
+    .prepare("SELECT slug, mpn, badges, highlights FROM products WHERE active = 1")
+    .all<{ slug: string; mpn: string; badges: string; highlights: string }>();
+  return new Map((r.results ?? []).map((x) => [x.slug, x]));
+}
+
 export async function getProduct(slug: string): Promise<Product | null> {
   return await db()
-    .prepare(`SELECT ${PUBLIC}, blurb, specs, meta_title, meta_description, meta_keywords, gtin, mpn FROM products WHERE slug = ?1 AND active = 1`)
+    .prepare(`SELECT ${PUBLIC}, blurb, specs, highlights, badges, meta_title, meta_description, meta_keywords, gtin, mpn FROM products WHERE slug = ?1 AND active = 1`)
     .bind(slug)
     .first<Product>();
 }

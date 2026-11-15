@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { cleanBadges, type Badge } from "../../lib/badges";
 import { gtinProblem } from "../../lib/gtin";
 import { DESCRIPTION_SHOWN, TITLE_SHOWN, autoDescription, autoTitle } from "../../lib/seo";
 import { ORIGIN, money } from "../../lib/site";
@@ -20,6 +21,8 @@ export type CatalogProduct = {
   cost_cents: number | null;
   blurb: string;
   specs: string;
+  highlights?: string;
+  badges?: string;
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
@@ -218,6 +221,8 @@ function Editor({
   const [cost, setCost] = useState(dollars(src?.cost_cents ?? null));
   const [blurb, setBlurb] = useState(src?.blurb ?? "");
   const [specs, setSpecs] = useState(src?.specs ?? "");
+  const [highlights, setHighlights] = useState(src?.highlights ?? "");
+  const [badges, setBadges] = useState<Badge[]>(cleanBadges(src?.badges ?? ""));
   // A copy keeps the keywords (same kind of product, same searches) but not
   // the title or description: two pages with one headline compete with each
   // other on Google. Left blank, the copy's own name fills them in.
@@ -261,6 +266,8 @@ function Editor({
       cost_cents: cost.trim() === "" ? null : toCents(cost),
       blurb,
       specs,
+      highlights,
+      badges,
       meta_title: metaTitle,
       meta_description: metaDescription,
       meta_keywords: metaKeywords,
@@ -427,6 +434,21 @@ function Editor({
         </p>
         <RichTextArea value={specs} onChange={setSpecs} mode="specs" />
       </label>
+
+      <label className="mt-4 block">
+        <span className="text-[13px] font-medium text-muted">Key features</span>
+        <p className="mt-1 text-[12px] leading-[1.5] text-muted">
+          One per line. Shown as a bullet list beside the price; the first five show, the rest behind &ldquo;See all&rdquo;.
+        </p>
+        <textarea
+          value={highlights}
+          onChange={(e) => setHighlights(e.target.value)}
+          rows={6}
+          className={`${input} mt-1.5 h-auto py-3 leading-relaxed`}
+        />
+      </label>
+
+      <BadgesField value={badges} onChange={setBadges} />
 
       <div className="mt-5">
         <GalleryField value={images} onChange={setImages} />
@@ -699,6 +721,53 @@ export function CatalogPanel() {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/** Feature badges (NDAA, Starlight, IP67…): remove any, or add one by name. */
+function BadgesField({ value, onChange }: { value: Badge[]; onChange: (v: Badge[]) => void }) {
+  const [labelText, setLabelText] = useState("");
+  const [detail, setDetail] = useState("");
+  const add = () => {
+    const next = cleanBadges([...value, { label: labelText, detail, icon: "" }]);
+    if (next.length > value.length) {
+      onChange(next);
+      setLabelText("");
+      setDetail("");
+    }
+  };
+  return (
+    <div className="mt-4">
+      <span className="text-[13px] font-medium text-muted">Feature badges</span>
+      <p className="mt-1 text-[12px] leading-[1.5] text-muted">
+        Icons under the product name, such as NDAA or IP67. The description shows when a customer points at one.
+      </p>
+      {value.length ? (
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {value.map((b) => (
+            <li key={b.label} title={b.detail} className="flex items-center gap-2 rounded-full border border-[#dbe7f3] bg-white py-1 pl-1.5 pr-2 text-[13px]">
+              {b.icon ? <img src={b.icon} alt="" className="h-6 w-6 object-contain" /> : null}
+              <span className="font-semibold">{b.label}</span>
+              <button
+                type="button"
+                onClick={() => onChange(value.filter((x) => x.label !== b.label))}
+                aria-label={`Remove ${b.label}`}
+                className="text-muted hover:text-ink"
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="mt-2 grid gap-2 sm:grid-cols-[160px_1fr_auto]">
+        <input value={labelText} onChange={(e) => setLabelText(e.target.value)} placeholder="Name, e.g. NDAA" className={input} />
+        <input value={detail} onChange={(e) => setDetail(e.target.value)} placeholder="What it means (optional)" className={input} />
+        <button type="button" onClick={add} className={btnLink}>
+          Add badge
+        </button>
       </div>
     </div>
   );

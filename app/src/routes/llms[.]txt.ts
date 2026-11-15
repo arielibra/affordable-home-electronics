@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../lib/shipping";
 import { ORIGIN, SITE } from "../lib/site";
-import { allProducts, listCategories, type Product } from "../lib/store.server";
+import { allProducts, listCategories, productFeatureIndex, type Product } from "../lib/store.server";
+import { parseBadges, parseHighlights } from "../lib/badges";
 
 /**
  * /llms.txt — the shop in plain text for AI assistants (llmstxt.org).
@@ -47,7 +48,7 @@ export const Route = createFileRoute("/llms.txt")({
         ];
 
         try {
-          const [cats, items] = await Promise.all([listCategories(), allProducts("name")]);
+          const [cats, items, features] = await Promise.all([listCategories(), allProducts("name"), productFeatureIndex()]);
           const byCat = new Map<string, Product[]>();
           for (const p of items) {
             const list = byCat.get(p.category) ?? [];
@@ -60,8 +61,12 @@ export const Route = createFileRoute("/llms.txt")({
             if (!list?.length) continue;
             out.push(`### [${c.name}](${ORIGIN}/shop/${c.slug})`, ``);
             for (const p of list) {
-              const bits = [p.brand, usd(p.price_cents), inStock(p) ? "in stock" : "out of stock"].filter(Boolean);
-              out.push(`- [${p.name}](${ORIGIN}/p/${p.slug}): ${bits.join(", ")}`);
+              const f = features.get(p.slug);
+              const bits = [p.brand, f?.mpn ? `part ${f.mpn}` : "", usd(p.price_cents), inStock(p) ? "in stock" : "out of stock"].filter(Boolean);
+              const badges = parseBadges(f?.badges).map((b) => b.label);
+              const keys = parseHighlights(f?.highlights).slice(0, 4);
+              const extra = [badges.length ? `features: ${badges.join(", ")}` : "", keys.length ? keys.join("; ") : ""].filter(Boolean);
+              out.push(`- [${p.name}](${ORIGIN}/p/${p.slug}): ${bits.join(", ")}${extra.length ? `. ${extra.join(". ")}` : ""}`);
             }
             out.push(``);
           }

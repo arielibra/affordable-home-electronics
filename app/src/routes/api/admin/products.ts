@@ -5,6 +5,7 @@ import { denied, isSignedIn, logAdmin } from "../../../lib/admin.server";
 import { bindings } from "../../../lib/bindings.server";
 import { gtinProblem, normaliseGtin } from "../../../lib/gtin";
 import { slugify } from "../../../lib/slug";
+import { cleanBadges, parseHighlights } from "../../../lib/badges";
 
 type Row = {
   slug: string;
@@ -19,6 +20,8 @@ type Row = {
   meta_title: string;
   meta_description: string;
   meta_keywords: string;
+  highlights: string;
+  badges: string;
   gtin: string;
   mpn: string;
   image: string;
@@ -29,7 +32,7 @@ type Row = {
 };
 
 const COLUMNS =
-  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,gtin,mpn,image,featured,stock,stock_tracked,active";
+  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,highlights,badges,gtin,mpn,image,featured,stock,stock_tracked,active";
 
 /** At most twenty, no blanks, no duplicates, order preserved. */
 function cleanImages(v: unknown): string[] | null {
@@ -231,8 +234,8 @@ export const Route = createFileRoute("/api/admin/products")({
         if (badGtin) return Response.json({ ok: false, error: `UPC: ${badGtin}` }, { status: 400 });
 
         await DB.prepare(
-          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,gtin,mpn,image,featured,stock,stock_tracked,active)
-           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20)`,
+          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,highlights,badges,gtin,mpn,image,featured,stock,stock_tracked,active)
+           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22)`,
         )
           .bind(
             slug,
@@ -248,6 +251,8 @@ export const Route = createFileRoute("/api/admin/products")({
             oneLine(body.meta_title, META_TITLE_MAX),
             oneLine(body.meta_description, META_DESC_MAX),
             cleanKeywords(body.meta_keywords),
+            parseHighlights(str(body.highlights, BLURB_MAX)).join("\n"),
+            JSON.stringify(cleanBadges(body.badges)),
             gtin,
             cleanMpn(body.mpn),
             // Filled in properly by writeImages below; this keeps the insert
@@ -332,6 +337,8 @@ export const Route = createFileRoute("/api/admin/products")({
         if ("meta_title" in body) put("meta_title", oneLine(body.meta_title, META_TITLE_MAX));
         if ("meta_description" in body) put("meta_description", oneLine(body.meta_description, META_DESC_MAX));
         if ("meta_keywords" in body) put("meta_keywords", cleanKeywords(body.meta_keywords));
+        if ("highlights" in body) put("highlights", parseHighlights(str(body.highlights, BLURB_MAX)).join("\n"));
+        if ("badges" in body) put("badges", JSON.stringify(cleanBadges(body.badges)));
         if ("gtin" in body) {
           const g = normaliseGtin(str(body.gtin, 40));
           const bad = gtinProblem(g);
