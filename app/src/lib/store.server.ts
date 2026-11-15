@@ -103,13 +103,46 @@ export async function allProducts(sort = "featured"): Promise<Product[]> {
   return r.results ?? [];
 }
 
+const STOP = new Set(["a", "an", "and", "the", "with", "for", "of", "in", "to", "on", "by", "or", "&"]);
+
+/** Split a search into the words worth matching: lowercase, no filler words,
+ *  no repeats, at most 12, each short enough for D1's 50-byte LIKE limit. */
+export function searchTerms(q: string): string[] {
+  const words = q
+    .toLowerCase()
+    .split(/[^a-z0-9.\-+]+/)
+    .map((w) => w.replace(/^[.\-+]+|[.\-+]+$/g, "").slice(0, 40))
+    .filter((w) => w && !STOP.has(w) && (w.length > 1 || /\d/.test(w)));
+  return [...new Set(words)].slice(0, 12);
+}
+
+/**
+ * Word-by-word search. A whole pasted product name used to go into one LIKE
+ * pattern, which D1 refuses past 50 bytes (the page crashed), and which only
+ * matched when the wording was identical. Now each word is matched on its
+ * own, products are ranked by how many words they contain (a hit in the name
+ * or part number counts double), and a product needs most of the words.
+ */
 export async function searchProducts(q: string, limit = 60): Promise<Product[]> {
-  const like = `%${q.trim().toLowerCase()}%`;
+  const terms = searchTerms(q);
+  if (terms.length === 0) return [];
+  const hay =
+    "lower(name || ' ' || brand || ' ' || coalesce(mpn,'') || ' ' || coalesce(meta_keywords,'') || ' ' || coalesce(meta_title,'') || ' ' || coalesce(highlights,'') || ' ' || coalesce(blurb,''))";
+  const strong = "lower(name || ' ' || coalesce(mpn,''))";
+  const hits = terms.map((_, i) => `(${hay} LIKE ?${i + 1})`).join(" + ");
+  const bonus = terms.map((_, i) => `(${strong} LIKE ?${i + 1})`).join(" + ");
+  // Short searches need every word; longer ones (pasted titles) need ~60%,
+  // since our titles word things a little differently from the manufacturer's.
+  const need = terms.length <= 2 ? terms.length : Math.ceil(terms.length * 0.6);
   const r = await db()
-    .prepare(`SELECT ${PUBLIC} FROM products WHERE active = 1 AND (lower(name) LIKE ?1 OR lower(brand) LIKE ?1 OR lower(blurb) LIKE ?1 OR lower(meta_keywords) LIKE ?1) ORDER BY featured DESC, price_cents LIMIT ?2`)
-    .bind(like, limit)
-    .all<Product>();
-  return r.results ?? [];
+    .prepare(
+      `SELECT * FROM (SELECT ${PUBLIC}, (${hits}) AS hits, (${bonus}) AS bonus FROM products WHERE active = 1)
+        WHERE hits >= ?${terms.length + 1}
+        ORDER BY hits + bonus DESC, featured DESC, price_cents LIMIT ?${terms.length + 2}`,
+    )
+    .bind(...terms.map((t) => `%${t}%`), need, limit)
+    .all<Product & { hits?: number; bonus?: number }>();
+  return (r.results ?? []).map(({ hits: _h, bonus: _b, ...p }) => p as Product);
 }
 
 /**
