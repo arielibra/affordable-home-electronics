@@ -448,9 +448,13 @@ export function specLinkLabel(url: string): string {
   }
   const KINDS: [RegExp, string][] = [
     [/data[-_ ]?sheet|spec[-_ ]?sheet/, "Data sheet"],
+    // Before "manual": a "firmware and manuals" page is mainly firmware.
+    [/firmware/, "Firmware downloads"],
     [/install|quick[-_ ]?start|qsg/, "Installation guide"],
     [/manual/, "User manual"],
-    [/firmware/, "Firmware downloads"],
+    [/osd/, "On-screen menu guide"],
+    [/site[-_ ]?survey/, "Site survey guide"],
+    [/mobile[-_ ]?app|-app$/, "Mobile app"],
     [/matrix|accessor/, "Product matrix & accessory guide"],
     [/power[-_ ]?distance/, "Power distance guide"],
     [/catalog/, "Product catalog"],
