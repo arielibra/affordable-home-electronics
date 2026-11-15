@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 import { SITE } from "../../lib/site";
 import { HalloweenSky } from "../site/halloween";
+import { HarvestGarland } from "../site/thanksgiving";
 import { ShopCta } from "../site/cta";
 import { Shell } from "../site/section";
 import { HeroSlides } from "./hero-slides";
@@ -36,6 +37,7 @@ export function Hero() {
 
         <div className="ahe-wall-wrap relative mt-8">
           <HalloweenSky />
+          <HarvestGarland />
           <div className="relative z-[1]">
             <HeroSlides />
           </div>

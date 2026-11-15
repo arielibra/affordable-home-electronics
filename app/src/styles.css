@@ -251,6 +251,41 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 @media (max-width: 640px) { .ahe-hw .ahe-feed-tag::after { display: none; } }
 @media (prefers-reduced-motion: reduce) { .ahe-hw-bats svg { animation: none; } }
 
+/* ---------- Thanksgiving (November only; see components/site/thanksgiving.tsx) ---------- */
+.ahe-tg .ahe-hero { background: linear-gradient(180deg, #f4f1ea 0%, #f9e8d4 100%); overflow: hidden; }
+/* The garland drapes over the top of the slideshow, so give it room there. */
+.ahe-tg .ahe-hero .ahe-wall-wrap { margin-top: 64px; }
+.ahe-tg .ahe-hero-accent { color: #c4561c; }
+.ahe-tg .ahe-kicker::before { background: #e8761c !important; box-shadow: 0 0 0 4px rgba(232,118,28,.2) !important; }
+.ahe-tg .ahe-wall { box-shadow: 0 26px 50px -30px rgba(107,52,22,.7), 0 0 0 1px rgba(232,118,28,.4); }
+.ahe-tg .ahe-feed-tag::before { background: #f2a33a !important; }
+.ahe-tg .ahe-feed-tag::after { content: "· Golden hour"; color: #ffc48a; font-weight: 500; }
+.ahe-tg .ahe-feed-time { color: #e8761c !important; }
+.ahe-tg-garland { position: absolute; z-index: 2; left: 2%; right: 16%; top: -46px; height: 90px; pointer-events: none; }
+.ahe-tg-cord { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ahe-tg-cord path { fill: none; stroke: #8a5a2b; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.ahe-tg-charm { position: absolute; width: 30px; height: 30px; filter: drop-shadow(0 2px 2px rgba(80,40,10,.25)); transform-origin: 50% 0; }
+.ahe-tg-charm.is-acorn { width: 22px; height: 22px; }
+.ahe-tg-pumpkins { position: absolute; z-index: 2; right: 3%; top: -56px; width: 120px; height: 64px; pointer-events: none; filter: drop-shadow(0 4px 4px rgba(80,40,10,.25)); }
+@media (max-width: 1023px) {
+  .ahe-tg .ahe-hero .ahe-wall-wrap { margin-top: 52px; }
+  .ahe-tg-garland { right: 24%; top: -40px; }
+  .ahe-tg-charm { width: 22px; height: 22px; }
+  .ahe-tg-charm.is-acorn { width: 16px; height: 16px; }
+  .ahe-tg-pumpkins { width: 84px; height: 45px; top: -40px; }
+}
+@media (max-width: 640px) { .ahe-tg .ahe-feed-tag::after { display: none; } .ahe-tg-charm:nth-of-type(even) { display: none; } }
+
+/* Falling leaves: a fixed layer over the page that never takes a click. Each
+   leaf falls on the outer span and sways and turns on the inner svg. */
+.ahe-fall-leaves { position: fixed; inset: 0; z-index: 45; overflow: hidden; pointer-events: none; }
+.ahe-fall-leaf { position: absolute; top: -40px; animation-name: ahe-fall-drop; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; }
+.ahe-fall-leaf svg { display: block; opacity: .82; filter: drop-shadow(0 2px 2px rgba(80, 40, 10, .18)); animation-name: ahe-fall-sway; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; }
+@keyframes ahe-fall-drop { from { transform: translateY(0); } to { transform: translateY(calc(100vh + 80px)); } }
+@keyframes ahe-fall-sway { from { transform: translateX(calc(var(--sway) * -1)) rotate(0deg); } to { transform: translateX(var(--sway)) rotate(var(--spin)); } }
+@media (max-width: 640px) { .ahe-fall-leaf:nth-child(n + 8) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ahe-fall-leaves { display: none; } }
+
 .ahe-rule { background-image: linear-gradient(to right, var(--color-line) 0 100%); }
 @keyframes ahe-rise { from { transform: translateY(14px); } to { transform: none; } }
 .ahe-rise { animation: ahe-rise 620ms cubic-bezier(.16,.84,.44,1) both; }
