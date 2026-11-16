@@ -135,7 +135,8 @@ function productJsonLd(
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 10,
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/RestockingFees",
+        // Customer pays return postage; the 15% is restockingFee (a percentage).
+        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
         restockingFee: 15,
         merchantReturnLink: `${ORIGIN}/returns`,
       },

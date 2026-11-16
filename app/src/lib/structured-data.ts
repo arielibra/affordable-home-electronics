@@ -97,7 +97,10 @@ const STORE = {
     returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
     merchantReturnDays: 10,
     returnMethod: "https://schema.org/ReturnByMail",
-    returnFees: "https://schema.org/RestockingFees",
+    // The customer posts it back at their own cost (/returns, "Who pays the
+    // postage"). Google accepts only FreeReturn, ReturnFeesCustomerResponsibility
+    // or ReturnShippingFees here; the 15% is carried by restockingFee instead.
+    returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
     restockingFee: 15,
     merchantReturnLink: `${ORIGIN}/returns`,
   },

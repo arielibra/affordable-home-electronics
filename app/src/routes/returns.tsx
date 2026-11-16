@@ -28,7 +28,7 @@ function Returns() {
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 10,
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/RestockingFees",
+        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
         restockingFee: 15,
         merchantReturnLink: `${ORIGIN}/returns`,
       }}
