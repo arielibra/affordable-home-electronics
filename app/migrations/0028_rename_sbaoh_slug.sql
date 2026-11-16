@@ -34,7 +34,8 @@ WHERE product_slug = 'https-img-kwcdn-com-product-fancy-042a99d3-1e35-4c8a-9c83-
 -- Add-on drop-downs on other products list their choices by address.
 UPDATE products
 SET options = replace(options, 'https-img-kwcdn-com-product-fancy-042a99d3-1e35-4c8a-9c83-8ac003331806-jpg-image', 'sbaoh-p302-300w-portable-power-station')
-WHERE options LIKE '%https-img-kwcdn-com-product-fancy-042a99d3-1e35-4c8a-9c83-8ac003331806-jpg-image%'
+-- instr(), not LIKE: D1 refuses a LIKE pattern this long ("pattern too complex").
+WHERE instr(options, 'https-img-kwcdn-com-product-fancy-042a99d3-1e35-4c8a-9c83-8ac003331806-jpg-image') > 0
   AND EXISTS (SELECT 1 FROM products WHERE slug = 'sbaoh-p302-300w-portable-power-station');
 
 -- 3. The old address forwards to the new one (301).
