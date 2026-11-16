@@ -313,3 +313,65 @@ export const saveHeardAbout = createServerFn({ method: "POST" })
       .run();
     return { ok: (r.meta?.changes ?? 0) > 0 };
   });
+
+// Google Customer Reviews opt-in on the confirmation screens.
+//
+// Google needs the buyer's email, the delivery country and a date by which the
+// parcel should have arrived; it emails its survey after that date. Same proof
+// rule as "how did you hear about us": only the person who just paid can ask,
+// only for two days, and only for a paid order placed on this site.
+//
+// No country is stored on an order. We ship to the US and Canada only, so a
+// Canadian province code or a Canadian postcode means CA and anything else US.
+const CA_PROVINCES = new Set(["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]);
+
+function addBusinessDays(from: Date, days: number): Date {
+  const d = new Date(from);
+  let left = days;
+  while (left > 0) {
+    d.setUTCDate(d.getUTCDate() + 1);
+    const wd = d.getUTCDay();
+    if (wd !== 0 && wd !== 6) left -= 1;
+  }
+  return d;
+}
+
+export const getReviewOptIn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      reference: z.string().min(4).max(40),
+      proof: z.string().min(3).max(200),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const DB = bindings().DB;
+    if (!DB) return { ok: false as const };
+    const proof = data.proof.trim();
+    const row = await DB.prepare(
+      `SELECT email, state, zip, paid_at FROM orders
+        WHERE reference = ?1
+          AND status = 'paid'
+          AND channel = 'site'
+          AND created_at >= datetime('now', '-2 days')
+          AND (stripe_session_id = ?2
+               OR paypal_order_id = ?2
+               OR (email <> '' AND lower(email) = lower(?2)))`,
+    )
+      .bind(data.reference, proof)
+      .first<{ email: string | null; state: string | null; zip: string | null; paid_at: string | null }>();
+    const email = (row?.email ?? "").trim();
+    if (!row || !email.includes("@")) return { ok: false as const };
+
+    const state = (row.state ?? "").trim().toUpperCase();
+    const zip = (row.zip ?? "").trim();
+    const country = CA_PROVINCES.has(state) || /^[A-Za-z]\d[A-Za-z]/.test(zip) ? "CA" : "US";
+
+    // Two business days to pick and pack, then UPS: five business days covers
+    // nearly all of the US, eight covers Canada. Erring late is deliberate: a
+    // survey that lands before the parcel asks about a delivery that has not
+    // happened yet.
+    const paid = row.paid_at ? new Date(row.paid_at.replace(" ", "T") + "Z") : new Date();
+    const start = Number.isNaN(paid.getTime()) ? new Date() : paid;
+    const eta = addBusinessDays(start, 2 + (country === "CA" ? 8 : 5));
+    return { ok: true as const, email, country, deliveryDate: eta.toISOString().slice(0, 10) };
+  });

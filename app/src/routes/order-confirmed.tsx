@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { useCart } from "../components/site/cart-context";
 import { SiteShell } from "../components/site/chrome";
+import { GoogleReviewsOptIn } from "../components/site/google-reviews-opt-in";
 import { HeardAbout } from "../components/site/heard-about";
 import { Shell } from "../components/site/section";
 import { getPaidOrder } from "../lib/api/store.functions";
@@ -103,6 +104,7 @@ function Confirmed() {
               <Row label="Paid" value={money(order?.amount_total_cents ?? 0)} mono strong />
             </dl>
             {order && sessionId ? <HeardAbout reference={order.reference} proof={sessionId} /> : null}
+            {order && sessionId ? <GoogleReviewsOptIn reference={order.reference} proof={sessionId} /> : null}
           </>
         ) : (
           <p className="mt-5 text-[16px] leading-relaxed text-muted">

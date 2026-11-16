@@ -27,8 +27,10 @@ export function applySecurityHeaders(response: Response): Response {
     // static.cloudflareinsights.com: Cloudflare Web Analytics, which the zone
     // injects into every page. Blocking it threw a console error on every page
     // and left the shop's visitor stats empty.
-    "script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.paypalobjects.com https://www.sandbox.paypal.com https://static.cloudflareinsights.com; " +
-      "frame-src https://www.paypal.com https://www.sandbox.paypal.com; " +
+    // apis.google.com + www.google.com: the Google Customer Reviews survey
+    // opt-in on the order confirmation screens (google-reviews-opt-in.tsx).
+    "script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://www.paypal.com https://www.paypalobjects.com https://www.sandbox.paypal.com https://static.cloudflareinsights.com; " +
+      "frame-src https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://apis.google.com https://content.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
       "img-src 'self' data: https:; media-src 'self' https:; " +

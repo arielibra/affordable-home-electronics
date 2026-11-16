@@ -6,6 +6,7 @@ import { undeliverableReason } from "../lib/address";
 import { SiteShell } from "../components/site/chrome";
 import { Field, Notice, TextArea, TextInput } from "../components/site/form";
 import { PayMarks } from "../components/site/pay-marks";
+import { GoogleReviewsOptIn } from "../components/site/google-reviews-opt-in";
 import { HeardAbout } from "../components/site/heard-about";
 import { Shell } from "../components/site/section";
 import { getCheckoutConfig, placeOrder } from "../lib/api/store.functions";
@@ -246,6 +247,7 @@ function CheckoutBody() {
             ) : null}
           </dl>
           <HeardAbout reference={done.reference} proof={done.proof} />
+          {done.paid ? <GoogleReviewsOptIn reference={done.reference} proof={done.proof} /> : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop" className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]">
               Keep browsing
