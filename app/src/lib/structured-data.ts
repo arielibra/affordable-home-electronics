@@ -53,7 +53,7 @@ const STORE = {
   logo: `${ORIGIN}/app-icon.png`,
   image: `${ORIGIN}/assets/hero-storefront.jpg`,
   description:
-    "Security cameras, NVR and DVR recorders, access control, smart locks and home electronics, sold online and installed across New York City since 2003.",
+    "Security cameras, NVR and DVR recorders, access control, smart locks and home electronics, sold online since 2003, with installation arranged across New York City.",
   telephone: "+1-718-275-9343",
   faxNumber: "+1-866-365-7643",
   email: SITE.email,
