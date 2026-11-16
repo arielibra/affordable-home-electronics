@@ -14,7 +14,7 @@ import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "
 import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
 import { parseBadges, parseHighlights, type Badge } from "../../lib/badges";
 import type { ResolvedOption } from "../../lib/options";
-import { STORE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data";
+import { STORE_ID, abs, breadcrumbs, structuredName, toJsonLd } from "../../lib/structured-data";
 
 /**
  * Product data for Google, as schema.org JSON-LD.
@@ -68,7 +68,7 @@ function productJsonLd(
   const product = {
     "@type": "Product",
     "@id": `${url}#product`,
-    name: p.name,
+    name: structuredName(p.name),
     url,
     sku: p.mpn || p.slug,
     ...(() => {
@@ -144,7 +144,7 @@ function productJsonLd(
   const trail = breadcrumbs([
     { name: "Catalog", path: "/shop" },
     ...(categoryName ? [{ name: categoryName, path: `/shop/${p.category}` }] : []),
-    { name: p.name, path: `/p/${p.slug}` },
+    { name: structuredName(p.name), path: `/p/${p.slug}` },
   ]);
   return toJsonLd({ "@context": "https://schema.org", "@graph": [product, trail] });
 }

@@ -5,7 +5,7 @@ import { ProductCard } from "../components/site/product-card";
 import { Shell } from "../components/site/section";
 import { getBrandPage } from "../lib/api/store.functions";
 import { ORIGIN } from "../lib/site";
-import { STORE_ID, WEBSITE_ID, abs, breadcrumbs, toJsonLd } from "../lib/structured-data";
+import { STORE_ID, WEBSITE_ID, abs, breadcrumbs, structuredName, toJsonLd } from "../lib/structured-data";
 
 type Sort = "featured" | "price-asc" | "price-desc" | "name";
 const SORTS: { value: Sort; label: string }[] = [
@@ -77,7 +77,7 @@ function BrandPage() {
             "@type": "ListItem",
             position: i + 1,
             url: `${ORIGIN}/p/${p.slug}`,
-            name: p.name,
+            name: structuredName(p.name),
             ...(p.image ? { image: abs(p.image) } : {}),
           })),
         },

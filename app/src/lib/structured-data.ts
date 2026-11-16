@@ -19,6 +19,27 @@ export const WEBSITE_ID = `${ORIGIN}/#website`;
 export const abs = (src: string) =>
   /^https?:\/\//.test(src) ? src : `${ORIGIN}${src.startsWith("/") ? "" : "/"}${src}`;
 
+/**
+ * A product name as structured data may carry it. Google rejects a Product
+ * "name" over 150 characters ("Invalid string length in field name"), and some
+ * manufacturer titles run to 200. The page itself still shows the full name;
+ * only the JSON-LD copy is shortened, at a word break, with trailing commas or
+ * dashes trimmed so it never ends mid-phrase on punctuation.
+ */
+export const MAX_NAME_LENGTH = 150;
+export function structuredName(name: string): string {
+  const clean = name.replace(/\s+/g, " ").trim();
+  if (clean.length <= MAX_NAME_LENGTH) return clean;
+  const cut = clean.slice(0, MAX_NAME_LENGTH + 1);
+  // Prefer the end of a whole phrase (a comma, full stop or dash) so the name
+  // does not stop on "...Battery for"; fall back to the last word break.
+  let end = -1;
+  for (const m of cut.matchAll(/[,.;] | [-–—] /g)) if (m.index! <= MAX_NAME_LENGTH) end = m.index!;
+  if (end < MAX_NAME_LENGTH * 0.6) end = cut.lastIndexOf(" ");
+  if (end < MAX_NAME_LENGTH * 0.6) end = MAX_NAME_LENGTH;
+  return cut.slice(0, end).replace(/[\s,;:.\-–—/&+(]+$/, "");
+}
+
 /** JSON for a <script type="application/ld+json">; "<" escaped so text can never close the tag. */
 export function toJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");

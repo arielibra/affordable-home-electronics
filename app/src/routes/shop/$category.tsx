@@ -4,7 +4,7 @@ import { CatalogBody, CatalogHeader } from "../../components/shop/catalog";
 import { SiteShell } from "../../components/site/chrome";
 import { getCategoryPage } from "../../lib/api/store.functions";
 import { ORIGIN } from "../../lib/site";
-import { STORE_ID, WEBSITE_ID, abs, breadcrumbs, toJsonLd } from "../../lib/structured-data";
+import { STORE_ID, WEBSITE_ID, abs, breadcrumbs, structuredName, toJsonLd } from "../../lib/structured-data";
 
 type Sort = "featured" | "price-asc" | "price-desc" | "name";
 const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "name"];
@@ -70,7 +70,7 @@ function CategoryPage() {
             "@type": "ListItem",
             position: i + 1,
             url: `${ORIGIN}/p/${p.slug}`,
-            name: p.name,
+            name: structuredName(p.name),
             ...(p.image ? { image: abs(p.image) } : {}),
           })),
         },
