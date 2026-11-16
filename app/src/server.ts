@@ -69,6 +69,17 @@ export default {
         url.hostname = url.hostname.slice(4);
         moved = true;
       }
+      // A link copied out of a sentence often drags the full stop, comma or
+      // closing bracket with it ("…/p/some-camera."). No page address ends in
+      // punctuation, so drop it and send the shopper to the real page instead
+      // of a 404. API routes are left exactly as sent.
+      if (!url.pathname.startsWith("/api/")) {
+        const trimmed = url.pathname.replace(/(?:[.,;:!)\]>]|%2[29]|%27|%3e|%5d)+$/i, "");
+        if (trimmed.length > 0 && trimmed !== url.pathname) {
+          url.pathname = trimmed;
+          moved = true;
+        }
+      }
       if (url.pathname.length > 1 && url.pathname.endsWith("/")) {
         url.pathname = url.pathname.replace(/\/+$/, "") || "/";
         moved = true;
