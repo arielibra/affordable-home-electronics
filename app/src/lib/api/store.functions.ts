@@ -366,12 +366,13 @@ export const getReviewOptIn = createServerFn({ method: "POST" })
     const zip = (row.zip ?? "").trim();
     const country = CA_PROVINCES.has(state) || /^[A-Za-z]\d[A-Za-z]/.test(zip) ? "CA" : "US";
 
-    // Two business days to pick and pack, then UPS: five business days covers
-    // nearly all of the US, eight covers Canada. Erring late is deliberate: a
+    // Two business days to pick and pack, then UPS. /shipping promises three to
+    // seven business days once the parcel leaves, so use the top of that range
+    // for the US and ten for Canada. Erring late is deliberate: a
     // survey that lands before the parcel asks about a delivery that has not
     // happened yet.
     const paid = row.paid_at ? new Date(row.paid_at.replace(" ", "T") + "Z") : new Date();
     const start = Number.isNaN(paid.getTime()) ? new Date() : paid;
-    const eta = addBusinessDays(start, 2 + (country === "CA" ? 8 : 5));
+    const eta = addBusinessDays(start, 2 + (country === "CA" ? 10 : 7));
     return { ok: true as const, email, country, deliveryDate: eta.toISOString().slice(0, 10) };
   });
