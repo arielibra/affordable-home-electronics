@@ -215,7 +215,12 @@ export const Route = createFileRoute("/api/admin/products")({
         }
 
         // Part numbers make better slugs than names, so honour one if given.
-        const wanted = slugify(str(body.slug, 120) || name);
+        // A pasted link is not a part number: one product went live as
+        // /p/https-img-kwcdn-com-… because a photo address landed in this box,
+        // and a slug can never change afterwards. Fall back to the name.
+        const typed = str(body.slug, 120);
+        const looksLikeLink = /^(https?:|www\.)|:\/\/|\.(jpe?g|png|webp|avif|gif)(\?|$)/i.test(typed);
+        const wanted = slugify((looksLikeLink ? "" : typed) || name);
         if (!wanted) return Response.json({ ok: false, error: "That name has no usable letters in it." }, { status: 400 });
 
         let slug = wanted;
