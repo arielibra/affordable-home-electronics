@@ -20,12 +20,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Security cameras, NVR/DVR recorders, access control and smart locks from an authorized dealer in Queens. Shipped nationwide, installed in NYC since 2003.",
+          "Security cameras, NVR/DVR recorders, access control and smart locks from an authorized dealer in Queens. Selling since 2003, shipped nationwide, installation arranged across NYC.",
       },
       { property: "og:title", content: "Affordable Home Electronics | Security Cameras & Access Control" },
       {
         property: "og:description",
-        content: "Authorized dealer in Rego Park, Queens. Shipped across the US, installed across NYC since 2003.",
+        content: "Authorized dealer in Rego Park, Queens. Selling since 2003. Shipped across the US, installation arranged across NYC.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/` }],

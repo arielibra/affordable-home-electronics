@@ -24,10 +24,10 @@ export const Route = createFileRoute("/installation")({
 });
 
 const STEPS = [
-  { n: "01", t: "A call and a look", b: "You describe the building, or we come by. We work out the coverage, the cable routes and where the recorder lives." },
+  { n: "01", t: "A call and a look", b: "You describe the building, or an installer comes by. We work out the coverage, the cable routes and where the recorder lives." },
   { n: "02", t: "A written number", b: "Equipment, labour and materials, itemised. You keep the gear either way, so there is nothing locked to us." },
   { n: "03", t: "The install", b: "Cable pulled, cameras mounted and aimed, recorder configured, drive sized for the retention you asked for." },
-  { n: "04", t: "Handover", b: "Your phone shows the cameras before we leave, and you know how to pull a clip when someone asks for one." },
+  { n: "04", t: "Handover", b: "Your phone shows the cameras before the installer leaves, and you know how to pull a clip when someone asks for one." },
 ];
 
 const INSTALL_JSON = pageJsonLd({
@@ -65,8 +65,8 @@ function Installation() {
             <Eyebrow>Installation across the city</Eyebrow>
             <h1 className="mt-2 max-w-[17ch] text-[40px] text-ink md:text-[56px]">We do not just ship the box.</h1>
             <p className="mt-3 max-w-[56ch] text-[17px] leading-relaxed text-muted">
-              Plenty of places will sell you eight cameras. Fewer will climb the ladder, run the cable through a
-              hundred year old wall, and still pick up the phone when the drive fills up in {new Date().getFullYear() + 2}.
+              Plenty of places will sell you eight cameras. Fewer will send an installer up the ladder to run the cable
+              through a hundred year old wall, and still pick up the phone when the drive fills up in {new Date().getFullYear() + 2}.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
@@ -91,7 +91,7 @@ function Installation() {
         <Shell className="pb-10">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              [`${new Date().getFullYear() - SITE.since} years`, "Selling and installing this gear out of Rego Park"],
+              [`${new Date().getFullYear() - SITE.since} years`, "Selling this gear out of Rego Park"],
               ["5 boroughs", "Plus Nassau and Westchester on request"],
               ["$0 a month", "No subscription. The system is yours outright"],
             ].map(([v, l]) => (

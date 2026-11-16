@@ -191,7 +191,7 @@ function Footer() {
             <Lockup reversed />
           </Link>
           <p className="mt-4 max-w-[34ch] text-[15px] leading-relaxed text-[#dcebfa]">
-            Security cameras, recorders and access control, sold and installed out of Rego Park since {SITE.since}.
+            Security cameras, recorders and access control, sold out of Rego Park since {SITE.since}, with installation arranged across New York City.
           </p>
         </div>
 

@@ -23,7 +23,7 @@ export const Route = createFileRoute("/llms.txt")({
         const out: string[] = [
           `# ${SITE.name}`,
           ``,
-          `> Security cameras, NVR/DVR recorders, access control, smart locks, doorbells and home electronics. An authorized dealer selling genuine USA product online, shipping across the US, and installing across New York City since ${SITE.since}.`,
+          `> Security cameras, NVR/DVR recorders, access control, smart locks, doorbells and home electronics. An authorized dealer selling genuine USA product online, shipping across the US, since ${SITE.since}, with installation arranged across New York City.`,
           ``,
           `## The shop`,
           ``,

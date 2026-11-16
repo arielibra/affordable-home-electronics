@@ -18,7 +18,7 @@ export const Route = createFileRoute("/security-cameras")({
       {
         name: "description",
         content:
-          "Dome, bullet and turret cameras, recorders and complete systems from an authorized dealer in Rego Park, Queens. Sold nationwide, installed across New York City.",
+          "Dome, bullet and turret cameras, recorders and complete systems from an authorized dealer in Rego Park, Queens. Sold nationwide, with installation arranged across New York City.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/security-cameras` }],

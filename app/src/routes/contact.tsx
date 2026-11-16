@@ -64,7 +64,7 @@ const HELP: { q: string; a: React.ReactNode }[] = [
     q: "Installation in New York City",
     a: (
       <>
-        We install camera systems, recorders and access control across the five boroughs. Tell us the property type and
+        We arrange installation of camera systems, recorders and access control across the five boroughs, through the installers we work with. Tell us the property type and
         roughly how many cameras and we will come back with a quote. More on the{" "}
         <Link to="/installation" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">installation page</Link>.
       </>

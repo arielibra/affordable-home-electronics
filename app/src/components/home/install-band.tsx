@@ -45,10 +45,10 @@ export function InstallBand() {
       <Shell className="grid items-start gap-8 lg:grid-cols-[1fr_460px] lg:gap-12">
         <div className="rounded-2xl bg-band p-6 text-white md:p-8">
           <p className="text-[14px] font-semibold text-[#cfe1ef]">Installation in New York City</p>
-          <h2 className="mt-2 max-w-[17ch] text-[32px] md:text-[44px]">We come out and install it ourselves.</h2>
+          <h2 className="mt-2 max-w-[17ch] text-[32px] md:text-[44px]">We arrange the install for you.</h2>
           <p className="mt-3 max-w-[54ch] text-[16px] leading-relaxed text-[#dcebfa]">
-            Cable run, mounting, aiming, the recorder configured and your phone showing the cameras before we pack up.
-            One trip, one bill, no subscription.
+            The installers we work with run the cable, mount and aim the cameras, set up the recorder and leave your phone showing
+            the cameras before they pack up. One call to us, no subscription.
           </p>
 
           <div className="mt-6 border-t border-white/20 pt-5">

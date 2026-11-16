@@ -26,7 +26,7 @@ function About() {
   const years = new Date().getFullYear() - SITE.since;
   return (
     <SiteShell>
-      <JsonLd json={pageJsonLd({ type: "AboutPage", path: "/about", name: "About Affordable Home Electronics", description: "A family-run security camera and electronics shop in Rego Park, Queens, selling and installing since 2003.", about: { "@id": STORE_ID } })} />
+      <JsonLd json={pageJsonLd({ type: "AboutPage", path: "/about", name: "About Affordable Home Electronics", description: "A family-run security camera and electronics shop in Rego Park, Queens, selling since 2003, with installation arranged across New York City.", about: { "@id": STORE_ID } })} />
       <Shell className="py-10 md:py-12">
         <Eyebrow>About</Eyebrow>
         <h1 className="mt-2 max-w-[18ch] text-[40px] text-ink md:text-[56px]">
@@ -46,7 +46,7 @@ function About() {
               something fails in year two, there is a path that does not end with a shrug.
             </p>
             <p>
-              We ship anywhere in the United States, and to Canada. Locally we install: Queens, Brooklyn, Manhattan,
+              We ship anywhere in the United States, and to Canada. Locally we arrange installation: Queens, Brooklyn, Manhattan,
               the Bronx, out to Nassau and Westchester when it makes sense. Retail, wholesale and government orders are
               all handled the same way.
             </p>

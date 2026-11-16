@@ -21,7 +21,7 @@ export function Hero() {
             </h1>
             <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-muted">
               Cameras, recorders and access control from the brands installers trust. Genuine USA stock, full
-              manufacturer warranty, shipped nationwide or installed across New York City.
+              manufacturer warranty, shipped nationwide, with installation available across New York City.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 lg:pb-1">
@@ -50,7 +50,7 @@ export function Hero() {
           ["Since " + SITE.since, "Over 20 years in Queens"],
           ["Full warranty", "Authorized dealer stock"],
           ["Free shipping", "On orders over $199"],
-          ["NYC installs", "By our own technicians"],
+          ["NYC installs", "Arranged through us"],
         ].map(([title, sub]) => (
           <div key={title} className="border-line px-5 py-4 max-md:[&:nth-child(-n+2)]:border-b md:border-l md:first:border-l-0 md:px-6 [&:nth-child(even)]:border-l">
             <p className="ahe-display text-[24px] leading-none text-ink md:text-[26px]">{title}</p>
