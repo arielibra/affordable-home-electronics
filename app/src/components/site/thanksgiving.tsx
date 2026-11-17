@@ -242,16 +242,17 @@ export function HarvestGarland() {
         ))}
       </span>
       <svg className="ahe-tg-pumpkins" viewBox="0 0 190 110" aria-hidden="true">
-        <ellipse cx="100" cy="104" rx="92" ry="6" fill="rgba(80,40,10,.18)" />
-        <path d="M20 92q20-30 52-20t40-18q14-10 30 2" fill="none" stroke="#5d7a2c" strokeWidth="2.4" strokeLinecap="round" />
-        <path d="M150 52q10-8 6-18M158 34q8 2 6 10" fill="none" stroke="#5d7a2c" strokeWidth="1.6" strokeLinecap="round" />
-        <path d="M32 80c-8-14 6-26 22-18-4 12-12 20-22 18z" fill="#6f8f35" />
-        <path d="M34 78c6-6 12-10 18-14" stroke="#4e6a22" strokeWidth="1" fill="none" />
+        <ellipse cx="104" cy="103" rx="84" ry="5" fill="rgba(80,40,10,.18)" />
+        {/* Vine: grows out of the big pumpkin's stalk, left to a leaf and right to a curl. */}
+        <path d="M74 42c-10-8-24-6-32 6-5 8-8 14-14 18" fill="none" stroke="#5d7a2c" strokeWidth="2.4" strokeLinecap="round" />
+        <path d="M30 64c-12-2-18-14-10-24 10 2 16 12 10 24z" fill="#6f8f35" />
+        <path d="M29 62c-3-7-6-13-9-20" stroke="#4e6a22" strokeWidth="1" fill="none" strokeLinecap="round" />
+        <path d="M80 42c10-12 30-14 44-6 8 5 14 4 18-2 3-5 0-10-5-9-4 1-4 6 0 7" fill="none" stroke="#5d7a2c" strokeWidth="2" strokeLinecap="round" />
         <Pumpkin x={78} y={72} rx={36} ry={28} fill="url(#ahe-tg-pump)" rib="#b0500f" />
         <Pumpkin x={136} y={82} rx={25} ry={19} fill="url(#ahe-tg-pump2)" rib="#c07a22" />
-        <Pumpkin x={166} y={92} rx={15} ry={11} fill="url(#ahe-tg-white)" rib="#bfa57a" />
-        <path d={MAPLE} fill="url(#ahe-tg-maple)" transform="translate(104 82) rotate(70 12 12) scale(.8)" />
-        <path d={ACORN} fill="#8a5a2b" transform="translate(42 86) rotate(-30 12 12) scale(.7)" />
+        <Pumpkin x={170} y={91} rx={15} ry={11} fill="url(#ahe-tg-white)" rib="#bfa57a" />
+        <path d={MAPLE} fill="url(#ahe-tg-maple)" transform="translate(2 86) rotate(-24 12 12) scale(.7)" />
+        <path d={ACORN} fill="#8a5a2b" transform="translate(21 84) rotate(14 12 12) scale(.74)" />
       </svg>
     </>
   );
