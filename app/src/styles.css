@@ -261,20 +261,30 @@ nav[aria-label="Breadcrumb"] a { display: inline-block; padding-block: 6px; }
 .ahe-tg .ahe-feed-tag::before { background: #f2a33a !important; }
 .ahe-tg .ahe-feed-tag::after { content: "· Golden hour"; color: #ffc48a; font-weight: 500; }
 .ahe-tg .ahe-feed-time { color: #e8761c !important; }
-.ahe-tg-garland { position: absolute; z-index: 2; left: 2%; right: 16%; top: -46px; height: 90px; pointer-events: none; }
+.ahe-tg-garland { position: absolute; z-index: 2; left: 2%; right: 18%; top: -46px; height: 90px; pointer-events: none; }
 .ahe-tg-cord { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.ahe-tg-cord path { fill: none; stroke: #8a5a2b; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.ahe-tg-charm { position: absolute; width: 30px; height: 30px; filter: drop-shadow(0 2px 2px rgba(80,40,10,.25)); transform-origin: 50% 0; }
-.ahe-tg-charm.is-acorn { width: 22px; height: 22px; }
-.ahe-tg-pumpkins { position: absolute; z-index: 2; right: 3%; top: -56px; width: 120px; height: 64px; pointer-events: none; filter: drop-shadow(0 4px 4px rgba(80,40,10,.25)); }
+.ahe-tg-cord path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.ahe-tg-cord .is-twine { stroke: #7a4e25; stroke-width: 4; }
+.ahe-tg-cord .is-twist { stroke: #c48f55; stroke-width: 1.6; stroke-dasharray: 5 4; }
+.ahe-tg-pennant { position: absolute; width: 34px; height: 42px; transform: translateX(-50%); overflow: visible; filter: drop-shadow(0 2px 2px rgba(80,40,10,.22)); }
+.ahe-tg-flag { transform-box: fill-box; transform-origin: 50% 0; animation: ahe-tg-sway 3.4s ease-in-out infinite alternate; }
+@keyframes ahe-tg-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+.ahe-tg-knot { position: absolute; top: -6px; width: 40px; height: 34px; transform: translateX(-50%); filter: drop-shadow(0 2px 2px rgba(80,40,10,.25)); }
+.ahe-tg-pumpkins { position: absolute; z-index: 2; right: 2%; top: -82px; width: 164px; height: 95px; pointer-events: none; filter: drop-shadow(0 4px 4px rgba(80,40,10,.2)); }
 @media (max-width: 1023px) {
   .ahe-tg .ahe-hero .ahe-wall-wrap { margin-top: 52px; }
-  .ahe-tg-garland { right: 24%; top: -40px; }
-  .ahe-tg-charm { width: 22px; height: 22px; }
-  .ahe-tg-charm.is-acorn { width: 16px; height: 16px; }
-  .ahe-tg-pumpkins { width: 84px; height: 45px; top: -40px; }
+  .ahe-tg-garland { right: 26%; top: -40px; }
+  .ahe-tg-pennant { width: 24px; height: 30px; }
+  .ahe-tg-knot { width: 30px; height: 26px; }
+  .ahe-tg-pumpkins { width: 112px; height: 65px; top: -56px; }
 }
-@media (max-width: 640px) { .ahe-tg .ahe-feed-tag::after { display: none; } .ahe-tg-charm:nth-of-type(even) { display: none; } }
+@media (max-width: 640px) {
+  .ahe-tg .ahe-feed-tag::after { display: none; }
+  .ahe-tg-pennant:nth-of-type(even) { display: none; }
+  .ahe-tg-garland { right: 31%; }
+  .ahe-tg-pumpkins { width: 92px; height: 53px; top: -46px; }
+}
+@media (prefers-reduced-motion: reduce) { .ahe-tg-flag { animation: none; } }
 
 /* Falling leaves: a fixed layer over the page that never takes a click. Each
    leaf falls on the outer span and sways and turns on the inner svg. */
