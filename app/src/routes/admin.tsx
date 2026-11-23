@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import { AbandonedPanel } from "../components/admin/abandoned-panel";
 import { BrandsPanel } from "../components/admin/brands-panel";
 import { CatalogPanel } from "../components/admin/catalog-panel";
 import { CategoriesPanel } from "../components/admin/categories-panel";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-type Tab = "catalog" | "stock" | "categories" | "brands" | "orders" | "reviews" | "messages";
+type Tab = "catalog" | "stock" | "categories" | "brands" | "orders" | "abandoned" | "reviews" | "messages";
 
 type Security = {
   fails24h: number;
@@ -51,6 +52,7 @@ const GROUPS: { heading: string; items: [Tab, string][] }[] = [
     heading: "Customers",
     items: [
       ["orders", "Orders"],
+      ["abandoned", "Abandoned checkouts"],
       ["reviews", "Reviews"],
       ["messages", "Messages"],
     ],
@@ -64,6 +66,7 @@ const BLURBS: Record<Tab, string> = {
   categories: "The sections customers browse by.",
   brands: "The makers you stock, and the logo shown against each.",
   orders: "Everything sold, wherever it sold, and where each one has got to.",
+  abandoned: "People who started paying and stopped — what they wanted, and how to reach them.",
   reviews: "What buyers said about what they bought. Nothing goes live until you approve it.",
   messages: "What customers have sent in through the site.",
 };
@@ -279,6 +282,8 @@ function Admin() {
               <BrandsPanel />
             ) : tab === "orders" ? (
               <OrdersPanel />
+            ) : tab === "abandoned" ? (
+              <AbandonedPanel />
             ) : tab === "reviews" ? (
               <ReviewsPanel />
             ) : (

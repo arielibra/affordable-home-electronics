@@ -48,6 +48,14 @@ export const ICONS = {
       <circle cx="17.5" cy="20" r="1.3" />
     </svg>
   ),
+  abandoned: (
+    <svg {...base} aria-hidden>
+      <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 7H6" />
+      <path d="M12 7.5v3.5l2 1.2" />
+      <circle cx="9.5" cy="20" r="1.3" />
+      <circle cx="17.5" cy="20" r="1.3" />
+    </svg>
+  ),
   reviews: (
     <svg {...base} aria-hidden>
       <path d="M12 3.5 14.6 8.8l5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z" />

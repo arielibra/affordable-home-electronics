@@ -57,6 +57,7 @@ import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
 import { Route as ApiAdminCategoriesRouteImport } from './routes/api/admin/categories'
 import { Route as ApiAdminBrandsRouteImport } from './routes/api/admin/brands'
+import { Route as ApiAdminAbandonedRouteImport } from './routes/api/admin/abandoned'
 
 const WarrantyRoute = WarrantyRouteImport.update({
   id: '/warranty',
@@ -298,6 +299,11 @@ const ApiAdminBrandsRoute = ApiAdminBrandsRouteImport.update({
   path: '/api/admin/brands',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminAbandonedRoute = ApiAdminAbandonedRouteImport.update({
+  id: '/api/admin/abandoned',
+  path: '/api/admin/abandoned',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -330,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/review/$token': typeof ReviewTokenRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
+  '/api/admin/abandoned': typeof ApiAdminAbandonedRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
   '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
@@ -380,6 +387,7 @@ export interface FileRoutesByTo {
   '/review/$token': typeof ReviewTokenRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop': typeof ShopIndexRoute
+  '/api/admin/abandoned': typeof ApiAdminAbandonedRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
   '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/review/$token': typeof ReviewTokenRoute
   '/shop/$category': typeof ShopCategoryRoute
   '/shop/': typeof ShopIndexRoute
+  '/api/admin/abandoned': typeof ApiAdminAbandonedRoute
   '/api/admin/brands': typeof ApiAdminBrandsRoute
   '/api/admin/categories': typeof ApiAdminCategoriesRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
@@ -483,6 +492,7 @@ export interface FileRouteTypes {
     | '/review/$token'
     | '/shop/$category'
     | '/shop/'
+    | '/api/admin/abandoned'
     | '/api/admin/brands'
     | '/api/admin/categories'
     | '/api/admin/login'
@@ -533,6 +543,7 @@ export interface FileRouteTypes {
     | '/review/$token'
     | '/shop/$category'
     | '/shop'
+    | '/api/admin/abandoned'
     | '/api/admin/brands'
     | '/api/admin/categories'
     | '/api/admin/login'
@@ -583,6 +594,7 @@ export interface FileRouteTypes {
     | '/review/$token'
     | '/shop/$category'
     | '/shop/'
+    | '/api/admin/abandoned'
     | '/api/admin/brands'
     | '/api/admin/categories'
     | '/api/admin/login'
@@ -634,6 +646,7 @@ export interface RootRouteChildren {
   ReviewTokenRoute: typeof ReviewTokenRoute
   ShopCategoryRoute: typeof ShopCategoryRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  ApiAdminAbandonedRoute: typeof ApiAdminAbandonedRoute
   ApiAdminBrandsRoute: typeof ApiAdminBrandsRoute
   ApiAdminCategoriesRoute: typeof ApiAdminCategoriesRoute
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
@@ -992,6 +1005,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminBrandsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/abandoned': {
+      id: '/api/admin/abandoned'
+      path: '/api/admin/abandoned'
+      fullPath: '/api/admin/abandoned'
+      preLoaderRoute: typeof ApiAdminAbandonedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1026,6 +1046,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewTokenRoute: ReviewTokenRoute,
   ShopCategoryRoute: ShopCategoryRoute,
   ShopIndexRoute: ShopIndexRoute,
+  ApiAdminAbandonedRoute: ApiAdminAbandonedRoute,
   ApiAdminBrandsRoute: ApiAdminBrandsRoute,
   ApiAdminCategoriesRoute: ApiAdminCategoriesRoute,
   ApiAdminLoginRoute: ApiAdminLoginRoute,
