@@ -30,6 +30,14 @@ type SessionEvent = {
         address?: Record<string, string | null> | null;
       } | null;
       shipping_details?: { name?: string | null; address?: Record<string, string | null> | null } | null;
+      /** Where Stripe puts the shipping address from API version 2025-03-31
+       *  ("basil") onward; `shipping_details` above no longer exists there.
+       *  That is why Link orders arrived with no address: card payers tick
+       *  "billing same as shipping", so the billing fallback happened to carry
+       *  it, while Link buyers pick a saved shipping address instead. */
+      collected_information?: {
+        shipping_details?: { name?: string | null; address?: Record<string, string | null> | null } | null;
+      } | null;
       metadata?: Record<string, string> | null;
     };
   };
@@ -65,7 +73,8 @@ export const Route = createFileRoute("/api/stripe-webhook")({
         if (!DB) return new Response("no database", { status: 503 });
 
         const s = event.data.object;
-        const addr = s.shipping_details?.address ?? s.customer_details?.address ?? {};
+        const shipTo = s.collected_information?.shipping_details ?? s.shipping_details ?? null;
+        const addr = shipTo?.address ?? s.customer_details?.address ?? {};
         const cartId = s.metadata?.cart_id ?? "";
 
         const existing = await DB.prepare("SELECT id, status FROM orders WHERE stripe_session_id = ?1")
@@ -106,7 +115,7 @@ export const Route = createFileRoute("/api/stripe-webhook")({
         )
           .bind(
             orderId,
-            s.shipping_details?.name ?? s.customer_details?.name ?? "",
+            shipTo?.name ?? s.customer_details?.name ?? "",
             s.customer_details?.email ?? "",
             s.customer_details?.phone ?? "",
             addr.line1 ?? "",
