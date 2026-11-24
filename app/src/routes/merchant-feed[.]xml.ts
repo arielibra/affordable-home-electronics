@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
+import { feedId } from "../lib/feed-id";
 import { plainText } from "../lib/rich-text";
 import { SITE } from "../lib/site";
 
@@ -42,20 +43,6 @@ function xml(s: string): string {
     .replace(/"/g, "&quot;")
     // Characters XML 1.0 does not allow at all; one would break the whole feed.
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
-}
-
-/** Merchant Center ids are at most 50 characters and must never change for a
- *  product, or Google treats it as a new item and loses its history. Short
- *  slugs are used as they are; long ones are cut and given a stable hash of
- *  the full slug so two products with a long shared prefix cannot collide. */
-function feedId(slug: string): string {
-  if (slug.length <= 50) return slug;
-  let h = 0x811c9dc5;
-  for (let i = 0; i < slug.length; i++) {
-    h ^= slug.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return `${slug.slice(0, 41).replace(/-+$/, "")}-${h.toString(16).padStart(8, "0")}`;
 }
 
 export const Route = createFileRoute("/merchant-feed.xml")({

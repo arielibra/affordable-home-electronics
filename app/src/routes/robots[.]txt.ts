@@ -14,6 +14,16 @@ export const Route = createFileRoute('/robots.txt')({
           'Disallow: /checkout',
           'Disallow: /order-confirmed',
           '',
+          // Google's Storebot checks that the checkout link (/cart?add={id})
+          // works. A crawler obeys only its own group, so repeat the rest.
+          'User-agent: Storebot-Google',
+          'Allow: /',
+          'Allow: /cart',
+          'Disallow: /admin',
+          'Disallow: /api/',
+          'Disallow: /checkout',
+          'Disallow: /order-confirmed',
+          '',
           `Sitemap: ${origin}/sitemap.xml`,
         ].join('\n')
         return new Response(body, {

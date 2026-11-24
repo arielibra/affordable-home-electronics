@@ -23,6 +23,7 @@ import {
   setCartQty,
 } from "../store.server";
 import { bindings } from "../bindings.server";
+import { feedId, feedIdPrefix } from "../feed-id";
 import { productReviews } from "../reviews.server";
 import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../email.server";
 import { SPAM_HOLD, scoreEnquiry } from "../spam";
@@ -123,6 +124,27 @@ export const mutateCart = createServerFn({ method: "POST" })
     if (data.mode === "add") await addToCart(data.cartId, data.slug, Math.max(1, data.qty));
     else await setCartQty(data.cartId, data.slug, data.qty);
     return { lines: await cartLines(data.cartId) };
+  });
+
+/** Google's checkout button opens /cart?add={id}, where {id} is the
+ *  product's Merchant Center id. Short slugs are their own id; long ones are
+ *  hashed (see feed-id.ts), so look those up by prefix and compare. */
+export const resolveFeedItem = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ id: z.string().min(1).max(120) }))
+  .handler(async ({ data }): Promise<{ slug: string | null }> => {
+    const DB = bindings().DB;
+    if (!DB) return { slug: null };
+    const exact = await DB.prepare("SELECT slug FROM products WHERE slug = ?1 AND active = 1")
+      .bind(data.id)
+      .first<{ slug: string }>();
+    if (exact) return { slug: exact.slug };
+    const prefix = feedIdPrefix(data.id);
+    if (!prefix) return { slug: null };
+    const rows = await DB.prepare("SELECT slug FROM products WHERE active = 1 AND substr(slug, 1, ?2) = ?1")
+      .bind(prefix, prefix.length)
+      .all<{ slug: string }>();
+    const hit = (rows.results ?? []).find((r) => feedId(r.slug) === data.id);
+    return { slug: hit?.slug ?? null };
   });
 
 const orderInput = z.object({

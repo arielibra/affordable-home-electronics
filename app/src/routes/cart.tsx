@@ -1,7 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useCart } from "../components/site/cart-context";
+import { resolveFeedItem } from "../lib/api/store.functions";
 import { SiteShell } from "../components/site/chrome";
 import { CheckoutCta } from "../components/site/cta";
 import { Mark } from "../components/site/mark";
@@ -9,7 +10,18 @@ import { Shell } from "../components/site/section";
 import { ORIGIN, SITE, money } from "../lib/site";
 import { FREE_SHIPPING_THRESHOLD_CENTS } from "../lib/shipping";
 
+type CartSearch = { add?: string; qty?: number };
+
 export const Route = createFileRoute("/cart")({
+  // ?add=<Merchant Center id>&qty=<n> is the checkout link Google's
+  // "Checkout" button opens: the product goes into the cart on arrival.
+  validateSearch: (s: Record<string, unknown>): CartSearch => {
+    const out: CartSearch = {};
+    if (typeof s.add === "string" && s.add.trim()) out.add = s.add.trim().slice(0, 120);
+    const q = Number(s.qty);
+    if (Number.isInteger(q) && q >= 1 && q <= 99) out.qty = q;
+    return out;
+  },
   head: () => ({
     meta: [{ title: "Your cart | Affordable Home Electronics" }, { name: "robots", content: "noindex" }],
     links: [{ rel: "canonical", href: `${ORIGIN}/cart` }],
@@ -81,9 +93,41 @@ function CartPage() {
   );
 }
 
+/** Adds the product named in ?add= once the cart is ready, then drops the
+ *  query so a reload or a shared link does not add it a second time. */
+function useAddFromLink() {
+  const { add: addParam, qty } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const { add, ready } = useCart();
+  const [adding, setAdding] = useState(Boolean(addParam));
+  const [missing, setMissing] = useState(false);
+  const done = useRef(false);
+
+  useEffect(() => {
+    if (!addParam || !ready || done.current) return;
+    done.current = true;
+    void (async () => {
+      try {
+        const r = await resolveFeedItem({ data: { id: addParam } });
+        if (r.slug) await add(r.slug, qty ?? 1);
+        else setMissing(true);
+      } catch {
+        setMissing(true);
+      } finally {
+        setAdding(false);
+        void navigate({ search: {}, replace: true });
+      }
+    })();
+  }, [addParam, qty, ready, add, navigate]);
+
+  return { adding, missing };
+}
+
 function CartBody() {
-  const { lines, subtotal, ready } = useCart();
+  const { lines, subtotal, ready: cartReady } = useCart();
   const { run: setQty, failed } = useSafeSetQty();
+  const { adding, missing } = useAddFromLink();
+  const ready = cartReady && !adding;
 
   return (
     <>
@@ -92,6 +136,11 @@ function CartBody() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px] lg:gap-8">
           <div>
+            {missing ? (
+              <p role="status" className="mb-3 rounded-lg border-l-[3px] border-signal bg-surface px-3.5 py-2.5 text-[15px] text-ink">
+                Sorry, that product is no longer in our catalog. Call us and we will find you the closest match.
+              </p>
+            ) : null}
             {!ready ? (
               <Skeleton />
             ) : lines.length === 0 ? (
