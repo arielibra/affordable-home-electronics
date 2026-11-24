@@ -1,5 +1,5 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { StructuredData } from "../../components/StructuredData";
 import { SiteShell } from "../../components/site/chrome";
@@ -15,6 +15,7 @@ import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
 import { parseBadges, parseHighlights, type Badge } from "../../lib/badges";
 import type { ResolvedOption } from "../../lib/options";
 import { STORE_ID, abs, breadcrumbs, structuredName, toJsonLd } from "../../lib/structured-data";
+import { gaItem, track } from "../../lib/analytics";
 
 /**
  * Product data for Google, as schema.org JSON-LD.
@@ -185,6 +186,13 @@ function ProductPage() {
   const [picked, setPicked] = useState<string[]>([]);
   const shots = images && images.length > 0 ? images : product?.image ? [product.image] : [];
   const [shown, setShown] = useState(0);
+  const viewed = product?.slug;
+  useEffect(() => {
+    if (!product) return;
+    track("view_item", { currency: "USD", value: product.price_cents / 100, items: [gaItem({ ...product, category: categoryName ?? product.category })] });
+    // Once per product opened, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewed]);
   if (!product) return null;
   const main = shots[shown] ?? product.image;
   const save = savings(product.price_cents, product.msrp_cents);

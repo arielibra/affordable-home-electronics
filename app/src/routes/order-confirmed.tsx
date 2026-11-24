@@ -8,6 +8,7 @@ import { HeardAbout } from "../components/site/heard-about";
 import { Shell } from "../components/site/section";
 import { getPaidOrder } from "../lib/api/store.functions";
 import { ORIGIN, SITE, money } from "../lib/site";
+import { trackPurchase } from "../lib/analytics";
 
 export const Route = createFileRoute("/order-confirmed")({
   validateSearch: (s: Record<string, unknown>): { session_id?: string } => ({
@@ -57,6 +58,13 @@ function Confirmed() {
         if (!alive) return;
         if (r.found && r.status === "paid") {
           setOrder(r as Order);
+          const o = r as Order;
+          trackPurchase({
+            reference: o.reference,
+            total_cents: o.amount_total_cents ?? o.subtotal_cents ?? 0,
+            shipping_cents: o.shipping_cents,
+            tax_cents: o.tax_cents,
+          });
           setState("ready");
           void refresh();
           return;

@@ -1,5 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Outlet, Link, createRootRouteWithContext, useRouter, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts } from "@tanstack/react-router";
+
+import { GA_BOOTSTRAP, GA_ID, untracked } from "../lib/analytics";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -153,6 +155,9 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
         {/* Who the shop is and how to search it, on every page (lib/structured-data.ts). */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SITE_JSON_LD }} />
+        {/* Google Analytics (lib/analytics.ts). Page views are sent by PageViews below. */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
+        <script dangerouslySetInnerHTML={{ __html: GA_BOOTSTRAP }} />
       </head>
       <body className="bg-ground text-ink antialiased">
         {children}
@@ -160,6 +165,33 @@ function RootShell({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+}
+
+/**
+ * One GA page view per page the visitor actually sees. The router swaps pages
+ * without reloading, so GA's automatic page view would only count the first.
+ * Keyed on path + query, so /search?q=a and /search?q=b are two views.
+ */
+function PageViews() {
+  const href = useRouterState({ select: (s) => s.location.href });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    if (untracked(pathname)) return;
+    // Let the new page set its <title> first.
+    const t = window.setTimeout(() => {
+      try {
+        (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "page_view", {
+          page_location: window.location.href,
+          page_path: pathname,
+          page_title: document.title,
+        });
+      } catch {
+        // never in the way
+      }
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [href, pathname]);
+  return null;
 }
 
 function RootComponent() {
@@ -180,6 +212,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PageViews />
       <Outlet />
     </QueryClientProvider>
   );

@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useCart } from "../components/site/cart-context";
+import { gaItem, track, trackPurchase } from "../lib/analytics";
 import { undeliverableReason } from "../lib/address";
 import { SiteShell } from "../components/site/chrome";
 import { Field, Notice, TextArea, TextInput } from "../components/site/form";
@@ -65,6 +66,18 @@ function CheckoutBody() {
   stateRef.current = { cartId };
 
   const shipping = subtotal >= cfg.freeShippingOverCents ? 0 : cfg.shippingFlatCents;
+
+  // GA: the basket as it stood when they reached checkout, once per visit to
+  // this page. Kept in a ref too, so the PayPal callback (registered once)
+  // reports what was actually bought rather than an empty first render.
+  const gaItemsRef = useRef<ReturnType<typeof gaItem>[]>([]);
+  gaItemsRef.current = lines.map((l) => gaItem(l, l.qty));
+  const begun = useRef(false);
+  useEffect(() => {
+    if (begun.current || !ready || lines.length === 0) return;
+    begun.current = true;
+    track("begin_checkout", { currency: "USD", value: subtotal / 100, items: gaItemsRef.current });
+  }, [ready, lines.length, subtotal]);
 
   function details() {
     const f = new FormData(formRef.current ?? undefined);
@@ -192,6 +205,12 @@ function CheckoutBody() {
             setError(String(r.error ?? "PayPal did not complete the payment."));
             return;
           }
+          trackPurchase({
+            reference: r.reference,
+            // Goods only: the capture reply does not carry shipping or tax.
+            total_cents: gaItemsRef.current.reduce((t, i) => t + Math.round(i.price * 100) * i.quantity, 0),
+            items: gaItemsRef.current,
+          });
           setDone({ reference: r.reference, paid: true, proof: data.orderID });
           await refresh().catch(() => undefined);
         } catch {

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import { getCart, mutateCart } from "../../lib/api/store.functions";
 import { ensureCartId } from "../../lib/cart-id";
+import { gaItem, track } from "../../lib/analytics";
 
 export type Line = { slug: string; name: string; image: string; brand: string; price_cents: number; qty: number; addon?: number };
 
@@ -57,6 +58,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (!cartId) setCartId(id);
       const r = await mutateCart({ data: { cartId: id, slug, qty, mode: "add" } });
       setLines(r.lines);
+      const line = r.lines.find((l: Line) => l.slug === slug);
+      if (line) {
+        track("add_to_cart", { currency: "USD", value: (line.price_cents * qty) / 100, items: [gaItem(line, qty)] });
+      }
     },
     [cartId],
   );

@@ -29,7 +29,9 @@ export function applySecurityHeaders(response: Response): Response {
     // and left the shop's visitor stats empty.
     // apis.google.com + www.google.com: the Google Customer Reviews survey
     // opt-in on the order confirmation screens (google-reviews-opt-in.tsx).
-    "script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://www.paypal.com https://www.paypalobjects.com https://www.sandbox.paypal.com https://static.cloudflareinsights.com; " +
+    // www.googletagmanager.com: the Google Analytics loader (lib/analytics.ts).
+    // Its hits go to *.google-analytics.com, already allowed by connect-src https:.
+    "script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://www.paypal.com https://www.paypalobjects.com https://www.sandbox.paypal.com https://static.cloudflareinsights.com https://www.googletagmanager.com; " +
       "frame-src https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://apis.google.com https://content.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
