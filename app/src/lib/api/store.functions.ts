@@ -16,6 +16,7 @@ import {
   listBrands,
   listCategories,
   productsIn,
+  productsBySlugs,
   productImages,
   relatedProducts,
   searchProducts,
@@ -55,6 +56,10 @@ export const getCategoryPage = createServerFn({ method: "GET" })
     const category = categories.find((c) => c.slug === data.slug) ?? null;
     return { categories, category, products, counts };
   });
+
+export const getProductsBySlugs = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ slugs: z.array(slug).max(40) }))
+  .handler(async ({ data }) => ({ products: await productsBySlugs(data.slugs) }));
 
 export const getProductPage = createServerFn({ method: "GET" })
   .inputValidator(z.object({ slug }))

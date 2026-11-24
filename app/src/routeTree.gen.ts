@@ -25,6 +25,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BrandsRouteImport } from './routes/brands'
+import { Route as AffordableSecurityCamerasRouteImport } from './routes/affordable-security-cameras'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -139,6 +140,12 @@ const BrandsRoute = BrandsRouteImport.update({
   path: '/brands',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AffordableSecurityCamerasRoute =
+  AffordableSecurityCamerasRouteImport.update({
+    id: '/affordable-security-cameras',
+    path: '/affordable-security-cameras',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -309,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/affordable-security-cameras': typeof AffordableSecurityCamerasRoute
   '/brands': typeof BrandsRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -360,6 +368,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/affordable-security-cameras': typeof AffordableSecurityCamerasRoute
   '/brands': typeof BrandsRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -412,6 +421,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/affordable-security-cameras': typeof AffordableSecurityCamerasRoute
   '/brands': typeof BrandsRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/affordable-security-cameras'
     | '/brands'
     | '/cart'
     | '/checkout'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/affordable-security-cameras'
     | '/brands'
     | '/cart'
     | '/checkout'
@@ -567,6 +579,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/affordable-security-cameras'
     | '/brands'
     | '/cart'
     | '/checkout'
@@ -619,6 +632,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
+  AffordableSecurityCamerasRoute: typeof AffordableSecurityCamerasRoute
   BrandsRoute: typeof BrandsRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -779,6 +793,13 @@ declare module '@tanstack/react-router' {
       path: '/brands'
       fullPath: '/brands'
       preLoaderRoute: typeof BrandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/affordable-security-cameras': {
+      id: '/affordable-security-cameras'
+      path: '/affordable-security-cameras'
+      fullPath: '/affordable-security-cameras'
+      preLoaderRoute: typeof AffordableSecurityCamerasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1019,6 +1040,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  AffordableSecurityCamerasRoute: AffordableSecurityCamerasRoute,
   BrandsRoute: BrandsRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,

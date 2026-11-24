@@ -20,6 +20,7 @@ const PAGES: [path: string, priority: string, freq: string][] = [
   ["/", "1.0", "daily"],
   ["/shop", "0.9", "daily"],
   ["/security-cameras", "0.8", "weekly"],
+  ["/affordable-security-cameras", "0.8", "weekly"],
   ["/installation", "0.7", "monthly"],
   ["/brands", "0.7", "weekly"],
   ["/about", "0.5", "monthly"],

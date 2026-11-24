@@ -14,11 +14,11 @@ export const Route = createFileRoute("/security-cameras")({
   loader: () => getCategoryPage({ data: { slug: "cameras", sort: "featured" } }),
   head: () => ({
     meta: [
-      { title: "Security Cameras & CCTV | Affordable Home Electronics" },
+      { title: "Affordable Surveillance Equipment & Security Cameras | AHE" },
       {
         name: "description",
         content:
-          "Dome, bullet and turret cameras, recorders and complete systems from an authorized dealer in Rego Park, Queens. Sold nationwide, with installation arranged across New York City.",
+          "Affordable surveillance equipment: security cameras, DVR and NVR recorders and complete systems, below list price from an authorized dealer in Queens. No monthly fees. Shipped nationwide, installed across NYC.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/security-cameras` }],
@@ -57,13 +57,20 @@ function SecurityCameras() {
       <section className="bg-ground">
         <Shell className="grid items-center gap-12 py-10 lg:grid-cols-[1fr_0.9fr] lg:gap-12 lg:py-14">
           <div>
-            <Eyebrow>Security and surveillance</Eyebrow>
+            <Eyebrow>The camera is easy. The system is the job.</Eyebrow>
             <h1 className="mt-2 max-w-[18ch] text-[40px] text-ink md:text-[56px]">
-              The camera is easy. The system is the job.
+              Affordable surveillance equipment and security cameras
             </h1>
             <p className="mt-3 max-w-[54ch] text-[17px] leading-relaxed text-muted">
               We have been specifying CCTV since {SITE.since}, for row houses, delis, warehouses and buildings with a super
               who needs it simple. Tell us the property and we will tell you what it takes.
+            </p>
+            <p className="mt-3 text-[15px] text-muted">
+              Working out a budget?{" "}
+              <Link to="/affordable-security-cameras" className="font-semibold text-ink underline underline-offset-4 hover:text-signal">
+                See what each price range gets you
+              </Link>
+              .
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <ShopCta category="cameras">Shop cameras</ShopCta>

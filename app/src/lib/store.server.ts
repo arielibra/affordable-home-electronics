@@ -96,6 +96,23 @@ export async function productsIn(category: string, sort = "featured"): Promise<P
   return r.results ?? [];
 }
 
+/**
+ * Several named products, in the order asked for. Used by editorial pages
+ * (the budget guide) so their prices are always the shop's live prices and a
+ * product that is hidden or deleted simply drops out instead of showing a
+ * stale number. One query, at most 40 slugs (D1 caps bound values at 100).
+ */
+export async function productsBySlugs(slugs: string[]): Promise<Product[]> {
+  const list = slugs.slice(0, 40);
+  if (list.length === 0) return [];
+  const r = await db()
+    .prepare(`SELECT ${PUBLIC} FROM products WHERE active = 1 AND slug IN (${list.map((_, i) => `?${i + 1}`).join(",")})`)
+    .bind(...list)
+    .all<Product>();
+  const by = new Map((r.results ?? []).map((p) => [p.slug, p]));
+  return list.map((s) => by.get(s)).filter((p): p is Product => Boolean(p));
+}
+
 export async function allProducts(sort = "featured"): Promise<Product[]> {
   const order =
     sort === "price-asc" ? "price_cents ASC" : sort === "price-desc" ? "price_cents DESC" : sort === "name" ? "name ASC" : "featured DESC, category, price_cents ASC";

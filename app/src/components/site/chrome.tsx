@@ -207,6 +207,11 @@ function Footer() {
             </Link>
           </li>
           <li>
+            <Link to="/affordable-security-cameras" className="ahe-onblue">
+              Camera buying guide
+            </Link>
+          </li>
+          <li>
             <Link to="/brands" className="ahe-onblue">
               Brands we carry
             </Link>
