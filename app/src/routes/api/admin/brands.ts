@@ -9,6 +9,7 @@ type Brand = {
   name: string;
   blurb: string;
   logo: string;
+  ship_from_zip: string;
   position: number;
   active: number;
   products: number;
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/api/admin/brands")({
         if (!DB) return Response.json({ ok: false, error: "No database." }, { status: 503 });
 
         const res = await DB.prepare(
-          `SELECT b.slug, b.name, b.blurb, b.logo, b.position, b.active,
+          `SELECT b.slug, b.name, b.blurb, b.logo, b.ship_from_zip, b.position, b.active,
                   (SELECT COUNT(*) FROM products p WHERE p.brand_slug = b.slug) AS products
              FROM brands b
             ORDER BY b.position, b.name`,
@@ -58,14 +59,19 @@ export const Route = createFileRoute("/api/admin/brands")({
 
         const blurb = str(body.blurb, 400);
         const logo = str(body.logo, 300);
+        // US ZIP (5 digits, or ZIP+4). Blank means "ships from the shop".
+        const shipFrom = str(body.ship_from_zip, 10);
+        if (shipFrom && !/^\d{5}(-\d{4})?$/.test(shipFrom)) {
+          return Response.json({ ok: false, error: "Ships-from ZIP must be a 5-digit US ZIP code." }, { status: 400 });
+        }
         const position = Number.isFinite(Number(body.position)) ? Math.max(0, Math.min(999, Math.round(Number(body.position)))) : 100;
         const active = body.active === false ? 0 : 1;
 
         if (existing) {
           const found = await DB.prepare("SELECT slug FROM brands WHERE slug = ?1").bind(existing).first();
           if (!found) return Response.json({ ok: false, error: "That brand no longer exists." }, { status: 404 });
-          await DB.prepare("UPDATE brands SET name=?2, blurb=?3, logo=?4, position=?5, active=?6 WHERE slug=?1")
-            .bind(slug, name, blurb, logo, position, active)
+          await DB.prepare("UPDATE brands SET name=?2, blurb=?3, logo=?4, position=?5, active=?6, ship_from_zip=?7 WHERE slug=?1")
+            .bind(slug, name, blurb, logo, position, active, shipFrom)
             .run();
           // Keep the denormalised copy on products in step, so the storefront
           // and the search box show the new name straight away.
@@ -75,15 +81,15 @@ export const Route = createFileRoute("/api/admin/brands")({
           const clash = await DB.prepare("SELECT slug FROM brands WHERE slug = ?1").bind(slug).first();
           if (clash) return Response.json({ ok: false, error: `${name} is already on the list.` }, { status: 409 });
           await DB.prepare(
-            "INSERT INTO brands (slug,name,blurb,logo,position,active) VALUES (?1,?2,?3,?4,?5,?6)",
+            "INSERT INTO brands (slug,name,blurb,logo,position,active,ship_from_zip) VALUES (?1,?2,?3,?4,?5,?6,?7)",
           )
-            .bind(slug, name, blurb, logo, position, active)
+            .bind(slug, name, blurb, logo, position, active, shipFrom)
             .run();
           await logAdmin("brand_create", slug, name);
         }
 
         const row = await DB.prepare(
-          `SELECT b.slug,b.name,b.blurb,b.logo,b.position,b.active,
+          `SELECT b.slug,b.name,b.blurb,b.logo,b.ship_from_zip,b.position,b.active,
                   (SELECT COUNT(*) FROM products p WHERE p.brand_slug = b.slug) AS products
              FROM brands b WHERE b.slug = ?1`,
         )

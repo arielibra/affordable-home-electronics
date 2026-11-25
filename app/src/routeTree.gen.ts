@@ -36,6 +36,7 @@ import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as MediaKeyRouteImport } from './routes/media/$key'
 import { Route as BrandsBrandRouteImport } from './routes/brands_.$brand'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
+import { Route as ApiShippingQuoteRouteImport } from './routes/api/shipping-quote'
 import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
 import { Route as ApiPaypalWebhookRouteImport } from './routes/api/paypal-webhook'
 import { Route as ApiOrderLookupRouteImport } from './routes/api/order-lookup'
@@ -196,6 +197,11 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   path: '/api/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiShippingQuoteRoute = ApiShippingQuoteRouteImport.update({
+  id: '/api/shipping-quote',
+  path: '/api/shipping-quote',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiReviewsRoute = ApiReviewsRouteImport.update({
   id: '/api/reviews',
   path: '/api/reviews',
@@ -337,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/reviews': typeof ApiReviewsRoute
+  '/api/shipping-quote': typeof ApiShippingQuoteRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/brands/$brand': typeof BrandsBrandRoute
   '/media/$key': typeof MediaKeyRoute
@@ -389,6 +396,7 @@ export interface FileRoutesByTo {
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/reviews': typeof ApiReviewsRoute
+  '/api/shipping-quote': typeof ApiShippingQuoteRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/brands/$brand': typeof BrandsBrandRoute
   '/media/$key': typeof MediaKeyRoute
@@ -442,6 +450,7 @@ export interface FileRoutesById {
   '/api/order-lookup': typeof ApiOrderLookupRoute
   '/api/paypal-webhook': typeof ApiPaypalWebhookRoute
   '/api/reviews': typeof ApiReviewsRoute
+  '/api/shipping-quote': typeof ApiShippingQuoteRoute
   '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/brands_/$brand': typeof BrandsBrandRoute
   '/media/$key': typeof MediaKeyRoute
@@ -496,6 +505,7 @@ export interface FileRouteTypes {
     | '/api/order-lookup'
     | '/api/paypal-webhook'
     | '/api/reviews'
+    | '/api/shipping-quote'
     | '/api/stripe-webhook'
     | '/brands/$brand'
     | '/media/$key'
@@ -548,6 +558,7 @@ export interface FileRouteTypes {
     | '/api/order-lookup'
     | '/api/paypal-webhook'
     | '/api/reviews'
+    | '/api/shipping-quote'
     | '/api/stripe-webhook'
     | '/brands/$brand'
     | '/media/$key'
@@ -600,6 +611,7 @@ export interface FileRouteTypes {
     | '/api/order-lookup'
     | '/api/paypal-webhook'
     | '/api/reviews'
+    | '/api/shipping-quote'
     | '/api/stripe-webhook'
     | '/brands_/$brand'
     | '/media/$key'
@@ -653,6 +665,7 @@ export interface RootRouteChildren {
   ApiOrderLookupRoute: typeof ApiOrderLookupRoute
   ApiPaypalWebhookRoute: typeof ApiPaypalWebhookRoute
   ApiReviewsRoute: typeof ApiReviewsRoute
+  ApiShippingQuoteRoute: typeof ApiShippingQuoteRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   BrandsBrandRoute: typeof BrandsBrandRoute
   MediaKeyRoute: typeof MediaKeyRoute
@@ -872,6 +885,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/shipping-quote': {
+      id: '/api/shipping-quote'
+      path: '/api/shipping-quote'
+      fullPath: '/api/shipping-quote'
+      preLoaderRoute: typeof ApiShippingQuoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/reviews': {
       id: '/api/reviews'
       path: '/api/reviews'
@@ -1061,6 +1081,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOrderLookupRoute: ApiOrderLookupRoute,
   ApiPaypalWebhookRoute: ApiPaypalWebhookRoute,
   ApiReviewsRoute: ApiReviewsRoute,
+  ApiShippingQuoteRoute: ApiShippingQuoteRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   BrandsBrandRoute: BrandsBrandRoute,
   MediaKeyRoute: MediaKeyRoute,

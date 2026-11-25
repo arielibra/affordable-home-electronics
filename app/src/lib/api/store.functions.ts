@@ -30,6 +30,7 @@ import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
 import { HEARD_ABOUT_IDS } from "../heard-about";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
+import { liveRatesEnabled } from "../rates.server";
 
 const id = z.string().min(8).max(64);
 const slug = z.string().min(1).max(120);
@@ -279,6 +280,7 @@ export const getCheckoutConfig = createServerFn({ method: "GET" }).handler(async
   paypalLive: paypalLive(),
   shippingFlatCents: SHIPPING_FLAT_CENTS,
   freeShippingOverCents: FREE_SHIPPING_THRESHOLD_CENTS,
+  liveRates: liveRatesEnabled(),
 }));
 
 /** Looked up by the Stripe session id, which only the buyer's redirect carries.

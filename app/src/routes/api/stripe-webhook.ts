@@ -103,10 +103,19 @@ export const Route = createFileRoute("/api/stripe-webhook")({
           city: addr.city ?? "",
           state: addr.state ?? "",
         });
-        const status = undeliverable ? "on_hold" : "paid";
+        // Shipping was priced from the ZIP typed on our checkout page before
+        // Stripe opened. If the address given on Stripe's page is somewhere
+        // else, the carrier may bill more than the customer paid, so check
+        // before buying the label.
+        const quotedZip = (s.metadata?.ship_zip ?? "").slice(0, 5);
+        const gotZip = (addr.postal_code ?? "").slice(0, 5);
+        const zipMoved = Boolean(quotedZip && gotZip && quotedZip !== gotZip);
+        const status = undeliverable || zipMoved ? "on_hold" : "paid";
         const hold = undeliverable
           ? "Customer gave an address UPS cannot deliver to. Call them for a street address before shipping."
-          : "";
+          : zipMoved
+            ? `Shipping was quoted to ZIP ${quotedZip} but the customer entered ZIP ${gotZip} on the payment page. Check the shipping cost before buying the label.`
+            : "";
 
         await DB.prepare(
           `UPDATE orders SET name=?2, email=?3, phone=?4, address1=?5, address2=?6, city=?7, state=?8, zip=?9,

@@ -24,7 +24,7 @@ function Shipping() {
       path="/shipping"
       eyebrow="Store policy"
       title="Shipping."
-      lead="We ship from the shop in Rego Park, Queens, to anywhere in the United States and Canada."
+      lead="We ship to anywhere in the United States and Canada, from the shop in Queens or straight from the supplier's warehouse."
     >
       <Clause title="When your order leaves us">
         <p>
@@ -40,24 +40,25 @@ function Shipping() {
       <Clause title="What delivery costs">
         <ul>
           <li>
-            <b>$14.95</b> flat to anywhere in the contiguous United States.
+            <b>Free</b> on orders over $199 that weigh <b>5 lb or less</b>, packed.
           </li>
           <li>
-            <b>Free</b> on orders over $199.
+            Every other order pays the shipping cost <b>shown at checkout before you pay</b>, worked out from the weight
+            and box size of what you ordered and where it is going.
           </li>
         </ul>
         <p>
-          Oversized or overweight items — larger recorders, monitors and some enclosures — may carry additional
-          shipping. Where that applies we tell you before you pay. Rush delivery and special handling are available
-          and charged at cost; call the shop to arrange it.
+          Recorders, PTZ cameras, monitors and other bulky items are usually over 5 lb, so they ship at the carrier's
+          rate even on larger orders. Rush delivery and special handling are available and charged at cost; call the
+          shop to arrange it.
         </p>
         <p>Shipping charges are not refundable.</p>
       </Clause>
 
       <Clause title="How it travels">
         <p>
-          We ship by UPS, with tracking. Standard delivery normally takes three to seven business days once the parcel
-          leaves us.
+          We ship by UPS, FedEx or USPS, with tracking. Standard delivery normally takes three to seven business days
+          once the parcel leaves the warehouse.
         </p>
       </Clause>
 

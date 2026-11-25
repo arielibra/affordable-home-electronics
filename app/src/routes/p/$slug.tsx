@@ -8,7 +8,7 @@ import { AddToCartButton, ProductCard, isAvailable, stockLabel } from "../../com
 import { ProductReviews, Stars, type ReviewData } from "../../components/site/reviews";
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
-import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "../../lib/shipping";
+import { FREE_SHIPPING_MAX_LB, FREE_SHIPPING_THRESHOLD_CENTS } from "../../lib/shipping";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
 import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
 import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
@@ -59,7 +59,7 @@ function featureProperties(p: { badges?: string | null; highlights?: string | nu
 }
 
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string; specs?: string | null; highlights?: string | null; badges?: string | null },
+  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string; specs?: string | null; highlights?: string | null; badges?: string | null; ship_weight_lb?: number | null },
   categoryName: string,
   shots: string[],
   available: boolean,
@@ -112,22 +112,23 @@ function productJsonLd(
       availability: available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@id": STORE_ID },
-      // Matches the /shipping page: UPS, $14.95 flat in the US or free over
-      // $199, ships within two business days, three to seven in transit.
-      shippingDetails: {
-        "@type": "OfferShippingDetails",
-        shippingRate: {
-          "@type": "MonetaryAmount",
-          value: (p.price_cents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS / 100).toFixed(2),
-          currency: "USD",
-        },
-        shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 2, unitCode: "DAY" },
-          transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 7, unitCode: "DAY" },
-        },
-      },
+      // Matches the /shipping page. Only stated when it is known to be free
+      // ($199 or more and 5 lb or less packed); everything else is priced
+      // live at checkout, so no fixed figure is claimed for it.
+      ...(p.price_cents >= FREE_SHIPPING_THRESHOLD_CENTS && p.ship_weight_lb != null && p.ship_weight_lb <= FREE_SHIPPING_MAX_LB
+        ? {
+            shippingDetails: {
+              "@type": "OfferShippingDetails",
+              shippingRate: { "@type": "MonetaryAmount", value: "0.00", currency: "USD" },
+              shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
+              deliveryTime: {
+                "@type": "ShippingDeliveryTime",
+                handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 2, unitCode: "DAY" },
+                transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 7, unitCode: "DAY" },
+              },
+            },
+          }
+        : {}),
       // Matches the /returns page: ten days from delivery, returned by mail,
       // 15% restocking fee on every return.
       hasMerchantReturnPolicy: {

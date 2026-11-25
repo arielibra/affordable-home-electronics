@@ -20,6 +20,8 @@ export type Product = {
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
+  /** Packed shipping weight; decides whether a $199+ item ships free. */
+  ship_weight_lb?: number | null;
   /** Barcode and part number, printed on the box. Single-product query only. */
   gtin?: string;
   mpn?: string;
@@ -191,7 +193,7 @@ export async function addonProducts(slugs: string[]): Promise<Map<string, { slug
 
 export async function getProduct(slug: string): Promise<Product | null> {
   return await db()
-    .prepare(`SELECT ${PUBLIC}, blurb, specs, highlights, badges, options, meta_title, meta_description, meta_keywords, gtin, mpn FROM products WHERE slug = ?1 AND active = 1`)
+    .prepare(`SELECT ${PUBLIC}, blurb, specs, highlights, badges, options, meta_title, meta_description, meta_keywords, gtin, mpn, ship_weight_lb FROM products WHERE slug = ?1 AND active = 1`)
     .bind(slug)
     .first<Product>();
 }

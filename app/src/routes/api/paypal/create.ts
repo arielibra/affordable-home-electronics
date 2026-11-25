@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { undeliverableReason } from "../../../lib/address";
+import { shippingQuote } from "../../../lib/rates.server";
 import { bindings } from "../../../lib/bindings.server";
 import { parkPaypalOrder, type PaypalAddress } from "../../../lib/paypal-order.server";
 import { paypalEnabled, paypalFetch, usd } from "../../../lib/paypal.server";
 import { cartLines, unavailableInCart } from "../../../lib/store.server";
-import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, calculateTax } from "../../../lib/stripe.server";
+import { calculateTax } from "../../../lib/stripe.server";
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -72,7 +73,7 @@ export const Route = createFileRoute("/api/paypal/create")({
         }
 
         const subtotal = lines.reduce((s, l) => s + l.price_cents * l.qty, 0);
-        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS;
+        const shipping = (await shippingQuote(lines, { zip: who.zip, state: who.state, city: who.city, country: "US" })).cents;
 
         // PayPal computes no tax of its own, so ask the same engine Stripe
         // Checkout uses and keep both routes reporting into one place.

@@ -65,7 +65,39 @@ function CheckoutBody() {
   const stateRef = useRef({ cartId });
   stateRef.current = { cartId };
 
-  const shipping = subtotal >= cfg.freeShippingOverCents ? 0 : cfg.shippingFlatCents;
+  // With live carrier rates on, shipping is quoted from the ZIP code (and the
+  // packed weight and box of each item); otherwise the old flat rule applies.
+  const [shipZip, setShipZip] = useState("");
+  const [shipCountry, setShipCountry] = useState<"US" | "CA">("US");
+  const [quote, setQuote] = useState<{ cents: number; label: string; source: string } | null>(null);
+  const [quoting, setQuoting] = useState(false);
+  const zipReady =
+    shipCountry === "CA" ? /^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/.test(shipZip.trim()) : /^\d{5}(-\d{4})?$/.test(shipZip.trim());
+  const linesKey = lines.map((l) => `${l.slug}:${l.qty}`).join(",");
+  useEffect(() => {
+    // The server prices every order (weight decides whether $199+ ships
+    // free), so ask it even without live rates; with them, wait for a ZIP.
+    if (!cartId || lines.length === 0 || (cfg.liveRates && !zipReady)) {
+      setQuote(null);
+      return;
+    }
+    let live = true;
+    setQuoting(true);
+    const t = setTimeout(() => {
+      json("/api/shipping-quote", { cartId, zip: zipReady ? shipZip.trim() : "", country: shipCountry })
+        .then((r) => {
+          if (live && r.ok) setQuote(r.quote as { cents: number; label: string; source: string });
+        })
+        .catch(() => undefined)
+        .finally(() => live && setQuoting(false));
+    }, 350);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [cfg.liveRates, zipReady, zipReady ? shipZip : "", shipCountry, cartId, linesKey, lines.length]);
+  const flatShipping = subtotal >= cfg.freeShippingOverCents ? 0 : cfg.shippingFlatCents;
+  const shipping: number | null = quote ? quote.cents : cfg.liveRates ? null : flatShipping;
 
   // GA: the basket as it stood when they reached checkout, once per visit to
   // this page. Kept in a ref too, so the PayPal callback (registered once)
@@ -100,7 +132,16 @@ function CheckoutBody() {
     setPending(true);
     setError("");
     try {
-      const r = await json("/api/checkout", { cartId, notes: String(new FormData(formRef.current ?? undefined).get("notes") ?? "") });
+      if (cfg.liveRates && !quote) {
+        setError("Enter the ZIP code it's shipping to, so we can add the shipping cost.");
+        return;
+      }
+      const r = await json("/api/checkout", {
+        cartId,
+        notes: String(new FormData(formRef.current ?? undefined).get("notes") ?? ""),
+        zip: shipZip.trim(),
+        country: shipCountry,
+      });
       if (!r.ok || typeof r.url !== "string") {
         setError(String(r.error ?? "Card payment could not be started. Please try again."));
         return;
@@ -375,7 +416,15 @@ function CheckoutBody() {
                     <TextInput id="state" name="state" required minLength={2} maxLength={40} autoComplete="address-level1" />
                   </Field>
                   <Field label="ZIP code" name="zip">
-                    <TextInput id="zip" name="zip" required minLength={3} maxLength={16} autoComplete="postal-code" />
+                    <TextInput
+                      id="zip"
+                      name="zip"
+                      required
+                      minLength={3}
+                      maxLength={16}
+                      autoComplete="postal-code"
+                      onChange={(e) => setShipZip(e.currentTarget.value)}
+                    />
                   </Field>
                 </div>
               </fieldset>
@@ -409,10 +458,34 @@ function CheckoutBody() {
                     You'll enter your card and shipping address on Stripe's secure page. Your card details never touch
                     this website.
                   </p>
+                  {cfg.liveRates ? (
+                    <div className="flex max-w-[380px] flex-wrap items-end gap-3">
+                      <Field label="Shipping to ZIP code" name="ship_zip" hint="Shipping is priced by the carrier from this.">
+                        <TextInput
+                          id="ship_zip"
+                          name="ship_zip"
+                          value={shipZip}
+                          onChange={(e) => setShipZip(e.currentTarget.value)}
+                          maxLength={10}
+                          autoComplete="postal-code"
+                          inputMode={shipCountry === "US" ? "numeric" : "text"}
+                        />
+                      </Field>
+                      <select
+                        aria-label="Country"
+                        value={shipCountry}
+                        onChange={(e) => setShipCountry(e.currentTarget.value === "CA" ? "CA" : "US")}
+                        className="h-12 rounded-[10px] border border-line bg-surface px-3 text-[15px] text-ink"
+                      >
+                        <option value="US">United States</option>
+                        <option value="CA">Canada</option>
+                      </select>
+                    </div>
+                  ) : null}
                   <button
                     type="button"
                     onClick={payByCard}
-                    disabled={pending || lines.length === 0}
+                    disabled={pending || lines.length === 0 || (cfg.liveRates && (!quote || quoting))}
                     className="inline-flex h-12 w-full max-w-[380px] items-center justify-center rounded-[10px] bg-ink px-8 text-[15px] font-semibold text-surface transition-transform duration-150 active:scale-[0.98] disabled:bg-line disabled:text-muted"
                   >
                     {pending ? "Opening secure checkout…" : "Pay by card"}
@@ -482,7 +555,15 @@ function CheckoutBody() {
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Shipping</dt>
-              <dd className="tabular-nums text-ink">{shipping === 0 ? "Free" : money(shipping)}</dd>
+              <dd className="tabular-nums text-ink">
+                {shipping === null
+                  ? quoting
+                    ? "Getting rates…"
+                    : "Enter ZIP code"
+                  : shipping === 0
+                    ? "Free"
+                    : money(shipping)}
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Sales tax</dt>
@@ -491,9 +572,13 @@ function CheckoutBody() {
           </dl>
           <div className="mt-3 flex items-baseline justify-between border-t border-[#dbe7f3] pt-3">
             <span className="text-[17px] font-bold text-ink">Total before tax</span>
-            <span className="ahe-price text-[28px] text-ink">{money(subtotal + shipping)}</span>
+            <span className="ahe-price text-[28px] text-ink">{money(subtotal + (shipping ?? 0))}</span>
           </div>
-          <p className="mt-2 text-[13px] text-muted">Free shipping over {money(cfg.freeShippingOverCents)}.</p>
+          <p className="mt-2 text-[13px] text-muted">
+            {cfg.liveRates
+              ? `Free shipping over ${money(cfg.freeShippingOverCents)}, on orders up to 5 lb. Heavier orders ship at the carrier's rate.`
+              : `Free shipping over ${money(cfg.freeShippingOverCents)}.`}
+          </p>
           <div className="mt-4 border-t border-[#dbe7f3] pt-4">
             <PayMarks label={null} />
           </div>

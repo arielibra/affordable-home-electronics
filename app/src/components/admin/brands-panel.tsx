@@ -8,6 +8,7 @@ export type AdminBrand = {
   name: string;
   blurb: string;
   logo: string;
+  ship_from_zip?: string;
   position: number;
   active: number;
   products: number;
@@ -27,6 +28,7 @@ function Editor({
   const [name, setName] = useState(brand?.name ?? "");
   const [blurb, setBlurb] = useState(brand?.blurb ?? "");
   const [logo, setLogo] = useState(brand?.logo ?? "");
+  const [shipFrom, setShipFrom] = useState(brand?.ship_from_zip ?? "");
   const [position, setPosition] = useState(String(brand?.position ?? 100));
   const [active, setActive] = useState(brand ? brand.active === 1 : true);
   const [saving, setSaving] = useState(false);
@@ -44,6 +46,7 @@ function Editor({
           name,
           blurb,
           logo,
+          ship_from_zip: shipFrom.trim(),
           position: Number(position) || 100,
           active,
         }),
@@ -96,6 +99,21 @@ function Editor({
       <div className="mt-5">
         <ImageField value={logo} onChange={setLogo} label="Logo" />
       </div>
+
+      <label className="mt-5 block">
+        <span className="text-[13px] font-medium text-muted">Ships from ZIP code</span>
+        <input
+          value={shipFrom}
+          inputMode="numeric"
+          placeholder="Blank = ships from the shop (11374)"
+          onChange={(e) => setShipFrom(e.currentTarget.value)}
+          className={`mt-1.5 ${input} max-w-[240px]`}
+        />
+        <span className="mt-1 block text-[12px] leading-[1.5] text-muted">
+          The supplier warehouse this brand drop-ships from on your UPS, FedEx and USPS accounts. Live shipping quotes
+          start here, so the customer pays what the carrier will charge you.
+        </span>
+      </label>
 
       <label className="mt-5 flex items-center gap-2 text-sm text-ink">
         <input type="checkbox" checked={active} onChange={(e) => setActive(e.currentTarget.checked)} className="h-4 w-4" />

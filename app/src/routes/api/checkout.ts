@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../../lib/bindings.server";
 import { cartLines, unavailableInCart } from "../../lib/store.server";
-import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, stripePost } from "../../lib/stripe.server";
+import { stripePost } from "../../lib/stripe.server";
+import { liveRatesEnabled, shippingQuote } from "../../lib/rates.server";
 
 type Session = { id: string; url: string };
 
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/api/checkout")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        let payload: { cartId?: unknown; notes?: unknown };
+        let payload: { cartId?: unknown; notes?: unknown; zip?: unknown; country?: unknown };
         try {
           payload = (await request.json()) as typeof payload;
         } catch {
@@ -19,6 +20,11 @@ export const Route = createFileRoute("/api/checkout")({
 
         const cartId = typeof payload.cartId === "string" ? payload.cartId : "";
         const notes = typeof payload.notes === "string" ? payload.notes.slice(0, 900) : "";
+        // Where it's going, so the shipping price can be quoted before Stripe's
+        // page opens. Stripe then collects the full address; the webhook holds
+        // the order if it lands in a different ZIP than the one quoted.
+        const shipZip = typeof payload.zip === "string" ? payload.zip.trim().slice(0, 10) : "";
+        const shipCountry = payload.country === "CA" ? "CA" : "US";
         if (cartId.length < 8 || cartId.length > 64) {
           return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
         }
@@ -47,19 +53,24 @@ export const Route = createFileRoute("/api/checkout")({
 
         const origin = new URL(request.url).origin;
         const subtotal = lines.reduce((s, l) => s + l.price_cents * l.qty, 0);
-        const freeShipping = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS;
+        const quote = await shippingQuote(lines, { zip: shipZip, country: shipCountry });
+        if (liveRatesEnabled() && !shipZip) {
+          return Response.json({ ok: false, error: "Enter the ZIP code it's shipping to." }, { status: 400 });
+        }
 
         const fields: Record<string, string> = {
           mode: "payment",
           "automatic_tax[enabled]": "true",
           "phone_number_collection[enabled]": "true",
           billing_address_collection: "auto",
-          "shipping_address_collection[allowed_countries][0]": "US",
-          "shipping_address_collection[allowed_countries][1]": "CA",
+          "shipping_address_collection[allowed_countries][0]": quote.source === "live" ? shipCountry : "US",
+          ...(quote.source === "live" ? {} : { "shipping_address_collection[allowed_countries][1]": "CA" }),
           success_url: `${origin}/order-confirmed?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${origin}/cart`,
           "metadata[cart_id]": cartId,
           "metadata[notes]": notes,
+          "metadata[ship_zip]": quote.source === "live" ? shipZip : "",
+          "metadata[ship_source]": quote.source,
         };
 
         lines.forEach((l, i) => {
@@ -85,8 +96,7 @@ export const Route = createFileRoute("/api/checkout")({
           fields[`${p}[delivery_estimate][maximum][unit]`] = "business_day";
           fields[`${p}[delivery_estimate][maximum][value]`] = String(maxDays);
         };
-        if (freeShipping) ship(0, 0, "Free shipping", 3, 7);
-        else ship(0, SHIPPING_FLAT_CENTS, "Standard shipping", 3, 7);
+        ship(0, quote.cents, quote.label, quote.minDays, quote.maxDays);
 
         let session: Session;
         try {
