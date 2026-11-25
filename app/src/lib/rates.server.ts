@@ -48,6 +48,22 @@ const OWN_BOX_LB = 10;
 const OWN_BOX_IN = 24;
 /** Room for padding when several boxes share one carton. */
 const PACK_SLACK = 1.15;
+/**
+ * A product's recorded L x W x H and weight are the item in its own retail
+ * packaging (owner, 2026-11-25), not the box it ships in. Every shipment goes
+ * out in an outer shipping box: this much bigger on each side, plus the weight
+ * of the box and its padding.
+ */
+const OUTER_PAD_IN = 2;
+const OUTER_BOX_LB = 0.4;
+const OUTER_BOX_LB_PER_CUIN = 0.0005;
+
+/** Wraps a packed load in its outer shipping box. */
+function outerBox(origin: string, weight: number, dims: number[]): Parcel {
+  const [l, w, h] = dims.map((d) => Math.ceil(d + OUTER_PAD_IN)).sort((a, b) => b - a);
+  const lb = weight + OUTER_BOX_LB + l * w * h * OUTER_BOX_LB_PER_CUIN;
+  return { origin, weight: round1(lb), length: l, width: w, height: h };
+}
 
 type Unit = { weight: number; dims: [number, number, number] };
 
@@ -63,8 +79,7 @@ function packCartons(origin: string, units: Unit[]): Parcel[] {
   for (const u of units) {
     const longest = Math.max(...u.dims);
     if (u.weight >= OWN_BOX_LB || longest >= OWN_BOX_IN) {
-      const [l, w, h] = [...u.dims].sort((a, b) => b - a);
-      out.push({ origin, weight: round1(u.weight), length: l, width: w, height: h });
+      out.push(outerBox(origin, u.weight, u.dims));
     } else small.push(u);
   }
   // Heaviest first, so cartons fill evenly.
@@ -74,8 +89,7 @@ function packCartons(origin: string, units: Unit[]): Parcel[] {
   const close = () => {
     if (!carton.length) return;
     if (carton.length === 1) {
-      const [l, w, h] = [...carton[0].dims].sort((a, b) => b - a);
-      out.push({ origin, weight: round1(carton[0].weight), length: l, width: w, height: h });
+      out.push(outerBox(origin, carton[0].weight, carton[0].dims));
     } else {
       const vol = carton.reduce((v, u) => v + u.dims[0] * u.dims[1] * u.dims[2], 0) * PACK_SLACK;
       const sorted = carton.map((u) => [...u.dims].sort((a, b) => b - a));
@@ -85,8 +99,7 @@ function packCartons(origin: string, units: Unit[]): Parcel[] {
       const side = Math.sqrt(vol / length);
       const width = Math.ceil(Math.max(minW, side));
       const height = Math.ceil(Math.max(minH, vol / length / width));
-      const dims = [Math.ceil(length), width, height].sort((a, b) => b - a);
-      out.push({ origin, weight: round1(lb), length: dims[0], width: dims[1], height: dims[2] });
+      out.push(outerBox(origin, lb, [length, width, height]));
     }
     carton = [];
     lb = 0;
