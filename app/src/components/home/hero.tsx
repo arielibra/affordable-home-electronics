@@ -3,14 +3,15 @@ import { Link } from "@tanstack/react-router";
 import { SITE } from "../../lib/site";
 import { HalloweenSky } from "../site/halloween";
 import { HarvestGarland } from "../site/thanksgiving";
-import { ChristmasLights } from "../site/christmas";
+import { ChristmasLights, HangingOrnaments } from "../site/christmas";
 import { ShopCta } from "../site/cta";
 import { Shell } from "../site/section";
 import { HeroSlides } from "./hero-slides";
 
 export function Hero() {
   return (
-    <section className="ahe-hero border-b border-line bg-ground">
+    <section className="ahe-hero relative border-b border-line bg-ground">
+      <HangingOrnaments />
       <Shell className="pt-10 pb-8 lg:pt-12 lg:pb-10">
         <div className="ahe-rise grid items-end gap-6 lg:grid-cols-[1fr_auto] lg:gap-10">
           <div>
