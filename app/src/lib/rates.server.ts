@@ -12,9 +12,12 @@
  *     whole order weighs FREE_SHIPPING_MAX_LB or less, packed.
  *   - Anything else pays the live rate for the whole order.
  *
- * Every item is quoted as its own parcel from its brand's warehouse ZIP (one
- * label per drop-shipped box, which is how the suppliers send them), and the
- * customer pays the cheapest carrier rate for each.
+ * Items are packed the way a warehouse packs them: everything from the same
+ * brand's warehouse goes into shared cartons (up to CARTON_MAX_LB each), and
+ * only heavy or oversized items (a recorder, a cable box) travel in a box of
+ * their own. Each carton is quoted from that warehouse's ZIP and the customer
+ * pays the cheapest carrier rate for each. (Until 2026-11-25 every unit was
+ * quoted as its own box, which made 14 headphones cost $217 to ship.)
  *
  * Never throws. With no Shippo key, or if Shippo fails, the old flat rule
  * applies, so checkout keeps working exactly as before.
@@ -38,6 +41,68 @@ export type ShippingQuote = {
 const DEFAULT_PARCEL = { weight: 3, length: 12, width: 10, height: 6 };
 /** No cart in this shop needs more; past it, fall back rather than run up calls. */
 const MAX_LOOKUPS = 12;
+/** A shared carton is closed at this weight and a new one started. */
+const CARTON_MAX_LB = 40;
+/** Anything this heavy, or this long on its longest side, ships in its own box. */
+const OWN_BOX_LB = 10;
+const OWN_BOX_IN = 24;
+/** Room for padding when several boxes share one carton. */
+const PACK_SLACK = 1.15;
+
+type Unit = { weight: number; dims: [number, number, number] };
+
+/**
+ * Packs one warehouse's units into cartons. Heavy or long items keep their own
+ * box; the rest are combined, filling cartons up to CARTON_MAX_LB. A combined
+ * carton is as long as its longest item and squared off around the total
+ * volume (plus padding), so the carrier's dimensional weight stays realistic.
+ */
+function packCartons(origin: string, units: Unit[]): Parcel[] {
+  const out: Parcel[] = [];
+  const small: Unit[] = [];
+  for (const u of units) {
+    const longest = Math.max(...u.dims);
+    if (u.weight >= OWN_BOX_LB || longest >= OWN_BOX_IN) {
+      const [l, w, h] = [...u.dims].sort((a, b) => b - a);
+      out.push({ origin, weight: round1(u.weight), length: l, width: w, height: h });
+    } else small.push(u);
+  }
+  // Heaviest first, so cartons fill evenly.
+  small.sort((a, b) => b.weight - a.weight);
+  let carton: Unit[] = [];
+  let lb = 0;
+  const close = () => {
+    if (!carton.length) return;
+    if (carton.length === 1) {
+      const [l, w, h] = [...carton[0].dims].sort((a, b) => b - a);
+      out.push({ origin, weight: round1(carton[0].weight), length: l, width: w, height: h });
+    } else {
+      const vol = carton.reduce((v, u) => v + u.dims[0] * u.dims[1] * u.dims[2], 0) * PACK_SLACK;
+      const sorted = carton.map((u) => [...u.dims].sort((a, b) => b - a));
+      const length = Math.max(...sorted.map((d) => d[0]));
+      const minW = Math.max(...sorted.map((d) => d[1]));
+      const minH = Math.max(...sorted.map((d) => d[2]));
+      const side = Math.sqrt(vol / length);
+      const width = Math.ceil(Math.max(minW, side));
+      const height = Math.ceil(Math.max(minH, vol / length / width));
+      const dims = [Math.ceil(length), width, height].sort((a, b) => b - a);
+      out.push({ origin, weight: round1(lb), length: dims[0], width: dims[1], height: dims[2] });
+    }
+    carton = [];
+    lb = 0;
+  };
+  for (const u of small) {
+    if (carton.length && lb + u.weight > CARTON_MAX_LB) close();
+    carton.push(u);
+    lb += u.weight;
+  }
+  close();
+  return out;
+}
+
+function round1(n: number): number {
+  return Math.ceil(n * 10) / 10;
+}
 
 function key(): string {
   return (bindings() as unknown as Record<string, string | undefined>).SHIPPO_API_KEY ?? "";
@@ -187,24 +252,33 @@ export async function shippingQuote(lines: ShipLine[], to: ShipTo): Promise<Ship
       ).results ?? [];
     const info = new Map(rows.map((r) => [r.slug, r]));
 
-    // One parcel per unit; identical parcels are quoted once and multiplied.
-    const groups = new Map<string, { parcel: Parcel; count: number }>();
+    // Gather every unit by the warehouse it ships from, then pack each
+    // warehouse's units into cartons. Identical cartons are quoted once.
+    const byOrigin = new Map<string, Unit[]>();
     totalLb = 0;
     for (const l of lines) {
       const r = info.get(l.slug);
       const hasBox = r?.ship_length_in && r?.ship_width_in && r?.ship_height_in;
-      const parcel: Parcel = {
-        origin: /^\d{5}/.test(r?.ship_from_zip ?? "") ? (r?.ship_from_zip ?? "").slice(0, 5) : SHOP_ZIP,
+      const origin = /^\d{5}/.test(r?.ship_from_zip ?? "") ? (r?.ship_from_zip ?? "").slice(0, 5) : SHOP_ZIP;
+      const unit: Unit = {
         weight: r?.ship_weight_lb ?? DEFAULT_PARCEL.weight,
-        length: hasBox ? (r?.ship_length_in as number) : DEFAULT_PARCEL.length,
-        width: hasBox ? (r?.ship_width_in as number) : DEFAULT_PARCEL.width,
-        height: hasBox ? (r?.ship_height_in as number) : DEFAULT_PARCEL.height,
+        dims: hasBox
+          ? [r?.ship_length_in as number, r?.ship_width_in as number, r?.ship_height_in as number]
+          : [DEFAULT_PARCEL.length, DEFAULT_PARCEL.width, DEFAULT_PARCEL.height],
       };
-      totalLb += parcel.weight * l.qty;
-      const k = JSON.stringify(parcel);
-      const g = groups.get(k);
-      if (g) g.count += l.qty;
-      else groups.set(k, { parcel, count: l.qty });
+      totalLb += unit.weight * l.qty;
+      const list = byOrigin.get(origin) ?? [];
+      for (let n = 0; n < Math.min(l.qty, 500); n++) list.push(unit);
+      byOrigin.set(origin, list);
+    }
+    const groups = new Map<string, { parcel: Parcel; count: number }>();
+    for (const [origin, units] of byOrigin) {
+      for (const parcel of packCartons(origin, units)) {
+        const k = JSON.stringify(parcel);
+        const g = groups.get(k);
+        if (g) g.count += 1;
+        else groups.set(k, { parcel, count: 1 });
+      }
     }
 
     const free = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS && totalLb <= FREE_SHIPPING_MAX_LB;
