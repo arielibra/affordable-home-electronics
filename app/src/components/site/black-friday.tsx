@@ -1,10 +1,11 @@
 /**
  * "Black Friday deals are here" welcome popup.
  *
- * Shows once to each visitor, a moment after they land, from November 23
+ * Shows on every visit, a moment after the visitor lands, from November 23
  * through December 1 (shop time, New York), every year. Closing it (the X,
  * "Keep browsing", a click outside, or Esc) or tapping "Shop the deals" keeps
- * it away for that visitor for the rest of the sale. It never appears on the
+ * it away for the rest of that visit only (sessionStorage), so it doesn't pop
+ * up again on every page they click; it comes back the next time they visit. It never appears on the
  * cart, checkout, order pages or admin.
  *
  * Wording follows the owner's rule: every price on the site IS the Black Friday
@@ -49,7 +50,7 @@ export function BlackFridayPopup() {
     if (!isBlackFridaySale()) return;
     if (QUIET_PATHS.some((p) => path.startsWith(p))) return;
     try {
-      if (window.localStorage.getItem(yearKey)) return;
+      if (window.sessionStorage.getItem(yearKey)) return;
     } catch {
       // storage blocked: show it this once
     }
@@ -62,7 +63,7 @@ export function BlackFridayPopup() {
   const dismiss = () => {
     setOpen(false);
     try {
-      window.localStorage.setItem(yearKey, "1");
+      window.sessionStorage.setItem(yearKey, "1");
     } catch {
       // ignore
     }
