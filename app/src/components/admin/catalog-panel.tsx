@@ -28,6 +28,11 @@ export type CatalogProduct = {
   meta_keywords?: string;
   gtin?: string;
   mpn?: string;
+  ship_weight_lb?: number | null;
+  ship_length_in?: number | null;
+  ship_width_in?: number | null;
+  ship_height_in?: number | null;
+  ship_estimated?: number;
   image: string;
   images?: string[];
   featured: number;
@@ -234,6 +239,19 @@ function Editor({
   const [gtin, setGtin] = useState(product?.gtin ?? "");
   const [mpn, setMpn] = useState(product?.mpn ?? "");
   const gtinError = gtinProblem(gtin);
+  // Packed for shipping: the product in its box. A copy is usually the same
+  // kind of item in the same kind of box, so it starts from the original's.
+  const num = (v: number | null | undefined) => (v === null || v === undefined ? "" : String(v));
+  const shipStart = [num(src?.ship_weight_lb), num(src?.ship_length_in), num(src?.ship_width_in), num(src?.ship_height_in)];
+  const [shipWeight, setShipWeight] = useState(shipStart[0]);
+  const [shipL, setShipL] = useState(shipStart[1]);
+  const [shipW, setShipW] = useState(shipStart[2]);
+  const [shipH, setShipH] = useState(shipStart[3]);
+  const shipNow = [shipWeight, shipL, shipW, shipH];
+  // Still the spec-sheet estimate only while nobody has changed a number.
+  const shipEstimated =
+    src?.ship_estimated === 1 && shipNow.every((v, i) => v.trim() === shipStart[i].trim());
+  const shipBad = shipNow.some((v) => v.trim() !== "" && !(Number(v) > 0));
   // A copy takes the original's whole gallery, not just its main photo.
   const [images, setImages] = useState<string[]>(
     src?.images && src.images.length > 0 ? [...src.images] : src?.image ? [src.image] : [],
@@ -254,6 +272,7 @@ function Editor({
     if (!name.trim()) return setError("A product needs a name.");
     if (!price.trim()) return setError("A product needs a price.");
     if (gtinError) return setError(`UPC: ${gtinError}`);
+    if (shipBad) return setError("Shipping weight and box size must be numbers, like 2.5 or 12.");
     setSaving(true);
     setError("");
 
@@ -273,6 +292,11 @@ function Editor({
       meta_keywords: metaKeywords,
       gtin,
       mpn,
+      ship_weight_lb: shipWeight.trim() === "" ? null : Number(shipWeight),
+      ship_length_in: shipL.trim() === "" ? null : Number(shipL),
+      ship_width_in: shipW.trim() === "" ? null : Number(shipW),
+      ship_height_in: shipH.trim() === "" ? null : Number(shipH),
+      ship_estimated: shipEstimated,
       images,
       featured,
       stock: Number(stock) || 0,
@@ -419,6 +443,47 @@ function Editor({
         <p className="mt-2.5 max-w-[68ch] text-[13px] leading-[1.55] text-muted">
           Only you ever see this. It is never sent to the shop pages, never in the page source, and never in anything a
           customer can open. Leave it blank if you would rather not record it.
+        </p>
+      </div>
+
+      <div className={`${cardQuiet} mt-4`}>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <span className="text-[13px] font-medium text-muted">Shipping weight and box size — packed, ready to ship</span>
+          {shipNow.some((v) => v.trim() !== "") && (
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-[12px] font-medium ${
+                shipEstimated ? "bg-[color:var(--color-signal)]/10 text-[color:var(--color-signal)]" : "bg-black/5 text-muted"
+              }`}
+            >
+              {shipEstimated ? "Estimate — not weighed yet" : "Measured"}
+            </span>
+          )}
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(
+            [
+              ["Weight (lb)", shipWeight, setShipWeight, "e.g. 2.4"],
+              ["Length (in)", shipL, setShipL, "e.g. 10"],
+              ["Width (in)", shipW, setShipW, "e.g. 8"],
+              ["Height (in)", shipH, setShipH, "e.g. 6"],
+            ] as const
+          ).map(([label, value, set, ph]) => (
+            <label key={label} className="block">
+              <span className="text-[12px] text-muted">{label}</span>
+              <input
+                value={value}
+                inputMode="decimal"
+                placeholder={ph}
+                onChange={(e) => set(e.currentTarget.value)}
+                className={`mt-1 ${input}`}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="mt-2.5 max-w-[68ch] text-[13px] leading-[1.55] text-muted">
+          The product in the box it ships in. Estimates come from the maker&rsquo;s spec sheet (product weight plus
+          packaging, product size plus padding) — weigh and measure one boxed and type the real numbers, and it is marked
+          Measured. Only you see these.
         </p>
       </div>
 

@@ -32,10 +32,25 @@ type Row = {
   stock: number;
   stock_tracked: number;
   active: number;
+  ship_weight_lb: number | null;
+  ship_length_in: number | null;
+  ship_width_in: number | null;
+  ship_height_in: number | null;
+  ship_estimated: number;
 };
 
 const COLUMNS =
-  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,highlights,badges,options,addon,gtin,mpn,image,featured,stock,stock_tracked,active";
+  "slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,highlights,badges,options,addon,gtin,mpn,image,featured,stock,stock_tracked,active,ship_weight_lb,ship_length_in,ship_width_in,ship_height_in,ship_estimated";
+
+/** Weight in pounds and size in inches. Blank means "not recorded" (null),
+ *  never zero. Two decimals is finer than any scale or tape he will use. */
+const MEASURES = ["ship_weight_lb", "ship_length_in", "ship_width_in", "ship_height_in"] as const;
+function measure(v: unknown): number | null | undefined {
+  if (v === null || v === undefined || (typeof v === "string" && v.trim() === "")) return null;
+  const n = typeof v === "number" ? v : Number(String(v).replace(/[^0-9.]/g, ""));
+  if (!Number.isFinite(n) || n <= 0 || n > 10000) return undefined;
+  return Math.round(n * 100) / 100;
+}
 
 /** At most twenty, no blanks, no duplicates, order preserved. */
 function cleanImages(v: unknown): string[] | null {
@@ -240,10 +255,16 @@ export const Route = createFileRoute("/api/admin/products")({
         const gtin = normaliseGtin(str(body.gtin, 40));
         const badGtin = gtinProblem(gtin);
         if (badGtin) return Response.json({ ok: false, error: `UPC: ${badGtin}` }, { status: 400 });
+        const sizes: (number | null)[] = [];
+        for (const k of MEASURES) {
+          const m = measure(body[k]);
+          if (m === undefined) return Response.json({ ok: false, error: "Weight and size must be positive numbers." }, { status: 400 });
+          sizes.push(m);
+        }
 
         await DB.prepare(
-          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,highlights,badges,options,addon,gtin,mpn,image,featured,stock,stock_tracked,active)
-           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24)`,
+          `INSERT INTO products (slug,name,brand,brand_slug,category,price_cents,msrp_cents,cost_cents,blurb,specs,meta_title,meta_description,meta_keywords,highlights,badges,options,addon,gtin,mpn,image,featured,stock,stock_tracked,active,ship_weight_lb,ship_length_in,ship_width_in,ship_height_in)
+           VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28)`,
         )
           .bind(
             slug,
@@ -272,6 +293,7 @@ export const Route = createFileRoute("/api/admin/products")({
             stock,
             body.stock_tracked ? 1 : 0,
             body.active === false ? 0 : 1,
+            ...sizes,
           )
           .run();
         const images = cleanImages(body.images) ?? (str(body.image, 300) ? [str(body.image, 300)] : []);
@@ -358,6 +380,15 @@ export const Route = createFileRoute("/api/admin/products")({
           put("gtin", g);
         }
         if ("mpn" in body) put("mpn", cleanMpn(body.mpn));
+        for (const k of MEASURES) {
+          if (!(k in body)) continue;
+          const m = measure(body[k]);
+          if (m === undefined) return Response.json({ ok: false, error: "Weight and size must be positive numbers." }, { status: 400 });
+          put(k, m);
+        }
+        // Numbers typed into the form are his own measurements, not the
+        // spec-sheet estimate any more.
+        if ("ship_estimated" in body) put("ship_estimated", body.ship_estimated ? 1 : 0);
         // The gallery is authoritative when it is sent; the single column is
         // kept in step by writeImages rather than set here.
         const nextImages = "images" in body ? cleanImages(body.images) : null;
