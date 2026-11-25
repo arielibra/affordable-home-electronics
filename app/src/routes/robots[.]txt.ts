@@ -15,13 +15,16 @@ export const Route = createFileRoute('/robots.txt')({
           'Disallow: /order-confirmed',
           '',
           // Google's Storebot checks that the checkout link (/cart?add={id})
-          // works. A crawler obeys only its own group, so repeat the rest.
+          // works, and reads the payment methods on /checkout (PayPal counts
+          // as an e-wallet in Merchant Center's store quality score). It is a
+          // shopping crawler, not web search, so this does not index the
+          // checkout. A crawler obeys only its own group, so repeat the rest.
           'User-agent: Storebot-Google',
           'Allow: /',
           'Allow: /cart',
+          'Allow: /checkout',
           'Disallow: /admin',
           'Disallow: /api/',
-          'Disallow: /checkout',
           'Disallow: /order-confirmed',
           '',
           `Sitemap: ${origin}/sitemap.xml`,
