@@ -7,6 +7,7 @@ import { IconCart, IconMail, IconPhone, IconPin, IconSearch, IconTruck } from ".
 import { Lockup } from "./mark";
 import { useHalloween } from "./halloween";
 import { FallingLeaves, LeafIcon, thanksLine, useThanksgiving } from "./thanksgiving";
+import { BlackFridayPopup } from "./black-friday";
 import { FallingSnow, HarvestLeafIcon, SnowflakeIcon, holidayGreeting, useHolidayPhase } from "./christmas";
 import { PayMarks } from "./pay-marks";
 
@@ -335,6 +336,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <Footer />
         <FallingLeaves />
         <FallingSnow />
+        <BlackFridayPopup />
       </div>
     </CartProvider>
   );

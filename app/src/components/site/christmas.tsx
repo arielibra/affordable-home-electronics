@@ -554,7 +554,7 @@ type Flake = {
 const LEAF_FILLS = ["#d9541e", "#e8761c", "#f2a33a", "#b5371b", "#c9862b"];
 
 function makeFlakes(harvest: boolean): Flake[] {
-  const count = 42;
+  const count = 58;
   return Array.from({ length: count }, (_, i) => {
     const leaf = harvest && i % 6 === 0;
     const soft = !leaf && i % 3 === 1;
@@ -562,12 +562,12 @@ function makeFlakes(harvest: boolean): Flake[] {
     const depth = Math.random();
     return {
       left: Math.random() * 100,
-      size: leaf ? 16 + Math.random() * 10 : soft ? 4 + depth * 7 : 9 + depth * 15,
+      size: leaf ? 16 + Math.random() * 10 : soft ? 6 + depth * 8 : 13 + depth * 17,
       duration: leaf ? 13 + Math.random() * 8 : 16 - depth * 7 + Math.random() * 3,
       delay: -Math.random() * 20,
       sway: leaf ? 40 + Math.random() * 50 : 12 + Math.random() * 30,
       spin: (Math.random() < 0.5 ? -1 : 1) * (leaf ? 220 + Math.random() * 300 : 60 + Math.random() * 160),
-      opacity: leaf ? 0.85 : 0.45 + depth * 0.5,
+      opacity: leaf ? 0.9 : 0.75 + depth * 0.25,
       kind: leaf ? "leaf" : soft ? "soft" : "crystal",
       leafOak: Math.random() < 0.35,
       leafFill: LEAF_FILLS[i % LEAF_FILLS.length],
@@ -624,7 +624,7 @@ export function FallingSnow() {
             ) : f.kind === "soft" ? (
               <circle cx="12" cy="12" r="10" fill="#ffffff" />
             ) : (
-              <path d={FLAKE} fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" />
+              <path d={FLAKE} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
             )}
           </svg>
         </span>
