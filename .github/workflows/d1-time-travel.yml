@@ -1,0 +1,34 @@
+name: D1 time travel (manual)
+
+# Rolls the production D1 database back to a point in time.
+# Manual only: Actions -> "D1 time travel (manual)" -> Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      timestamp:
+        description: "RFC3339 UTC time to restore to, e.g. 2026-11-25T05:17:30Z"
+        required: true
+      mode:
+        description: "info = show the bookmark only; restore = roll the database back"
+        required: true
+        default: info
+
+jobs:
+  time-travel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bookmark for that time
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.141.0"
+          command: d1 time-travel info affordable-home-electronics-db --timestamp=${{ inputs.timestamp }}
+      - name: Restore
+        if: ${{ inputs.mode == 'restore' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.141.0"
+          command: d1 time-travel restore affordable-home-electronics-db --timestamp=${{ inputs.timestamp }}
