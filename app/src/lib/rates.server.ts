@@ -55,11 +55,41 @@ function flat(subtotal: number, totalLb: number): ShippingQuote {
 }
 
 type Parcel = { origin: string; weight: number; length: number; width: number; height: number };
+
+/** Carriers the shop actually ships with (owner, 2026-11-24: UPS only for now).
+ *  Add "fedex" or "usps" here once those accounts are connected in Shippo. */
+const SHOP_CARRIERS = ["ups"];
+
+/**
+ * The shop's OWN carrier accounts in Shippo. A new Shippo account also comes
+ * with Shippo's discounted master accounts switched on; quoting from those
+ * would show customers a price below what his own UPS account is billed, and
+ * he would lose the difference on every order. So quotes are restricted to
+ * his accounts. Looked up once per isolate.
+ */
+let accounts: { at: number; ids: string[] } | undefined;
+async function ownAccounts(token: string): Promise<string[]> {
+  if (accounts && Date.now() - accounts.at < 60 * 60_000) return accounts.ids;
+  const res = await fetch("https://api.goshippo.com/carrier_accounts/?results=100", {
+    headers: { Authorization: `ShippoToken ${token}` },
+  });
+  if (!res.ok) throw new Error(`shippo accounts ${res.status}`);
+  const data = (await res.json()) as {
+    results?: { object_id?: string; carrier?: string; active?: boolean; is_shippo_account?: boolean; test?: boolean }[];
+  };
+  const ids = (data.results ?? [])
+    .filter((a) => a.active !== false && a.test !== true && !a.is_shippo_account && SHOP_CARRIERS.includes((a.carrier ?? "").toLowerCase()))
+    .map((a) => a.object_id ?? "")
+    .filter(Boolean);
+  accounts = { at: Date.now(), ids };
+  return ids;
+}
 type Rate = { cents: number; carrier: string; service: string; days: number | null };
 
 /** The cheapest rate for one parcel, or null if no carrier answered. */
-async function cheapestRate(p: Parcel, to: ShipTo, token: string): Promise<Rate | null> {
+async function cheapestRate(p: Parcel, to: ShipTo, token: string, carrierAccounts: string[]): Promise<Rate | null> {
   const body = {
+    carrier_accounts: carrierAccounts,
     address_from: { zip: p.origin, country: "US" },
     address_to: {
       zip: to.zip,
@@ -86,11 +116,20 @@ async function cheapestRate(p: Parcel, to: ShipTo, token: string): Promise<Rate 
   });
   if (!res.ok) throw new Error(`shippo ${res.status}`);
   const data = (await res.json()) as {
-    rates?: { amount?: string; currency?: string; provider?: string; servicelevel?: { name?: string }; estimated_days?: number | null }[];
+    rates?: {
+      amount?: string;
+      currency?: string;
+      provider?: string;
+      carrier_account?: string;
+      servicelevel?: { name?: string };
+      estimated_days?: number | null;
+    }[];
   };
   let best: Rate | null = null;
   for (const r of data.rates ?? []) {
     if ((r.currency ?? "USD") !== "USD") continue;
+    // Belt and braces: only rates from his own accounts, whatever Shippo sends.
+    if (!r.carrier_account || !carrierAccounts.includes(r.carrier_account)) continue;
     const cents = Math.ceil(Number(r.amount) * 100);
     if (!Number.isFinite(cents) || cents <= 0) continue;
     // Nothing slower than about a week and a half; customers were promised 3-7 days.
@@ -167,8 +206,13 @@ export async function shippingQuote(lines: ShipLine[], to: ShipTo): Promise<Ship
     if (free) return { cents: 0, source: "free", label: "Free shipping", minDays: 3, maxDays: 7 };
     if (!token || !zipOk || groups.size > MAX_LOOKUPS) return flat(subtotal, totalLb);
 
+    const mine = await ownAccounts(token);
+    if (mine.length === 0) {
+      console.error("shipping quote: no shop-owned carrier account found in Shippo, using flat rate");
+      return flat(subtotal, totalLb);
+    }
     const quoted = await Promise.all(
-      [...groups.values()].map(async (g) => ({ g, rate: await cheapestRate(g.parcel, { ...to, zip, country }, token) })),
+      [...groups.values()].map(async (g) => ({ g, rate: await cheapestRate(g.parcel, { ...to, zip, country }, token, mine) })),
     );
     if (quoted.some((q) => !q.rate)) return flat(subtotal, totalLb);
 
@@ -189,4 +233,38 @@ export async function shippingQuote(lines: ShipLine[], to: ShipTo): Promise<Ship
     console.error("shipping quote failed, using flat rate", error);
     return flat(subtotal, totalLb);
   }
+}
+
+/** For the back office's shipping check: which carrier accounts Shippo holds,
+ *  which of them quotes will use, and a sample quote. Never returns the key. */
+export async function shippingDiagnostics(): Promise<Record<string, unknown>> {
+  const token = key();
+  if (!token) return { ok: false, live: false, note: "SHIPPO_API_KEY is not set, so the flat $14.95 rule applies." };
+  const out: Record<string, unknown> = { ok: true, live: true, keyType: token.startsWith("shippo_live_") ? "live" : "test (rates are not real)" };
+  try {
+    const res = await fetch("https://api.goshippo.com/carrier_accounts/?results=100", {
+      headers: { Authorization: `ShippoToken ${token}` },
+    });
+    const data = (await res.json()) as { results?: Record<string, unknown>[] };
+    out.accounts = (data.results ?? []).map((a) => ({
+      carrier: a.carrier,
+      account: typeof a.account_id === "string" ? `…${(a.account_id as string).slice(-4)}` : "",
+      active: a.active,
+      shippoOwned: a.is_shippo_account ?? null,
+      test: a.test,
+    }));
+    accounts = undefined;
+    const mine = await ownAccounts(token);
+    out.usedForQuotes = mine.length;
+    if (mine.length) {
+      out.sample = {
+        what: "7.4 lb NVR box 17x15x5 from 11374 to 90001 (Los Angeles)",
+        rate: await cheapestRate({ origin: SHOP_ZIP, weight: 7.4, length: 17, width: 15, height: 5 }, { zip: "90001", country: "US" }, token, mine),
+      };
+    }
+  } catch (error) {
+    out.ok = false;
+    out.error = error instanceof Error ? error.message : String(error);
+  }
+  return out;
 }

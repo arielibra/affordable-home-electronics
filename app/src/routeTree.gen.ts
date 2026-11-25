@@ -47,6 +47,7 @@ import { Route as ApiAdminZipRouteImport } from './routes/api/admin/zip'
 import { Route as ApiAdminUploadRouteImport } from './routes/api/admin/upload'
 import { Route as ApiAdminTestEmailRouteImport } from './routes/api/admin/test-email'
 import { Route as ApiAdminTaxonomyRouteImport } from './routes/api/admin/taxonomy'
+import { Route as ApiAdminShippingCheckRouteImport } from './routes/api/admin/shipping-check'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
 import { Route as ApiAdminReviewsRouteImport } from './routes/api/admin/reviews'
 import { Route as ApiAdminReportRouteImport } from './routes/api/admin/report'
@@ -252,6 +253,11 @@ const ApiAdminTaxonomyRoute = ApiAdminTaxonomyRouteImport.update({
   path: '/api/admin/taxonomy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminShippingCheckRoute = ApiAdminShippingCheckRouteImport.update({
+  id: '/api/admin/shipping-check',
+  path: '/api/admin/shipping-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminSessionRoute = ApiAdminSessionRouteImport.update({
   id: '/api/admin/session',
   path: '/api/admin/session',
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/reviews': typeof ApiAdminReviewsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/shipping-check': typeof ApiAdminShippingCheckRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/test-email': typeof ApiAdminTestEmailRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/reviews': typeof ApiAdminReviewsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/shipping-check': typeof ApiAdminShippingCheckRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/test-email': typeof ApiAdminTestEmailRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
@@ -471,6 +479,7 @@ export interface FileRoutesById {
   '/api/admin/report': typeof ApiAdminReportRoute
   '/api/admin/reviews': typeof ApiAdminReviewsRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/shipping-check': typeof ApiAdminShippingCheckRoute
   '/api/admin/taxonomy': typeof ApiAdminTaxonomyRoute
   '/api/admin/test-email': typeof ApiAdminTestEmailRoute
   '/api/admin/upload': typeof ApiAdminUploadRoute
@@ -526,6 +535,7 @@ export interface FileRouteTypes {
     | '/api/admin/report'
     | '/api/admin/reviews'
     | '/api/admin/session'
+    | '/api/admin/shipping-check'
     | '/api/admin/taxonomy'
     | '/api/admin/test-email'
     | '/api/admin/upload'
@@ -579,6 +589,7 @@ export interface FileRouteTypes {
     | '/api/admin/report'
     | '/api/admin/reviews'
     | '/api/admin/session'
+    | '/api/admin/shipping-check'
     | '/api/admin/taxonomy'
     | '/api/admin/test-email'
     | '/api/admin/upload'
@@ -632,6 +643,7 @@ export interface FileRouteTypes {
     | '/api/admin/report'
     | '/api/admin/reviews'
     | '/api/admin/session'
+    | '/api/admin/shipping-check'
     | '/api/admin/taxonomy'
     | '/api/admin/test-email'
     | '/api/admin/upload'
@@ -686,6 +698,7 @@ export interface RootRouteChildren {
   ApiAdminReportRoute: typeof ApiAdminReportRoute
   ApiAdminReviewsRoute: typeof ApiAdminReviewsRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
+  ApiAdminShippingCheckRoute: typeof ApiAdminShippingCheckRoute
   ApiAdminTaxonomyRoute: typeof ApiAdminTaxonomyRoute
   ApiAdminTestEmailRoute: typeof ApiAdminTestEmailRoute
   ApiAdminUploadRoute: typeof ApiAdminUploadRoute
@@ -962,6 +975,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminTaxonomyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/shipping-check': {
+      id: '/api/admin/shipping-check'
+      path: '/api/admin/shipping-check'
+      fullPath: '/api/admin/shipping-check'
+      preLoaderRoute: typeof ApiAdminShippingCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/session': {
       id: '/api/admin/session'
       path: '/api/admin/session'
@@ -1102,6 +1122,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminReportRoute: ApiAdminReportRoute,
   ApiAdminReviewsRoute: ApiAdminReviewsRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
+  ApiAdminShippingCheckRoute: ApiAdminShippingCheckRoute,
   ApiAdminTaxonomyRoute: ApiAdminTaxonomyRoute,
   ApiAdminTestEmailRoute: ApiAdminTestEmailRoute,
   ApiAdminUploadRoute: ApiAdminUploadRoute,
