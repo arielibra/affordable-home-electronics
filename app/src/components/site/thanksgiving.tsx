@@ -6,9 +6,9 @@
  * drifting down over the storefront. Nothing on product cards, prices or
  * checkout, and the leaves never block a click.
  *
- * It switches itself on for November 1-30 and off at midnight on December 1st,
- * shop time (New York), every year. Halloween owns October 15-31, so the two
- * never overlap.
+ * It switches itself on for November 1-24, shop time (New York), every year.
+ * Halloween owns October 15-31 and the winter/Christmas look takes over on
+ * November 25, so none of them overlap.
  *
  * The falling leaves are drawn only in the browser, after the page loads: they
  * are pure decoration, and leaving them out of the server render means their
@@ -19,6 +19,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type CSSProperties } from "react";
 
 import { SITE } from "../../lib/site";
+import { isChristmasSeason } from "./christmas";
 
 const SHOP_TZ = "America/New_York";
 const LEAF_COUNT = 14;
@@ -37,7 +38,8 @@ function shopMonth(now: Date): number {
 }
 
 export function isThanksgivingSeason(now: Date = new Date()): boolean {
-  return shopMonth(now) === 11;
+  // The winter/Christmas look takes over from November 25 (see christmas.tsx).
+  return shopMonth(now) === 11 && !isChristmasSeason(now);
 }
 
 /** True during the season. Re-checked in the browser after it loads. */
