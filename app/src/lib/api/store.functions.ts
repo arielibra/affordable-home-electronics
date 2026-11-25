@@ -28,7 +28,7 @@ import { productReviews } from "../reviews.server";
 import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../email.server";
 import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
-import { HEARD_ABOUT_IDS } from "../heard-about";
+import { HEARD_ABOUT_IDS, HEARD_ABOUT_OTHER_MAX } from "../heard-about";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
 import { liveRatesEnabled } from "../rates.server";
 
@@ -323,14 +323,20 @@ export const saveHeardAbout = createServerFn({ method: "POST" })
       reference: z.string().min(4).max(40),
       proof: z.string().min(3).max(200),
       answer: z.enum(HEARD_ABOUT_IDS),
+      // Only kept when the answer is "other": what the customer typed.
+      other: z.string().max(400).optional(),
     }),
   )
   .handler(async ({ data }) => {
     const DB = bindings().DB;
     if (!DB) return { ok: false as const };
     const proof = data.proof.trim();
+    const other =
+      data.answer === "other"
+        ? (data.other ?? "").replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, HEARD_ABOUT_OTHER_MAX)
+        : "";
     const r = await DB.prepare(
-      `UPDATE orders SET heard_about = ?1
+      `UPDATE orders SET heard_about = ?1, heard_about_other = ?4
         WHERE reference = ?2
           AND heard_about = ''
           AND created_at >= datetime('now', '-2 days')
@@ -338,7 +344,7 @@ export const saveHeardAbout = createServerFn({ method: "POST" })
                OR paypal_order_id = ?3
                OR (email <> '' AND lower(email) = lower(?3)))`,
     )
-      .bind(data.answer, data.reference, proof)
+      .bind(data.answer, data.reference, proof, other)
       .run();
     return { ok: (r.meta?.changes ?? 0) > 0 };
   });

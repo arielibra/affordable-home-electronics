@@ -41,6 +41,7 @@ export type AdminOrder = {
   cancelled_at?: string | null;
   cancel_notified_at?: string | null;
   heard_about?: string;
+  heard_about_other?: string;
   items: Item[];
 };
 
@@ -200,7 +201,7 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
               <p className="mt-5 text-sm">
                 <span className="font-semibold text-ink">How they heard about us:</span>{" "}
                 {order.heard_about ? (
-                  <span className="text-ink">{heardAboutLabel(order.heard_about)}</span>
+                  <span className="text-ink">{heardAboutLabel(order.heard_about, order.heard_about_other)}</span>
                 ) : (
                   <span className="text-muted">Not answered</span>
                 )}
