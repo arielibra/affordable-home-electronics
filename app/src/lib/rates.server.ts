@@ -20,6 +20,7 @@
  * applies, so checkout keeps working exactly as before.
  */
 import { bindings } from "./bindings.server";
+import { zipPlace } from "./zip.server";
 import { FREE_SHIPPING_THRESHOLD_CENTS, FREE_SHIPPING_MAX_LB, SHIPPING_FLAT_CENTS, SHOP_ZIP } from "./shipping";
 
 export type ShipLine = { slug: string; price_cents: number; qty: number };
@@ -88,14 +89,18 @@ type Rate = { cents: number; carrier: string; service: string; days: number | nu
 
 /** The cheapest rate for one parcel, or null if no carrier answered. */
 async function cheapestRate(p: Parcel, to: ShipTo, token: string, carrierAccounts: string[]): Promise<Rate | null> {
+  // UPS will not quote without a state at both ends ("Missing ship from state
+  // province code"), so fill it in from the ZIP where it wasn't given.
+  const from = await zipPlace(p.origin, "US");
+  const toPlace = to.state ? { city: to.city ?? "", state: to.state } : await zipPlace(to.zip, to.country ?? "US");
   const body = {
     carrier_accounts: carrierAccounts,
-    address_from: { zip: p.origin, country: "US" },
+    address_from: { zip: p.origin, country: "US", ...(from ? { state: from.state, city: from.city } : {}) },
     address_to: {
       zip: to.zip,
       country: to.country ?? "US",
-      ...(to.state ? { state: to.state } : {}),
-      ...(to.city ? { city: to.city } : {}),
+      ...(toPlace?.state ? { state: toPlace.state } : {}),
+      ...(toPlace?.city ? { city: toPlace.city } : {}),
     },
     parcels: [
       {
@@ -263,8 +268,8 @@ export async function shippingDiagnostics(): Promise<Record<string, unknown>> {
         headers: { Authorization: `ShippoToken ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           carrier_accounts: mine,
-          address_from: { zip: SHOP_ZIP, country: "US" },
-          address_to: { zip: "90001", country: "US" },
+          address_from: { zip: SHOP_ZIP, country: "US", ...((await zipPlace(SHOP_ZIP)) ?? {}) },
+          address_to: { zip: "90001", country: "US", ...((await zipPlace("90001")) ?? {}) },
           parcels: [{ length: "17", width: "15", height: "5", distance_unit: "in", weight: "7.4", mass_unit: "lb" }],
           async: false,
         }),
