@@ -33,7 +33,14 @@ type Row = {
   stock: number;
   stock_tracked: number;
   cat_name: string | null;
+  ship_weight_lb: number | null;
+  ship_length_in: number | null;
+  ship_width_in: number | null;
+  ship_height_in: number | null;
 };
+
+/** "7.4", "12", never "7.400000001". */
+const num = (n: number) => String(Math.round(n * 100) / 100);
 
 function xml(s: string): string {
   return s
@@ -64,6 +71,7 @@ export const Route = createFileRoute("/merchant-feed.xml")({
               await db
                 .prepare(
                   `SELECT p.slug, p.name, p.brand, p.category, p.price_cents, p.blurb, p.gtin, p.mpn, p.image, p.stock, p.stock_tracked,
+                          p.ship_weight_lb, p.ship_length_in, p.ship_width_in, p.ship_height_in,
                           c.name AS cat_name
                      FROM products p LEFT JOIN categories c ON c.slug = p.category
                     WHERE p.active = 1 AND p.price_cents > 0
@@ -109,6 +117,17 @@ export const Route = createFileRoute("/merchant-feed.xml")({
             p.gtin ? `<g:gtin>${xml(p.gtin)}</g:gtin>` : "",
             p.mpn ? `<g:mpn>${xml(p.mpn)}</g:mpn>` : "",
             p.cat_name ? `<g:product_type>${xml(p.cat_name)}</g:product_type>` : "",
+            // Packed weight and box, for Merchant Center's shipping rules: free
+            // only up to 5 lb on $199+ orders, UPS rate otherwise. Same default
+            // parcel as the checkout uses when a product has none recorded.
+            `<g:shipping_weight>${num(p.ship_weight_lb ?? 3)} lb</g:shipping_weight>`,
+            ...(p.ship_length_in && p.ship_width_in && p.ship_height_in
+              ? [
+                  `<g:shipping_length>${num(p.ship_length_in)} in</g:shipping_length>`,
+                  `<g:shipping_width>${num(p.ship_width_in)} in</g:shipping_width>`,
+                  `<g:shipping_height>${num(p.ship_height_in)} in</g:shipping_height>`,
+                ]
+              : [`<g:shipping_length>12 in</g:shipping_length>`, `<g:shipping_width>10 in</g:shipping_width>`, `<g:shipping_height>6 in</g:shipping_height>`]),
           ].filter(Boolean);
           return `    <item>\n      ${lines.join("\n      ")}\n    </item>`;
         });
