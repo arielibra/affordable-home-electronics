@@ -35,7 +35,7 @@ export const Route = createFileRoute("/llms.txt")({
           ``,
           `## Policies`,
           ``,
-          `- [Shipping](${ORIGIN}/shipping): UPS, FedEx or USPS with tracking to the US and Canada. Free on orders over ${usd(FREE_SHIPPING_THRESHOLD_CENTS)} weighing ${FREE_SHIPPING_MAX_LB} lb or less packed; otherwise shipping is priced at checkout from weight, box size and destination. Ships within 2 business days, 3 to 7 days in transit.`,
+          `- [Shipping](${ORIGIN}/shipping): UPS, FedEx or USPS with tracking to the US and Canada. On orders over ${usd(FREE_SHIPPING_THRESHOLD_CENTS)}, every package weighing ${FREE_SHIPPING_MAX_LB} lb or less ships free (items ship from each brand's warehouse, so one order can be several packages); heavier packages and smaller orders are priced at checkout from weight, size and destination. Ships within 2 business days, 3 to 7 days in transit.`,
           `- [Returns](${ORIGIN}/returns): 10 days from delivery, returned by mail, 15% restocking fee. Refunds go to the original payment method.`,
           `- [Warranty](${ORIGIN}/warranty): full manufacturer warranty on every item.`,
           `- Payment: credit card and PayPal.`,

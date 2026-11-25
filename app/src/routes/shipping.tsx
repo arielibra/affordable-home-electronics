@@ -40,11 +40,15 @@ function Shipping() {
       <Clause title="What delivery costs">
         <ul>
           <li>
-            <b>Free</b> on orders over $199 that weigh <b>5 lb or less</b>, packed.
+            <b>Free</b> on orders over $199, for every package that weighs <b>5 lb or less</b>.
           </li>
           <li>
-            Every other order pays the shipping cost <b>shown at checkout before you pay</b>, worked out from the weight
-            and box size of what you ordered and where it is going.
+            Items ship straight from the brand's warehouse, so an order with items from different brands can arrive in
+            separate packages. Each package is judged on its own: a light one stays free even if another is heavy.
+          </li>
+          <li>
+            Heavier packages, and orders under $199, pay the shipping cost <b>shown at checkout before you pay</b>,
+            worked out from the weight and size of what you ordered and where it is going.
           </li>
         </ul>
         <p>

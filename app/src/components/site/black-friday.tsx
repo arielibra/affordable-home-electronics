@@ -113,7 +113,7 @@ export function BlackFridayPopup() {
             installers trust. Genuine USA stock with full manufacturer warranty.
           </p>
           <ul>
-            <li>Free shipping on $199+ orders up to 5&nbsp;lb</li>
+            <li>Free shipping on $199+ orders, packages up to 5&nbsp;lb</li>
             <li>Ends December 1 at midnight</li>
           </ul>
           <div className="ahe-bf-actions">

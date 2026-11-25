@@ -52,7 +52,7 @@ export function Hero() {
         {[
           ["Since " + SITE.since, "Over 20 years in Queens"],
           ["Full warranty", "Authorized dealer stock"],
-          ["Free shipping", "$199+ orders up to 5 lb"],
+          ["Free shipping", "$199+ orders, packages up to 5 lb"],
           ["NYC installs", "Arranged through us"],
         ].map(([title, sub]) => (
           <div key={title} className="border-line px-5 py-4 max-md:[&:nth-child(-n+2)]:border-b md:border-l md:first:border-l-0 md:px-6 [&:nth-child(even)]:border-l">

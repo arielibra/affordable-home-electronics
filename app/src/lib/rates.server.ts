@@ -7,10 +7,11 @@
  * from the carriers instead, through Shippo, which holds the shop's own
  * carrier accounts and so returns the rates he is actually billed.
  *
- * The rules (owner's decision, 2026-11-24):
- *   - Free shipping only when the order is at or over the threshold AND the
- *     whole order weighs FREE_SHIPPING_MAX_LB or less, packed.
- *   - Anything else pays the live rate for the whole order.
+ * The rules (owner's decisions, 2026-11-24 and 2026-11-25):
+ *   - Orders at or over the threshold: every supplier shipment (one per
+ *     warehouse) that weighs FREE_SHIPPING_MAX_LB or less ships free.
+ *   - Heavier shipments, and every shipment on smaller orders, pay the live
+ *     carrier rate.
  *
  * Items are packed the way a warehouse packs them: everything from the same
  * brand's warehouse goes into shared cartons (up to CARTON_MAX_LB each), and
@@ -284,8 +285,19 @@ export async function shippingQuote(lines: ShipLine[], to: ShipTo): Promise<Ship
       for (let n = 0; n < Math.min(l.qty, 500); n++) list.push(unit);
       byOrigin.set(origin, list);
     }
+    // Free shipping is judged per supplier shipment (owner, 2026-11-25): on a
+    // $199+ order, each warehouse's shipment that weighs 5 lb or less (the
+    // products' own weights) ships free; only heavier shipments are charged.
+    // So a light add-on from another supplier never takes free shipping away
+    // from the rest of the order.
+    const overThreshold = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS;
+    const paidOrigins = [...byOrigin].filter(
+      ([, units]) => !(overThreshold && units.reduce((w, u) => w + u.weight, 0) <= FREE_SHIPPING_MAX_LB),
+    );
+    if (paidOrigins.length === 0) return { cents: 0, source: "free", label: "Free shipping", minDays: 3, maxDays: 7 };
+
     const groups = new Map<string, { parcel: Parcel; count: number }>();
-    for (const [origin, units] of byOrigin) {
+    for (const [origin, units] of paidOrigins) {
       for (const parcel of packCartons(origin, units)) {
         const k = JSON.stringify(parcel);
         const g = groups.get(k);
@@ -294,8 +306,6 @@ export async function shippingQuote(lines: ShipLine[], to: ShipTo): Promise<Ship
       }
     }
 
-    const free = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS && totalLb <= FREE_SHIPPING_MAX_LB;
-    if (free) return { cents: 0, source: "free", label: "Free shipping", minDays: 3, maxDays: 7 };
     if (!token || !zipOk || groups.size > MAX_LOOKUPS) return flat(subtotal, totalLb);
 
     const mine = await ownAccounts(token);

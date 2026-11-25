@@ -587,7 +587,7 @@ function CheckoutBody() {
           </div>
           <p className="mt-2 text-[13px] text-muted">
             {cfg.liveRates
-              ? `Free shipping over ${money(cfg.freeShippingOverCents)}, on orders up to 5 lb. Heavier orders ship at the carrier's rate.`
+              ? `Orders over ${money(cfg.freeShippingOverCents)}: free shipping on every package up to 5 lb. Heavier packages ship at the carrier's rate.`
               : `Free shipping over ${money(cfg.freeShippingOverCents)}.`}
           </p>
           <div className="mt-4 border-t border-[#dbe7f3] pt-4">
