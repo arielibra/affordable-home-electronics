@@ -3,13 +3,15 @@ import { Link } from "@tanstack/react-router";
 import { SITE } from "../../lib/site";
 import { HalloweenSky } from "../site/halloween";
 import { HarvestGarland } from "../site/thanksgiving";
+import { ChristmasLights, HangingOrnaments } from "../site/christmas";
 import { ShopCta } from "../site/cta";
 import { Shell } from "../site/section";
 import { HeroSlides } from "./hero-slides";
 
 export function Hero() {
   return (
-    <section className="ahe-hero border-b border-line bg-ground">
+    <section className="ahe-hero relative border-b border-line bg-ground">
+      <HangingOrnaments />
       <Shell className="pt-10 pb-8 lg:pt-12 lg:pb-10">
         <div className="ahe-rise grid items-end gap-6 lg:grid-cols-[1fr_auto] lg:gap-10">
           <div>
@@ -38,6 +40,7 @@ export function Hero() {
         <div className="ahe-wall-wrap relative mt-8">
           <HalloweenSky />
           <HarvestGarland />
+          <ChristmasLights />
           <div className="relative z-[1]">
             <HeroSlides />
           </div>
@@ -49,7 +52,7 @@ export function Hero() {
         {[
           ["Since " + SITE.since, "Over 20 years in Queens"],
           ["Full warranty", "Authorized dealer stock"],
-          ["Free shipping", "On orders over $199"],
+          ["Free shipping", "$199+ orders up to 5 lb"],
           ["NYC installs", "Arranged through us"],
         ].map(([title, sub]) => (
           <div key={title} className="border-line px-5 py-4 max-md:[&:nth-child(-n+2)]:border-b md:border-l md:first:border-l-0 md:px-6 [&:nth-child(even)]:border-l">
