@@ -28,7 +28,7 @@ import { productReviews } from "../reviews.server";
 import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../email.server";
 import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
-import { HEARD_ABOUT_IDS, HEARD_ABOUT_OTHER_MAX } from "../heard-about";
+import { HEARD_ABOUT_IDS, HEARD_ABOUT_OTHER_MAX, cleanHeardAbout } from "../heard-about";
 import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
 import { liveRatesEnabled } from "../rates.server";
 
@@ -160,6 +160,8 @@ const orderInput = z.object({
   state: z.string().min(2).max(40),
   zip: z.string().min(3).max(16),
   notes: z.string().max(1000).default(""),
+  heardAbout: z.string().max(40).optional(),
+  heardAboutOther: z.string().max(400).optional(),
 });
 
 export const placeOrder = createServerFn({ method: "POST" })
@@ -170,16 +172,18 @@ export const placeOrder = createServerFn({ method: "POST" })
     const lines = await cartLines(data.cartId);
     if (lines.length === 0) return { ok: false as const, reason: "empty" as const };
     const subtotal = lines.reduce((s, l) => s + l.price_cents * l.qty, 0);
+    const heard = cleanHeardAbout(data.heardAbout, data.heardAboutOther);
     const orderId = crypto.randomUUID();
     const bytes = new Uint8Array(3);
     crypto.getRandomValues(bytes);
     const reference = "AHE-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
     await DB.prepare(
-      "INSERT INTO orders (id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,subtotal_cents) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+      "INSERT INTO orders (id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,subtotal_cents,heard_about,heard_about_other) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
     )
       .bind(
         orderId, reference, data.name, data.email, data.phone, data.company,
         data.address1, data.address2, data.city, data.state, data.zip, data.notes, subtotal,
+        heard.id, heard.other,
       )
       .run();
     const stmt = DB.prepare("INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)");
@@ -291,7 +295,7 @@ export const getPaidOrder = createServerFn({ method: "POST" })
     const DB = bindings().DB;
     if (!DB) return { found: false as const };
     const row = await DB.prepare(
-      "SELECT reference, status, amount_total_cents, shipping_cents, tax_cents, subtotal_cents, email FROM orders WHERE stripe_session_id = ?1",
+      "SELECT reference, status, amount_total_cents, shipping_cents, tax_cents, subtotal_cents, email, heard_about FROM orders WHERE stripe_session_id = ?1",
     )
       .bind(data.sessionId)
       .first<{
@@ -302,6 +306,7 @@ export const getPaidOrder = createServerFn({ method: "POST" })
         tax_cents: number | null;
         subtotal_cents: number | null;
         email: string;
+        heard_about: string;
       }>();
     if (!row) return { found: false as const };
     return { found: true as const, ...row };

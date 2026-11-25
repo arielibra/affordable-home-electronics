@@ -108,3 +108,71 @@ export function HeardAbout({ reference, proof }: { reference: string; proof: str
     </section>
   );
 }
+
+/**
+ * The same question inside checkout, before the pay button. Controlled: the
+ * checkout page holds the answer and sends it with the order, so it is saved
+ * the moment the order is created. Nothing is sent from here.
+ */
+export function HeardAboutChoice({
+  value,
+  other,
+  onChange,
+}: {
+  value: HeardAboutId | "";
+  other: string;
+  onChange: (value: HeardAboutId | "", other: string) => void;
+}) {
+  const otherRef = useRef<HTMLInputElement>(null);
+  const firstPick = useRef(true);
+  useEffect(() => {
+    if (value === "other" && !firstPick.current) otherRef.current?.focus();
+    firstPick.current = false;
+  }, [value]);
+
+  return (
+    <fieldset>
+      <legend className="text-[15px] font-semibold text-ink">
+        How did you hear about us? <span className="font-normal text-muted">Optional</span>
+      </legend>
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {HEARD_ABOUT.map((h) => {
+          const on = value === h.id;
+          return (
+            <button
+              key={h.id}
+              type="button"
+              aria-pressed={on}
+              // Tapping the chosen answer again clears it.
+              onClick={() => onChange(on ? "" : h.id, other)}
+              className={`inline-flex h-10 items-center rounded-full px-4 text-[15px] font-medium transition active:scale-[0.97] ${
+                on
+                  ? "bg-ink text-surface"
+                  : "bg-white text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] hover:shadow-[inset_0_0_0_1.5px_currentColor]"
+              }`}
+            >
+              {h.label}
+            </button>
+          );
+        })}
+      </div>
+      {value === "other" ? (
+        <div className="mt-2.5 max-w-[380px]">
+          <label htmlFor="heard-about-other-checkout" className="sr-only">
+            Where did you hear about us?
+          </label>
+          <input
+            id="heard-about-other-checkout"
+            ref={otherRef}
+            type="text"
+            value={other}
+            maxLength={HEARD_ABOUT_OTHER_MAX}
+            onChange={(e) => onChange("other", e.target.value)}
+            placeholder="Where did you hear about us?"
+            className="h-11 w-full min-w-0 rounded-[10px] bg-white px-3.5 text-[15px] text-ink shadow-[inset_0_0_0_1.5px_#9db6cf] placeholder:text-muted"
+          />
+        </div>
+      ) : null}
+    </fieldset>
+  );
+}

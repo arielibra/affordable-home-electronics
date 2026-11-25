@@ -8,7 +8,8 @@ import { SiteShell } from "../components/site/chrome";
 import { Field, Notice, TextArea, TextInput } from "../components/site/form";
 import { PayMarks } from "../components/site/pay-marks";
 import { GoogleReviewsOptIn } from "../components/site/google-reviews-opt-in";
-import { HeardAbout } from "../components/site/heard-about";
+import { HeardAbout, HeardAboutChoice } from "../components/site/heard-about";
+import type { HeardAboutId } from "../lib/heard-about";
 import { Shell } from "../components/site/section";
 import { getCheckoutConfig, placeOrder } from "../lib/api/store.functions";
 import { ORIGIN, SITE, money } from "../lib/site";
@@ -68,6 +69,10 @@ function CheckoutBody() {
   // With live carrier rates on, shipping is quoted from the ZIP code (and the
   // packed weight and box of each item); otherwise the old flat rule applies.
   const [shipZip, setShipZip] = useState("");
+  // "How did you hear about us?", asked before paying and sent with the order.
+  const [heard, setHeard] = useState<{ id: HeardAboutId | ""; other: string }>({ id: "", other: "" });
+  const heardRef = useRef(heard);
+  heardRef.current = heard;
   const [shipCountry, setShipCountry] = useState<"US" | "CA">("US");
   const [quote, setQuote] = useState<{ cents: number; label: string; source: string } | null>(null);
   const [quoting, setQuoting] = useState(false);
@@ -141,6 +146,8 @@ function CheckoutBody() {
         notes: String(new FormData(formRef.current ?? undefined).get("notes") ?? ""),
         zip: shipZip.trim(),
         country: shipCountry,
+        heardAbout: heard.id,
+        heardAboutOther: heard.other,
       });
       if (!r.ok || typeof r.url !== "string") {
         setError(String(r.error ?? "Card payment could not be started. Please try again."));
@@ -166,7 +173,7 @@ function CheckoutBody() {
     setError("");
     try {
       const d = details();
-      const r = await placeOrder({ data: { cartId, ...d } });
+      const r = await placeOrder({ data: { cartId, ...d, heardAbout: heard.id, heardAboutOther: heard.other } });
       if (!r.ok) {
         setError("The cart emptied before the order went through. Add the items again, or call the shop.");
         return;
@@ -230,6 +237,8 @@ function CheckoutBody() {
         const r = await json("/api/paypal/create", {
           cartId: stateRef.current.cartId,
           ...details(),
+          heardAbout: heardRef.current.id,
+          heardAboutOther: heardRef.current.other,
         });
         if (!r.ok || typeof r.id !== "string") {
           const message = String(r.error ?? "PayPal could not start the order.");
@@ -306,7 +315,7 @@ function CheckoutBody() {
               </div>
             ) : null}
           </dl>
-          <HeardAbout reference={done.reference} proof={done.proof} />
+          {heard.id ? null : <HeardAbout reference={done.reference} proof={done.proof} />}
           {done.paid ? <GoogleReviewsOptIn reference={done.reference} proof={done.proof} /> : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop" className="inline-flex h-12 items-center rounded-[10px] bg-ink px-6 text-[15px] font-semibold text-surface active:scale-[0.98]">
@@ -436,6 +445,8 @@ function CheckoutBody() {
               <Field label="Notes for the shop" name="notes" hint="Install request, delivery window, PO number, anything else. Optional.">
                 <TextArea id="notes" name="notes" rows={3} maxLength={1000} />
               </Field>
+
+              <HeardAboutChoice value={heard.id} other={heard.other} onChange={(id, other) => setHeard({ id, other })} />
 
               <p className="max-w-[60ch] text-[14px] leading-relaxed text-muted">
                 Please read our{" "}

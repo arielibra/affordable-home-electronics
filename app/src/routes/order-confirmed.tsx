@@ -33,6 +33,7 @@ type Order = {
   tax_cents: number | null;
   subtotal_cents: number | null;
   email: string;
+  heard_about?: string;
 };
 
 function Confirmed() {
@@ -111,7 +112,7 @@ function Confirmed() {
               <Row label="Tax" value={money(order?.tax_cents ?? 0)} mono />
               <Row label="Paid" value={money(order?.amount_total_cents ?? 0)} mono strong />
             </dl>
-            {order && sessionId ? <HeardAbout reference={order.reference} proof={sessionId} /> : null}
+            {order && sessionId && !order.heard_about ? <HeardAbout reference={order.reference} proof={sessionId} /> : null}
             {order && sessionId ? <GoogleReviewsOptIn reference={order.reference} proof={sessionId} /> : null}
           </>
         ) : (

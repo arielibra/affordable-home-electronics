@@ -31,6 +31,20 @@ export const HEARD_ABOUT_IDS = HEARD_ABOUT.map((h) => h.id) as [HeardAboutId, ..
 
 export const HEARD_ABOUT_OTHER_MAX = 120;
 
+/**
+ * Validates an answer sent from the checkout page. Unknown or missing answers
+ * become "" (not answered); the typed text is kept only for "other", with
+ * control characters and runs of spaces squeezed out.
+ */
+export function cleanHeardAbout(answer: unknown, other: unknown): { id: string; other: string } {
+  const id = typeof answer === "string" && (HEARD_ABOUT_IDS as readonly string[]).includes(answer) ? answer : "";
+  const text =
+    id === "other" && typeof other === "string"
+      ? other.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, HEARD_ABOUT_OTHER_MAX)
+      : "";
+  return { id, other: text };
+}
+
 export function heardAboutLabel(id: string | null | undefined, other?: string | null): string {
   if (!id) return "";
   const label = HEARD_ABOUT.find((h) => h.id === id)?.label ?? LEGACY[id] ?? id;

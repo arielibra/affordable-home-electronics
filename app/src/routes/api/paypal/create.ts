@@ -7,6 +7,7 @@ import { parkPaypalOrder, type PaypalAddress } from "../../../lib/paypal-order.s
 import { paypalEnabled, paypalFetch, usd } from "../../../lib/paypal.server";
 import { cartLines, unavailableInCart } from "../../../lib/store.server";
 import { calculateTax } from "../../../lib/stripe.server";
+import { cleanHeardAbout } from "../../../lib/heard-about";
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -158,6 +159,13 @@ export const Route = createFileRoute("/api/paypal/create")({
         await DB.prepare("INSERT OR REPLACE INTO paypal_carts (paypal_order_id, cart_id) VALUES (?1,?2)")
           .bind(created.id, cartId)
           .run();
+        // "How did you hear about us?", answered (optionally) before paying.
+        const heard = cleanHeardAbout(body.heardAbout, body.heardAboutOther);
+        if (heard.id) {
+          await DB.prepare("UPDATE orders SET heard_about = ?1, heard_about_other = ?2 WHERE paypal_order_id = ?3")
+            .bind(heard.id, heard.other, created.id)
+            .run();
+        }
 
         return Response.json({
           ok: true,

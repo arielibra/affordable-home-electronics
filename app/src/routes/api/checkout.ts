@@ -4,6 +4,7 @@ import { bindings } from "../../lib/bindings.server";
 import { cartLines, unavailableInCart } from "../../lib/store.server";
 import { stripePost } from "../../lib/stripe.server";
 import { liveRatesEnabled, shippingQuote } from "../../lib/rates.server";
+import { cleanHeardAbout } from "../../lib/heard-about";
 
 type Session = { id: string; url: string };
 
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/api/checkout")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        let payload: { cartId?: unknown; notes?: unknown; zip?: unknown; country?: unknown };
+        let payload: { cartId?: unknown; notes?: unknown; zip?: unknown; country?: unknown; heardAbout?: unknown; heardAboutOther?: unknown };
         try {
           payload = (await request.json()) as typeof payload;
         } catch {
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/api/checkout")({
         // the order if it lands in a different ZIP than the one quoted.
         const shipZip = typeof payload.zip === "string" ? payload.zip.trim().slice(0, 10) : "";
         const shipCountry = payload.country === "CA" ? "CA" : "US";
+        // "How did you hear about us?", answered (optionally) before paying.
+        const heard = cleanHeardAbout(payload.heardAbout, payload.heardAboutOther);
         if (cartId.length < 8 || cartId.length > 64) {
           return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
         }
@@ -109,9 +112,9 @@ export const Route = createFileRoute("/api/checkout")({
 
         // Park a pending order now so nothing is lost if the webhook is slow.
         await DB.prepare(
-          "INSERT INTO orders (id,reference,name,email,phone,notes,subtotal_cents,status,stripe_session_id) VALUES (?1,?2,'','','',?3,?4,'pending_payment',?5)",
+          "INSERT INTO orders (id,reference,name,email,phone,notes,subtotal_cents,status,stripe_session_id,heard_about,heard_about_other) VALUES (?1,?2,'','','',?3,?4,'pending_payment',?5,?6,?7)",
         )
-          .bind(crypto.randomUUID(), referenceFor(), notes, subtotal, session.id)
+          .bind(crypto.randomUUID(), referenceFor(), notes, subtotal, session.id, heard.id, heard.other)
           .run();
 
         return Response.json({ ok: true, url: session.url });
