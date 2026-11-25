@@ -7,7 +7,6 @@ import { IconCart, IconMail, IconPhone, IconPin, IconSearch, IconTruck } from ".
 import { Lockup } from "./mark";
 import { useHalloween } from "./halloween";
 import { FallingLeaves, LeafIcon, thanksLine, useThanksgiving } from "./thanksgiving";
-import { FallingSnow, SnowflakeIcon, useChristmas } from "./christmas";
 import { PayMarks } from "./pay-marks";
 
 function CartLink() {
@@ -58,22 +57,14 @@ function Header() {
   const [open, setOpen] = useState(false);
   const halloween = useHalloween();
   const thanksgiving = useThanksgiving();
-  const christmas = useChristmas();
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur">
       {/* One bar across the very top. During Halloween it turns night blue and
           carries the greeting; in November it turns russet and thanks the
-          customers; over the holidays it turns evergreen with a red ribbon;
-          the rest of the year it is the brand blue. */}
+          customers; the rest of the year it is the brand blue. */}
       <div
         className={
-          halloween
-            ? "bg-[#1b2b45] text-[#ffe9d2]"
-            : thanksgiving
-              ? "bg-[#6b3416] text-[#fff1e0]"
-              : christmas
-                ? "ahe-xm-bar bg-[#14532d] text-[#f3fbf5]"
-                : "bg-band text-surface"
+          halloween ? "bg-[#1b2b45] text-[#ffe9d2]" : thanksgiving ? "bg-[#6b3416] text-[#fff1e0]" : "bg-band text-surface"
         }
       >
         <div className="mx-auto flex min-h-9 max-w-[1240px] items-center justify-between gap-4 px-5 py-1.5 text-[13px] font-medium">
@@ -90,12 +81,6 @@ function Header() {
               <>
                 <LeafIcon className="h-[18px] w-[18px] shrink-0" />
                 <b className="ahe-display shrink-0 text-[16px] tracking-[0.04em] text-[#ffc48a]">{thanksLine()}</b>
-                <span className="hidden truncate sm:inline">· Authorized dealer. Full USA warranty on every item.</span>
-              </>
-            ) : christmas ? (
-              <>
-                <SnowflakeIcon className="h-[18px] w-[18px] shrink-0" />
-                <b className="ahe-display shrink-0 text-[16px] tracking-[0.04em] text-[#ffd54a]">Happy Holidays</b>
                 <span className="hidden truncate sm:inline">· Authorized dealer. Full USA warranty on every item.</span>
               </>
             ) : (
@@ -317,17 +302,13 @@ function Footer() {
 export function SiteShell({ children }: { children: ReactNode }) {
   const halloween = useHalloween();
   const thanksgiving = useThanksgiving();
-  const christmas = useChristmas();
   return (
     <CartProvider>
-      <div
-        className={`flex min-h-dvh flex-col bg-ground ${halloween ? "ahe-hw" : ""} ${thanksgiving ? "ahe-tg" : ""} ${christmas ? "ahe-xm" : ""}`}
-      >
+      <div className={`flex min-h-dvh flex-col bg-ground ${halloween ? "ahe-hw" : ""} ${thanksgiving ? "ahe-tg" : ""}`}>
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
         <FallingLeaves />
-        <FallingSnow />
       </div>
     </CartProvider>
   );
