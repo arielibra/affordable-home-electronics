@@ -257,6 +257,29 @@ export async function shippingDiagnostics(): Promise<Record<string, unknown>> {
     const mine = await ownAccounts(token);
     out.usedForQuotes = mine.length;
     if (mine.length) {
+      // Raw Shippo reply for the same sample, so a missing rate can be explained.
+      const raw = await fetch("https://api.goshippo.com/shipments/", {
+        method: "POST",
+        headers: { Authorization: `ShippoToken ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          carrier_accounts: mine,
+          address_from: { zip: SHOP_ZIP, country: "US" },
+          address_to: { zip: "90001", country: "US" },
+          parcels: [{ length: "17", width: "15", height: "5", distance_unit: "in", weight: "7.4", mass_unit: "lb" }],
+          async: false,
+        }),
+      });
+      const rj = (await raw.json()) as {
+        status?: string;
+        messages?: { source?: string; code?: string; text?: string }[];
+        rates?: { provider?: string; amount?: string; carrier_account?: string; servicelevel?: { name?: string }; estimated_days?: number }[];
+      };
+      out.raw = {
+        http: raw.status,
+        status: rj.status,
+        messages: (rj.messages ?? []).map((m) => `${m.source ?? ""} ${m.code ?? ""}: ${m.text ?? ""}`.slice(0, 300)),
+        rates: (rj.rates ?? []).map((r) => `${r.provider} ${r.servicelevel?.name} $${r.amount} ${r.estimated_days ?? "?"}d ${mine.includes(r.carrier_account ?? "") ? "(own)" : "(other)"}`),
+      };
       out.sample = {
         what: "7.4 lb NVR box 17x15x5 from 11374 to 90001 (Los Angeles)",
         rate: await cheapestRate({ origin: SHOP_ZIP, weight: 7.4, length: 17, width: 15, height: 5 }, { zip: "90001", country: "US" }, token, mine),
