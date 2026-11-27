@@ -65,7 +65,9 @@ export const Route = createFileRoute("/api/checkout")({
           mode: "payment",
           "automatic_tax[enabled]": "true",
           "phone_number_collection[enabled]": "true",
-          billing_address_collection: "auto",
+          // Required so every card and Apple Pay payment carries a name and billing
+          // address: Radar blocks far more payments that arrive without them.
+          billing_address_collection: "required",
           "shipping_address_collection[allowed_countries][0]": quote.source === "live" ? shipCountry : "US",
           ...(quote.source === "live" ? {} : { "shipping_address_collection[allowed_countries][1]": "CA" }),
           success_url: `${origin}/order-confirmed?session_id={CHECKOUT_SESSION_ID}`,
