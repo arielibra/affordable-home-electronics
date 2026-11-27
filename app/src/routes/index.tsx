@@ -22,10 +22,14 @@ export const Route = createFileRoute("/")({
         content:
           "Security cameras, NVR/DVR recorders, access control and smart locks from an authorized dealer in Queens. Selling since 2003, shipped nationwide, installation arranged across NYC.",
       },
-      { property: "og:title", content: "Affordable Home Electronics | Security Cameras & Access Control" },
+      {
+        property: "og:title",
+        content: "Affordable Home Electronics | Security Cameras & Access Control",
+      },
       {
         property: "og:description",
-        content: "Authorized dealer in Rego Park, Queens. Selling since 2003. Shipped across the US, installation arranged across NYC.",
+        content:
+          "Authorized dealer in Rego Park, Queens. Selling since 2003. Shipped across the US, installation arranged across NYC.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/` }],
@@ -35,7 +39,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { categories, counts, featured } = Route.useLoaderData();
+  const { categories, counts, featured, brands } = Route.useLoaderData();
   return (
     <SiteShell>
       <Hero />
@@ -44,7 +48,7 @@ function Index() {
       <WhatWeDo />
       <InstallBand />
       <WhyBuy />
-      <BrandsWall />
+      <BrandsWall brands={brands} />
       <Testimonials />
       <ContactPanel />
     </SiteShell>

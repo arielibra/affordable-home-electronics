@@ -1,11 +1,17 @@
 import { Link } from "@tanstack/react-router";
 
+import { BrandTile, type BrandTileData } from "../site/brand-tile";
 import { MoreLink, SectionHead, Shell } from "../site/section";
 
-const BRANDS = ["Hikvision", "Dahua", "ALIBI", "LTS", "ENS", "Lorex", "Anviz", "Speco", "Ring", "Q-See", "FingerTec", "ZMODO"];
-
-/** The lines the shop carries, as a calm grid of name tiles. */
-export function BrandsWall() {
+/**
+ * "Brands we carry" on the homepage: the official logo of every brand that has
+ * products on the shelf, using the same tiles as the /brands wall (quiet at
+ * rest, full colour and "Shop <brand>" on hover). The list comes from the
+ * shop's brands, so a brand appears or drops off as its products do; nothing
+ * here is typed by hand.
+ */
+export function BrandsWall({ brands }: { brands: BrandTileData[] }) {
+  if (!brands.length) return null;
   return (
     <section className="bg-ground py-12 md:py-16">
       <Shell>
@@ -17,13 +23,10 @@ export function BrandsWall() {
             </Link>
           }
         />
-        <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-          {BRANDS.map((b) => (
-            <li
-              key={b}
-              className="ahe-display flex h-16 items-center justify-center rounded-[14px] border border-[#dbe7f3] bg-surface px-3 text-center text-[22px] tracking-[0.02em] text-ink-soft"
-            >
-              {b}
+        <ul className="ahe-brand-grid ahe-brand-grid--home mt-6">
+          {brands.map((b) => (
+            <li key={b.slug}>
+              <BrandTile b={b} />
             </li>
           ))}
         </ul>

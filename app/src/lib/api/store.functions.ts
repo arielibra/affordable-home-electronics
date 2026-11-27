@@ -30,7 +30,11 @@ import { deliverableAddress, enquiryMessage, ownerAddress, sendMail } from "../e
 import { SPAM_HOLD, scoreEnquiry } from "../spam";
 import { paypalClientId, paypalEnabled, paypalLive } from "../paypal.server";
 import { HEARD_ABOUT_IDS, HEARD_ABOUT_OTHER_MAX, cleanHeardAbout } from "../heard-about";
-import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS, paymentsEnabled } from "../stripe.server";
+import {
+  FREE_SHIPPING_THRESHOLD_CENTS,
+  SHIPPING_FLAT_CENTS,
+  paymentsEnabled,
+} from "../stripe.server";
 import { liveRatesEnabled } from "../rates.server";
 
 const id = z.string().min(8).max(64);
@@ -54,26 +58,41 @@ const HOME_NEW_ALIBI = [
 ];
 
 export const getStorefront = createServerFn({ method: "GET" }).handler(async () => {
-  const [categories, counts, picks, fallback] = await Promise.all([
+  const [categories, counts, picks, fallback, allBrands] = await Promise.all([
     listCategories(),
     categoryCounts(),
     productsBySlugs(HOME_NEW_ALIBI),
     featuredProducts(9),
+    listBrands(),
   ]);
+  // Homepage logo wall: brands with a logo and something on the shelf, in the
+  // shop's chosen order (same rule as the /brands wall).
+  const brands = allBrands.filter((b) => b.logo).slice(0, 10);
   const seen = new Set(picks.map((p) => p.slug));
   const featured = [...picks, ...fallback.filter((p) => !seen.has(p.slug))].slice(0, 9);
-  return { categories, counts, featured };
+  return { categories, counts, featured, brands };
 });
 
 export const getShop = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
+  .inputValidator(
+    z.object({ sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }),
+  )
   .handler(async ({ data }) => {
-    const [categories, counts, products] = await Promise.all([listCategories(), categoryCounts(), allProducts(data.sort)]);
+    const [categories, counts, products] = await Promise.all([
+      listCategories(),
+      categoryCounts(),
+      allProducts(data.sort),
+    ]);
     return { categories, counts, products };
   });
 
 export const getCategoryPage = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ slug, sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
+  .inputValidator(
+    z.object({
+      slug,
+      sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured"),
+    }),
+  )
   .handler(async ({ data }) => {
     const [categories, products, counts] = await Promise.all([
       listCategories(),
@@ -104,14 +123,25 @@ export const getProductPage = createServerFn({ method: "GET" })
     const opts = cleanOptions(product.options);
     const addons = opts.length ? await addonProducts(opts.flatMap((o) => o.choices)) : new Map();
     const options: ResolvedOption[] = opts
-      .map((o) => ({ label: o.label, help: o.help, choices: o.choices.map((c) => addons.get(c)).filter((c): c is { slug: string; name: string; price_cents: number } => !!c) }))
+      .map((o) => ({
+        label: o.label,
+        help: o.help,
+        choices: o.choices
+          .map((c) => addons.get(c))
+          .filter((c): c is { slug: string; name: string; price_cents: number } => !!c),
+      }))
       .filter((o) => o.choices.length > 0);
     // "Complete your system" suggestions, live prices, in-stock only.
     const plan = upsellPlan(product);
     const upsellRows = plan.slugs.length ? await productsBySlugs(plan.slugs) : [];
     const upsells = upsellRows
       .filter((u) => u.stock_tracked === 0 || u.stock > 0)
-      .map((u) => ({ slug: u.slug, name: UPSELL_LABEL[u.slug] ?? u.name, image: u.image, price_cents: u.price_cents }));
+      .map((u) => ({
+        slug: u.slug,
+        name: UPSELL_LABEL[u.slug] ?? u.name,
+        image: u.image,
+        price_cents: u.price_cents,
+      }));
     return {
       product,
       images,
@@ -128,18 +158,31 @@ export const searchCatalog = createServerFn({ method: "GET" })
   .inputValidator(z.object({ q: z.string().max(80).default("") }))
   .handler(async ({ data }) => {
     const q = data.q.trim();
-    const [categories, products] = await Promise.all([listCategories(), q.length > 1 ? searchProducts(q) : Promise.resolve([])]);
+    const [categories, products] = await Promise.all([
+      listCategories(),
+      q.length > 1 ? searchProducts(q) : Promise.resolve([]),
+    ]);
     return { categories, products, q };
   });
 
 export const getBrandPage = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ slug, sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured") }))
+  .inputValidator(
+    z.object({
+      slug,
+      sort: z.enum(["featured", "price-asc", "price-desc", "name"]).default("featured"),
+    }),
+  )
   .handler(async ({ data }) => {
-    const [brand, products] = await Promise.all([getBrand(data.slug), productsByBrand(data.slug, data.sort)]);
+    const [brand, products] = await Promise.all([
+      getBrand(data.slug),
+      productsByBrand(data.slug, data.sort),
+    ]);
     return { brand, products };
   });
 
-export const getBrandIndex = createServerFn({ method: "GET" }).handler(async () => ({ brands: await listBrands() }));
+export const getBrandIndex = createServerFn({ method: "GET" }).handler(async () => ({
+  brands: await listBrands(),
+}));
 
 export const getCart = createServerFn({ method: "POST" })
   .inputValidator(z.object({ cartId: id }))
@@ -174,7 +217,9 @@ export const resolveFeedItem = createServerFn({ method: "POST" })
     if (exact) return { slug: exact.slug };
     const prefix = feedIdPrefix(data.id);
     if (!prefix) return { slug: null };
-    const rows = await DB.prepare("SELECT slug FROM products WHERE active = 1 AND substr(slug, 1, ?2) = ?1")
+    const rows = await DB.prepare(
+      "SELECT slug FROM products WHERE active = 1 AND substr(slug, 1, ?2) = ?1",
+    )
       .bind(prefix, prefix.length)
       .all<{ slug: string }>();
     const hit = (rows.results ?? []).find((r) => feedId(r.slug) === data.id);
@@ -209,17 +254,35 @@ export const placeOrder = createServerFn({ method: "POST" })
     const orderId = crypto.randomUUID();
     const bytes = new Uint8Array(3);
     crypto.getRandomValues(bytes);
-    const reference = "AHE-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+    const reference =
+      "AHE-" +
+      Array.from(bytes, (b) => b.toString(16).padStart(2, "0"))
+        .join("")
+        .toUpperCase();
     await DB.prepare(
       "INSERT INTO orders (id,reference,name,email,phone,company,address1,address2,city,state,zip,notes,subtotal_cents,heard_about,heard_about_other) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
     )
       .bind(
-        orderId, reference, data.name, data.email, data.phone, data.company,
-        data.address1, data.address2, data.city, data.state, data.zip, data.notes, subtotal,
-        heard.id, heard.other,
+        orderId,
+        reference,
+        data.name,
+        data.email,
+        data.phone,
+        data.company,
+        data.address1,
+        data.address2,
+        data.city,
+        data.state,
+        data.zip,
+        data.notes,
+        subtotal,
+        heard.id,
+        heard.other,
       )
       .run();
-    const stmt = DB.prepare("INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)");
+    const stmt = DB.prepare(
+      "INSERT INTO order_items (order_id,product_slug,name,qty,price_cents) VALUES (?1,?2,?3,?4,?5)",
+    );
     await DB.batch(lines.map((l) => stmt.bind(orderId, l.slug, l.name, l.qty, l.price_cents)));
     await clearCart(data.cartId);
     return { ok: true as const, reference, subtotal, lines };
@@ -371,7 +434,11 @@ export const saveHeardAbout = createServerFn({ method: "POST" })
     const proof = data.proof.trim();
     const other =
       data.answer === "other"
-        ? (data.other ?? "").replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, HEARD_ABOUT_OTHER_MAX)
+        ? (data.other ?? "")
+            .replace(/[\u0000-\u001f\u007f]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, HEARD_ABOUT_OTHER_MAX)
         : "";
     const r = await DB.prepare(
       `UPDATE orders SET heard_about = ?1, heard_about_other = ?4
@@ -396,7 +463,21 @@ export const saveHeardAbout = createServerFn({ method: "POST" })
 //
 // No country is stored on an order. We ship to the US and Canada only, so a
 // Canadian province code or a Canadian postcode means CA and anything else US.
-const CA_PROVINCES = new Set(["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]);
+const CA_PROVINCES = new Set([
+  "AB",
+  "BC",
+  "MB",
+  "NB",
+  "NL",
+  "NS",
+  "NT",
+  "NU",
+  "ON",
+  "PE",
+  "QC",
+  "SK",
+  "YT",
+]);
 
 function addBusinessDays(from: Date, days: number): Date {
   const d = new Date(from);
@@ -431,7 +512,12 @@ export const getReviewOptIn = createServerFn({ method: "POST" })
                OR (email <> '' AND lower(email) = lower(?2)))`,
     )
       .bind(data.reference, proof)
-      .first<{ email: string | null; state: string | null; zip: string | null; paid_at: string | null }>();
+      .first<{
+        email: string | null;
+        state: string | null;
+        zip: string | null;
+        paid_at: string | null;
+      }>();
     const email = (row?.email ?? "").trim();
     if (!row || !email.includes("@")) return { ok: false as const };
 

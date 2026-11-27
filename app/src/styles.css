@@ -837,3 +837,8 @@ html.ahe .ahe-bf-card:focus, html.ahe .ahe-bf-card:focus-visible { outline: none
 @media (min-width: 640px) {
   .ahe-specs dl > div { grid-template-columns: minmax(12rem, 34%) 1fr; }
 }
+
+/* Homepage logo wall: shorter tiles and five across on desktop, so ten brands sit in two tidy rows. */
+.ahe-brand-grid--home .ahe-brand-tile { aspect-ratio: 16 / 10; }
+@media (min-width: 640px) { .ahe-brand-grid--home { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .ahe-brand-grid--home { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
