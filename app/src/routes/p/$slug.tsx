@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 import { StructuredData } from "../../components/StructuredData";
 import { SiteShell } from "../../components/site/chrome";
 import { IconShield, IconTruck } from "../../components/site/icons";
-import { AddToCartButton, ProductCard, isAvailable, stockLabel } from "../../components/site/product-card";
+import {
+  AddToCartButton,
+  ProductCard,
+  isAvailable,
+  stockLabel,
+} from "../../components/site/product-card";
+import { ProductDetails } from "../../components/site/product-details";
 import { ProductReviews, Stars, type ReviewData } from "../../components/site/reviews";
 import { Shell } from "../../components/site/section";
 import { getProductPage } from "../../lib/api/store.functions";
 import { FREE_SHIPPING_MAX_LB, FREE_SHIPPING_THRESHOLD_CENTS } from "../../lib/shipping";
 import { ORIGIN, SITE, money, savings } from "../../lib/site";
-import { parseSpecSheet, renderRichText, renderSpecSheet, specLinkLabel } from "../../lib/rich-text";
+import { parseSpecSheet } from "../../lib/rich-text";
 import { pageDescription, pageKeywords, pageTitle } from "../../lib/seo";
 import { parseBadges, parseHighlights, type Badge } from "../../lib/badges";
 import type { ResolvedOption } from "../../lib/options";
@@ -53,13 +59,30 @@ function specProperties(text: string | null | undefined) {
  */
 function featureProperties(p: { badges?: string | null; highlights?: string | null }) {
   const out: { "@type": "PropertyValue"; name: string; value: string }[] = [];
-  for (const b of parseBadges(p.badges)) out.push({ "@type": "PropertyValue", name: b.label, value: b.detail || "Yes" });
-  for (const h of parseHighlights(p.highlights)) out.push({ "@type": "PropertyValue", name: "Key feature", value: h });
+  for (const b of parseBadges(p.badges))
+    out.push({ "@type": "PropertyValue", name: b.label, value: b.detail || "Yes" });
+  for (const h of parseHighlights(p.highlights))
+    out.push({ "@type": "PropertyValue", name: "Key feature", value: h });
   return out;
 }
 
 function productJsonLd(
-  p: { slug: string; name: string; brand: string; price_cents: number; blurb?: string; meta_description?: string; gtin?: string; mpn?: string; image: string; category: string; specs?: string | null; highlights?: string | null; badges?: string | null; ship_weight_lb?: number | null },
+  p: {
+    slug: string;
+    name: string;
+    brand: string;
+    price_cents: number;
+    blurb?: string;
+    meta_description?: string;
+    gtin?: string;
+    mpn?: string;
+    image: string;
+    category: string;
+    specs?: string | null;
+    highlights?: string | null;
+    badges?: string | null;
+    ship_weight_lb?: number | null;
+  },
   categoryName: string,
   shots: string[],
   available: boolean,
@@ -98,7 +121,12 @@ function productJsonLd(
             "@type": "Review",
             author: { "@type": "Person", name: r.author },
             datePublished: r.date,
-            reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
             ...(r.title ? { name: r.title } : {}),
             ...(r.body ? { reviewBody: r.body } : {}),
           })),
@@ -115,7 +143,9 @@ function productJsonLd(
       // Matches the /shipping page. Only stated when it is known to be free
       // ($199 or more and 5 lb or less packed); everything else is priced
       // live at checkout, so no fixed figure is claimed for it.
-      ...(p.price_cents >= FREE_SHIPPING_THRESHOLD_CENTS && p.ship_weight_lb != null && p.ship_weight_lb <= FREE_SHIPPING_MAX_LB
+      ...(p.price_cents >= FREE_SHIPPING_THRESHOLD_CENTS &&
+      p.ship_weight_lb != null &&
+      p.ship_weight_lb <= FREE_SHIPPING_MAX_LB
         ? {
             shippingDetails: {
               "@type": "OfferShippingDetails",
@@ -123,8 +153,18 @@ function productJsonLd(
               shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
               deliveryTime: {
                 "@type": "ShippingDeliveryTime",
-                handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 2, unitCode: "DAY" },
-                transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 7, unitCode: "DAY" },
+                handlingTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: 0,
+                  maxValue: 2,
+                  unitCode: "DAY",
+                },
+                transitTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: 3,
+                  maxValue: 7,
+                  unitCode: "DAY",
+                },
               },
             },
           }
@@ -182,7 +222,8 @@ export const Route = createFileRoute("/p/$slug")({
 });
 
 function ProductPage() {
-  const { product, images, related, categoryName, reviews, options, upsells, installUpsell } = Route.useLoaderData();
+  const { product, images, related, categoryName, reviews, options, upsells, installUpsell } =
+    Route.useLoaderData();
   // "Complete your system" add-ons ticked by the shopper, by product slug.
   const [ticked, setTicked] = useState<string[]>([]);
   // The add-on picked in each drop-down ("" = none), by drop-down position.
@@ -192,7 +233,11 @@ function ProductPage() {
   const viewed = product?.slug;
   useEffect(() => {
     if (!product) return;
-    track("view_item", { currency: "USD", value: product.price_cents / 100, items: [gaItem({ ...product, category: categoryName ?? product.category })] });
+    track("view_item", {
+      currency: "USD",
+      value: product.price_cents / 100,
+      items: [gaItem({ ...product, category: categoryName ?? product.category })],
+    });
     // Once per product opened, not on every re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewed]);
@@ -202,9 +247,6 @@ function ProductPage() {
   const available = isAvailable(product);
   const badges = parseBadges(product.badges);
   const highlights = parseHighlights(product.highlights);
-  // A long manufacturer write-up would push the price below the fold, so it
-  // moves to its own Overview section under the buy box. Short ones stay put.
-  const longBlurb = (product.blurb ?? "").length > 700;
 
   return (
     <SiteShell>
@@ -215,7 +257,11 @@ function ProductPage() {
             Catalog
           </Link>
           <span className="mx-2">/</span>
-          <Link to="/shop/$category" params={{ category: product.category }} className="hover:text-signal">
+          <Link
+            to="/shop/$category"
+            params={{ category: product.category }}
+            className="hover:text-signal"
+          >
             {categoryName}
           </Link>
         </nav>
@@ -245,7 +291,9 @@ function ProductPage() {
                     aria-label={`Photo ${i + 1} of ${shots.length}`}
                     aria-current={i === shown}
                     className={`ahe-photo h-14 w-14 rounded-[10px] border lg:h-16 lg:w-16 ${
-                      i === shown ? "border-signal shadow-[0_0_0_1px_var(--color-signal)]" : "border-[#dbe7f3] hover:border-[#9db6cf]"
+                      i === shown
+                        ? "border-signal shadow-[0_0_0_1px_var(--color-signal)]"
+                        : "border-[#dbe7f3] hover:border-[#9db6cf]"
                     }`}
                   >
                     <img src={src} alt="" loading="lazy" />
@@ -260,7 +308,10 @@ function ProductPage() {
           <p className="text-[14px] font-semibold text-signal">{product.brand}</p>
           <h1 className="mt-1.5 text-[30px] text-ink md:text-[40px]">{product.name}</h1>
           {reviews && reviews.summary.count > 0 ? (
-            <a href="#reviews" className="mt-3 inline-flex items-center gap-2 text-sm text-muted hover:text-ink">
+            <a
+              href="#reviews"
+              className="mt-3 inline-flex items-center gap-2 text-sm text-muted hover:text-ink"
+            >
               <Stars value={reviews.summary.average} />
               <span>
                 {reviews.summary.average.toFixed(1)} · {reviews.summary.count}{" "}
@@ -270,15 +321,14 @@ function ProductPage() {
           ) : null}
           {badges.length ? <FeatureBadges badges={badges} /> : null}
           {highlights.length ? <KeyFeatures items={highlights} /> : null}
-          {product.blurb && !longBlurb ? (
-            <div className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-muted">{renderRichText(product.blurb)}</div>
-          ) : null}
 
           <div className="mt-6 grid gap-3.5 rounded-[14px] border border-[#dbe7f3] bg-surface p-5">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
               <span className="ahe-price text-[40px] text-ink">{money(product.price_cents)}</span>
               {product.msrp_cents && product.msrp_cents > product.price_cents ? (
-                <span className="text-[15px] text-muted line-through tabular-nums">{money(product.msrp_cents)}</span>
+                <span className="text-[15px] text-muted line-through tabular-nums">
+                  {money(product.msrp_cents)}
+                </span>
               ) : null}
               {save && product.msrp_cents ? (
                 <span className="rounded-full bg-[#e6f1fb] px-2.5 py-1 text-[14px] font-bold text-signal">
@@ -300,21 +350,36 @@ function ProductPage() {
                 items={upsells ?? []}
                 install={!!installUpsell}
                 ticked={ticked}
-                onToggle={(slug) => setTicked((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]))}
+                onToggle={(slug) =>
+                  setTicked((prev) =>
+                    prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+                  )
+                }
                 basePrice={
                   product.price_cents +
-                  (options ?? []).reduce((sum, o, i) => sum + (o.choices.find((c) => c.slug === picked[i])?.price_cents ?? 0), 0)
+                  (options ?? []).reduce(
+                    (sum, o, i) =>
+                      sum + (o.choices.find((c) => c.slug === picked[i])?.price_cents ?? 0),
+                    0,
+                  )
                 }
               />
             ) : null}
             <div className="max-w-[420px]">
-              <AddToCartButton slug={product.slug} soldOut={!available} extras={[...picked.filter(Boolean), ...ticked]} />
+              <AddToCartButton
+                slug={product.slug}
+                soldOut={!available}
+                extras={[...picked.filter(Boolean), ...ticked]}
+              />
               {available && product.stock_tracked === 1 && product.stock <= 3 ? (
-                <p className="mt-2 text-[14px] font-semibold text-signal">Only {product.stock} left</p>
+                <p className="mt-2 text-[14px] font-semibold text-signal">
+                  Only {product.stock} left
+                </p>
               ) : null}
               {!available ? (
                 <p className="mt-3 text-[15px] leading-relaxed text-muted">
-                  Call the shop and we will tell you when the next shipment lands, or find you an equivalent.
+                  Call the shop and we will tell you when the next shipment lands, or find you an
+                  equivalent.
                 </p>
               ) : null}
             </div>
@@ -326,7 +391,8 @@ function ProductPage() {
               <div>
                 <dt className="text-[15px] font-semibold text-ink">Authorized dealer stock</dt>
                 <dd className="mt-0.5 max-w-[52ch] text-[14px] leading-relaxed text-muted">
-                  Sealed USA retail product with the full manufacturer warranty and every accessory the factory packed.
+                  Sealed USA retail product with the full manufacturer warranty and every accessory
+                  the factory packed.
                 </dd>
               </div>
             </div>
@@ -335,7 +401,8 @@ function ProductPage() {
               <div>
                 <dt className="text-[15px] font-semibold text-ink">Shipping</dt>
                 <dd className="mt-0.5 max-w-[52ch] text-[14px] leading-relaxed text-muted">
-                  Ships anywhere in the United States and Canada. NYC installation can be added to the order.
+                  Ships anywhere in the United States and Canada. NYC installation can be added to
+                  the order.
                 </dd>
               </div>
             </div>
@@ -343,7 +410,10 @@ function ProductPage() {
 
           <p className="mt-5 text-[14px] leading-relaxed text-muted">
             Questions on compatibility or channel count? Call{" "}
-            <a href={SITE.phoneHref} className="font-semibold text-ink underline underline-offset-4 hover:text-signal">
+            <a
+              href={SITE.phoneHref}
+              className="font-semibold text-ink underline underline-offset-4 hover:text-signal"
+            >
               {SITE.phone}
             </a>{" "}
             and we will check it against your recorder before you buy.
@@ -351,14 +421,17 @@ function ProductPage() {
         </div>
       </Shell>
 
-      {product.blurb && longBlurb ? <Overview text={product.blurb} /> : null}
-
-      {product.specs ? <Specifications text={product.specs} /> : null}
+      <ProductDetails key={product.slug} blurb={product.blurb} specs={product.specs} />
 
       <Shell>
         <ProductReviews
           slug={product.slug}
-          data={reviews ?? { summary: { count: 0, average: 0, breakdown: [0, 0, 0, 0, 0] }, reviews: [] }}
+          data={
+            reviews ?? {
+              summary: { count: 0, average: 0, breakdown: [0, 0, 0, 0, 0] },
+              reviews: [],
+            }
+          }
         />
       </Shell>
 
@@ -379,99 +452,41 @@ function ProductPage() {
 }
 
 /** Rows shown before "Show all". Short sheets never collapse. */
-const SPEC_PREVIEW_ROWS = 12;
-
-/**
- * The spec sheet, full width below the product.
- *
- * It used to sit in the right-hand column between the description and the
- * price, so a long sheet pushed the price and the cart button a whole screen
- * down. Here it can be as long as the manufacturer made it.
- *
- * A long sheet is folded, not cut: every row is in the HTML, so search
- * engines index the whole thing and Ctrl-F still finds a figure, and the fold
- * is only a height limit that the button lifts.
- */
-function Specifications({ text }: { text: string }) {
-  const sheet = parseSpecSheet(text);
-  const [open, setOpen] = useState(false);
-  if (sheet.blocks.length === 0 && sheet.links.length === 0) return null;
-  const foldable = sheet.rowCount > SPEC_PREVIEW_ROWS + 4;
-  const folded = foldable && !open;
-
-  return (
-    <section className="pb-6 pt-2" aria-labelledby="specs-title">
-      <Shell>
-        <div className="flex flex-wrap items-end justify-between gap-4 pb-3">
-          <h2 id="specs-title" className="text-[32px] text-ink">
-            Specifications
-          </h2>
-          {sheet.links.length > 0 ? (
-            <ul className="flex flex-wrap gap-x-5 gap-y-2">
-              {sheet.links.map((url) => (
-                <li key={url}>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="text-sm text-ink underline underline-offset-4 hover:text-signal"
-                  >
-                    {specLinkLabel(url)}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-
-        {sheet.blocks.length > 0 ? (
-          <div className="rounded-[14px] border border-[#dbe7f3] bg-surface p-5 md:p-7">
-            <div
-              id="specs-body"
-              className={`relative max-w-4xl text-[15px] leading-relaxed ${folded ? "max-h-[36rem] overflow-hidden" : ""}`}
-            >
-              {renderSpecSheet(sheet)}
-              {folded ? (
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-surface to-transparent"
-                />
-              ) : null}
-            </div>
-            {foldable ? (
-              <button
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                aria-expanded={open}
-                aria-controls="specs-body"
-                className="mt-5 rounded-[10px] border border-ink px-5 py-2.5 text-[14px] font-semibold text-ink transition-colors hover:bg-ink hover:text-white"
-              >
-                {open ? "Show fewer" : `Show all ${sheet.rowCount} specifications`}
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </Shell>
-    </section>
-  );
-}
-
 /** Feature icons (NDAA, Starlight, IP67…). The meaning shows on hover and is
  *  also written out for screen readers. */
 function FeatureBadges({ badges }: { badges: Badge[] }) {
   return (
     <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-3" aria-label="Features">
       {badges.map((b) => (
-        <li key={b.label} title={b.detail || b.label} className="flex w-[64px] flex-col items-center text-center">
+        <li
+          key={b.label}
+          title={b.detail || b.label}
+          className="flex w-[64px] flex-col items-center text-center"
+        >
           {b.icon ? (
-            <img src={b.icon} alt="" width={56} height={51} loading="lazy" className="h-[51px] w-[56px] object-contain" />
+            <img
+              src={b.icon}
+              alt=""
+              width={56}
+              height={51}
+              loading="lazy"
+              className="h-[51px] w-[56px] object-contain"
+            />
           ) : (
             <span className="grid h-11 w-11 place-items-center rounded-full bg-[#e6f1fb] text-[11px] font-bold text-signal">
               {b.label.slice(0, 4)}
             </span>
           )}
           {/* Manufacturer icons print their own caption; only text badges need one. */}
-          <span className={b.icon ? "sr-only" : "mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink"}>{b.label}</span>
+          <span
+            className={
+              b.icon
+                ? "sr-only"
+                : "mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink"
+            }
+          >
+            {b.label}
+          </span>
           {b.detail ? <span className="sr-only">: {b.detail}</span> : null}
         </li>
       ))}
@@ -508,20 +523,6 @@ function KeyFeatures({ items }: { items: string[] }) {
   );
 }
 
-/** The full manufacturer write-up, below the buy box. */
-function Overview({ text }: { text: string }) {
-  return (
-    <section className="pb-6 pt-2" aria-labelledby="overview-title">
-      <Shell>
-        <h2 id="overview-title" className="pb-3 text-[32px] text-ink">
-          Overview
-        </h2>
-        <div className="max-w-[75ch] text-[16px] leading-relaxed text-muted">{renderRichText(text)}</div>
-      </Shell>
-    </section>
-  );
-}
-
 /** Add-on drop-downs ("Add a Hard Drive"), with the total including what is picked. */
 function AddOnPicker({
   options,
@@ -534,13 +535,18 @@ function AddOnPicker({
   onPick: (index: number, slug: string) => void;
   basePrice: number;
 }) {
-  const extra = options.reduce((sum, o, i) => sum + (o.choices.find((c) => c.slug === picked[i])?.price_cents ?? 0), 0);
+  const extra = options.reduce(
+    (sum, o, i) => sum + (o.choices.find((c) => c.slug === picked[i])?.price_cents ?? 0),
+    0,
+  );
   return (
     <div className="grid gap-3">
       {options.map((o, i) => (
         <label key={o.label} className="block">
           <span className="text-[15px] font-semibold text-ink">{o.label}</span>
-          {o.help ? <span className="mt-0.5 block text-[14px] leading-relaxed text-muted">{o.help}</span> : null}
+          {o.help ? (
+            <span className="mt-0.5 block text-[14px] leading-relaxed text-muted">{o.help}</span>
+          ) : null}
           <select
             value={picked[i] ?? ""}
             onChange={(e) => onPick(i, e.target.value)}
@@ -557,7 +563,8 @@ function AddOnPicker({
       ))}
       {extra > 0 ? (
         <p className="text-[15px] text-ink">
-          Total with add-ons: <span className="ahe-price text-[20px]">{money(basePrice + extra)}</span>
+          Total with add-ons:{" "}
+          <span className="ahe-price text-[20px]">{money(basePrice + extra)}</span>
         </p>
       ) : null}
     </div>
@@ -584,8 +591,14 @@ function CompleteYourSystem({
 }) {
   const extra = items.filter((i) => ticked.includes(i.slug)).reduce((s, i) => s + i.price_cents, 0);
   return (
-    <section aria-labelledby="complete-system-h" className="grid gap-2.5 rounded-[12px] border border-[#dbe7f3] bg-[#f8fbfe] p-4">
-      <h2 id="complete-system-h" className="ahe-display text-[22px] leading-none tracking-[0.3px] text-ink">
+    <section
+      aria-labelledby="complete-system-h"
+      className="grid gap-2.5 rounded-[12px] border border-[#dbe7f3] bg-[#f8fbfe] p-4"
+    >
+      <h2
+        id="complete-system-h"
+        className="ahe-display text-[22px] leading-none tracking-[0.3px] text-ink"
+      >
         COMPLETE YOUR SYSTEM
       </h2>
       {items.map((it) => {
@@ -597,7 +610,9 @@ function CompleteYourSystem({
             aria-pressed={on}
             onClick={() => onToggle(it.slug)}
             className={`flex min-h-[60px] w-full items-center gap-3 rounded-[10px] bg-white px-3 py-2 text-left transition-colors ${
-              on ? "border-2 border-signal bg-[#eef5fc]" : "border border-[#cfdcea] hover:border-[#4a86c9]"
+              on
+                ? "border-2 border-signal bg-[#eef5fc]"
+                : "border border-[#cfdcea] hover:border-[#4a86c9]"
             }`}
           >
             <span
@@ -607,14 +622,34 @@ function CompleteYourSystem({
               }`}
             >
               {on ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M5 12l5 5L20 7" />
                 </svg>
               ) : null}
             </span>
-            {it.image ? <img src={it.image} alt="" loading="lazy" className="h-11 w-11 shrink-0 object-contain" /> : null}
-            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-snug text-ink">{it.name}</span>
-            <span className="whitespace-nowrap text-[15px] font-bold tabular-nums text-ink">+{money(it.price_cents)}</span>
+            {it.image ? (
+              <img
+                src={it.image}
+                alt=""
+                loading="lazy"
+                className="h-11 w-11 shrink-0 object-contain"
+              />
+            ) : null}
+            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-snug text-ink">
+              {it.name}
+            </span>
+            <span className="whitespace-nowrap text-[15px] font-bold tabular-nums text-ink">
+              +{money(it.price_cents)}
+            </span>
           </button>
         );
       })}
@@ -623,20 +658,34 @@ function CompleteYourSystem({
           to="/installation"
           className="flex min-h-[52px] items-center gap-3 rounded-[10px] border border-dashed border-[#4a86c9] bg-white px-3 py-2 text-ink no-underline"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-signal">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="shrink-0 text-signal"
+          >
             <path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L4 12l2.6-2.6" />
             <path d="M3 21l5-5" />
           </svg>
           <span className="flex-1">
             <span className="block text-[15px] font-semibold">Want it installed?</span>
-            <span className="block text-[14px] text-muted">We arrange professional installation. Get a quote.</span>
+            <span className="block text-[14px] text-muted">
+              We arrange professional installation. Get a quote.
+            </span>
           </span>
           <span className="text-[14px] font-bold text-signal">Quote</span>
         </Link>
       ) : null}
       {extra > 0 ? (
         <p className="text-[15px] text-ink">
-          Total with add-ons: <span className="ahe-price text-[20px]">{money(basePrice + extra)}</span>
+          Total with add-ons:{" "}
+          <span className="ahe-price text-[20px]">{money(basePrice + extra)}</span>
         </p>
       ) : null}
     </section>

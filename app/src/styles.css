@@ -805,3 +805,35 @@ html.ahe .ahe-bf-card:focus, html.ahe .ahe-bf-card:focus-visible { outline: none
   .ahe-brand-tile:hover, .ahe-brand-tile:focus-visible { transform: none; }
   .ahe-brand-tile:hover .ahe-brand-mark, .ahe-brand-tile:focus-visible .ahe-brand-mark { transform: none; }
 }
+
+/* ── Product details tabs (components/site/product-details.tsx) ───────────── */
+.ahe-tabs { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.ahe-tabs::-webkit-scrollbar { display: none; }
+.ahe-panel:not([hidden]) { animation: ahe-panel-in 180ms ease-out; }
+@keyframes ahe-panel-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ahe-panel:not([hidden]) { animation: none; } }
+
+/* Overview: the manufacturer write-up, with its bold lines read as section heads. */
+.ahe-prose strong { color: var(--color-ink); font-weight: 650; }
+.ahe-prose p + p { margin-top: 0.9em; }
+.ahe-prose ul { margin: 0.4em 0 1em; padding-left: 1.2em; list-style: disc; }
+.ahe-prose li { margin: 0.25em 0; }
+.ahe-prose li::marker { color: var(--color-signal); }
+
+/* Specifications: each group gets an eyebrow heading and a striped two-column table. */
+.ahe-specs h3 {
+  margin-top: 28px; margin-bottom: 10px;
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-signal);
+}
+.ahe-specs h3:first-child { margin-top: 0; }
+.ahe-specs dl { margin-top: 0; border: 1px solid #e3edf7; border-radius: 12px; overflow: hidden; }
+.ahe-specs dl + dl { margin-top: 12px; }
+.ahe-specs dl > div { border-bottom: 1px solid #e3edf7; padding: 11px 16px; }
+.ahe-specs dl > div:last-child { border-bottom: 0; }
+.ahe-specs dl > div:nth-child(even) { background: #f8fbfe; }
+.ahe-specs dt { font-weight: 600; color: var(--color-ink); }
+.ahe-specs dd { color: var(--color-muted); }
+@media (min-width: 640px) {
+  .ahe-specs dl > div { grid-template-columns: minmax(12rem, 34%) 1fr; }
+}
