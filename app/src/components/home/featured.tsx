@@ -9,11 +9,11 @@ export function Featured({ products }: { products: CardProduct[] }) {
     <section className="bg-ground py-12 md:py-16">
       <Shell>
         <SectionHead
-          title="On the counter this week"
-          lead="Real stock at the price we sell it for, with the manufacturer list price beside it so you can see the difference."
+          title="New from Alibi"
+          lead="The latest Alibi Vigilant cameras and recorders, at the price we sell them for with the list price beside it."
           aside={
-            <Link to="/shop">
-              <MoreLink>See all products</MoreLink>
+            <Link to="/brands/$brand" params={{ brand: "alibi" }}>
+              <MoreLink>See all Alibi</MoreLink>
             </Link>
           }
         />

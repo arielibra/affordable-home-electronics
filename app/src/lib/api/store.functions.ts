@@ -35,8 +35,32 @@ import { liveRatesEnabled } from "../rates.server";
 const id = z.string().min(8).max(64);
 const slug = z.string().min(1).max(120);
 
+/**
+ * The homepage grid shows the newest Alibi models (added 2026-11-24), in this
+ * order. Hidden or deleted ones drop out; if fewer than 9 remain, the grid is
+ * topped up with the usual featured products.
+ */
+const HOME_NEW_ALIBI = [
+  "ali-ft41-la-d",
+  "ali-ft80-la-d",
+  "ali-fd82-vua-d",
+  "ali-pb50-luais-d",
+  "ali-pt40-vluais-d",
+  "ali-pb80-vluais-d",
+  "ali-pt81-vluai-d",
+  "ali-nr043f-1-d",
+  "ali-nr160pai-2-d",
+];
+
 export const getStorefront = createServerFn({ method: "GET" }).handler(async () => {
-  const [categories, counts, featured] = await Promise.all([listCategories(), categoryCounts(), featuredProducts(9)]);
+  const [categories, counts, picks, fallback] = await Promise.all([
+    listCategories(),
+    categoryCounts(),
+    productsBySlugs(HOME_NEW_ALIBI),
+    featuredProducts(9),
+  ]);
+  const seen = new Set(picks.map((p) => p.slug));
+  const featured = [...picks, ...fallback.filter((p) => !seen.has(p.slug))].slice(0, 9);
   return { categories, counts, featured };
 });
 
