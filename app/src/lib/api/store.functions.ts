@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { cleanOptions, type ResolvedOption } from "../options";
+import { UPSELL_LABEL, upsellPlan } from "../upsells";
 
 import {
   addToCart,
@@ -105,12 +106,20 @@ export const getProductPage = createServerFn({ method: "GET" })
     const options: ResolvedOption[] = opts
       .map((o) => ({ label: o.label, help: o.help, choices: o.choices.map((c) => addons.get(c)).filter((c): c is { slug: string; name: string; price_cents: number } => !!c) }))
       .filter((o) => o.choices.length > 0);
+    // "Complete your system" suggestions, live prices, in-stock only.
+    const plan = upsellPlan(product);
+    const upsellRows = plan.slugs.length ? await productsBySlugs(plan.slugs) : [];
+    const upsells = upsellRows
+      .filter((u) => u.stock_tracked === 0 || u.stock > 0)
+      .map((u) => ({ slug: u.slug, name: UPSELL_LABEL[u.slug] ?? u.name, image: u.image, price_cents: u.price_cents }));
     return {
       product,
       images,
       reviews,
       related,
       options,
+      upsells,
+      installUpsell: plan.install,
       categoryName: categories.find((c) => c.slug === product.category)?.name ?? "",
     };
   });

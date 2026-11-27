@@ -182,7 +182,9 @@ export const Route = createFileRoute("/p/$slug")({
 });
 
 function ProductPage() {
-  const { product, images, related, categoryName, reviews, options } = Route.useLoaderData();
+  const { product, images, related, categoryName, reviews, options, upsells, installUpsell } = Route.useLoaderData();
+  // "Complete your system" add-ons ticked by the shopper, by product slug.
+  const [ticked, setTicked] = useState<string[]>([]);
   // The add-on picked in each drop-down ("" = none), by drop-down position.
   const [picked, setPicked] = useState<string[]>([]);
   const shots = images && images.length > 0 ? images : product?.image ? [product.image] : [];
@@ -293,8 +295,20 @@ function ProductPage() {
                 basePrice={product.price_cents}
               />
             ) : null}
+            {available && ((upsells && upsells.length) || installUpsell) ? (
+              <CompleteYourSystem
+                items={upsells ?? []}
+                install={!!installUpsell}
+                ticked={ticked}
+                onToggle={(slug) => setTicked((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]))}
+                basePrice={
+                  product.price_cents +
+                  (options ?? []).reduce((sum, o, i) => sum + (o.choices.find((c) => c.slug === picked[i])?.price_cents ?? 0), 0)
+                }
+              />
+            ) : null}
             <div className="max-w-[420px]">
-              <AddToCartButton slug={product.slug} soldOut={!available} extras={picked.filter(Boolean)} />
+              <AddToCartButton slug={product.slug} soldOut={!available} extras={[...picked.filter(Boolean), ...ticked]} />
               {available && product.stock_tracked === 1 && product.stock <= 3 ? (
                 <p className="mt-2 text-[14px] font-semibold text-signal">Only {product.stock} left</p>
               ) : null}
@@ -547,5 +561,84 @@ function AddOnPicker({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * "Complete your system": optional extras the shopper ticks before adding
+ * to the cart (a drive and monitor for a recorder, cable for an IP camera).
+ * Each ticked item goes into the cart as its own line. Nothing is pre-ticked.
+ */
+function CompleteYourSystem({
+  items,
+  install,
+  ticked,
+  onToggle,
+  basePrice,
+}: {
+  items: { slug: string; name: string; image: string | null; price_cents: number }[];
+  install: boolean;
+  ticked: string[];
+  onToggle: (slug: string) => void;
+  basePrice: number;
+}) {
+  const extra = items.filter((i) => ticked.includes(i.slug)).reduce((s, i) => s + i.price_cents, 0);
+  return (
+    <section aria-labelledby="complete-system-h" className="grid gap-2.5 rounded-[12px] border border-[#dbe7f3] bg-[#f8fbfe] p-4">
+      <h2 id="complete-system-h" className="ahe-display text-[22px] leading-none tracking-[0.3px] text-ink">
+        COMPLETE YOUR SYSTEM
+      </h2>
+      {items.map((it) => {
+        const on = ticked.includes(it.slug);
+        return (
+          <button
+            key={it.slug}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onToggle(it.slug)}
+            className={`flex min-h-[60px] w-full items-center gap-3 rounded-[10px] bg-white px-3 py-2 text-left transition-colors ${
+              on ? "border-2 border-signal bg-[#eef5fc]" : "border border-[#cfdcea] hover:border-[#4a86c9]"
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] border-2 ${
+                on ? "border-signal bg-signal" : "border-[#8aa6c4] bg-white"
+              }`}
+            >
+              {on ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12l5 5L20 7" />
+                </svg>
+              ) : null}
+            </span>
+            {it.image ? <img src={it.image} alt="" loading="lazy" className="h-11 w-11 shrink-0 object-contain" /> : null}
+            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-snug text-ink">{it.name}</span>
+            <span className="whitespace-nowrap text-[15px] font-bold tabular-nums text-ink">+{money(it.price_cents)}</span>
+          </button>
+        );
+      })}
+      {install ? (
+        <Link
+          to="/installation"
+          className="flex min-h-[52px] items-center gap-3 rounded-[10px] border border-dashed border-[#4a86c9] bg-white px-3 py-2 text-ink no-underline"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-signal">
+            <path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L4 12l2.6-2.6" />
+            <path d="M3 21l5-5" />
+          </svg>
+          <span className="flex-1">
+            <span className="block text-[15px] font-semibold">Want it installed?</span>
+            <span className="block text-[14px] text-muted">We arrange professional installation. Get a quote.</span>
+          </span>
+          <span className="text-[14px] font-bold text-signal">Quote</span>
+        </Link>
+      ) : null}
+      {extra > 0 ? (
+        <p className="text-[15px] text-ink">
+          Total with add-ons: <span className="ahe-price text-[20px]">{money(basePrice + extra)}</span>
+        </p>
+      ) : null}
+    </section>
   );
 }
