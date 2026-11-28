@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { InstallBand } from "../components/home/install-band";
 import { CallCta } from "../components/site/cta";
@@ -116,6 +116,13 @@ function Installation() {
               </li>
             ))}
           </ol>
+          <p className="mt-6 text-[16px] text-muted">
+            What an install includes, what drives the cost and how long it takes:{" "}
+            <Link to="/installation-guide" className="font-semibold text-ink underline underline-offset-4 hover:text-signal">
+              read the installation guide
+            </Link>
+            .
+          </p>
         </Shell>
       </section>
 

@@ -20,11 +20,13 @@ import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as MerchantFeedDotxmlRouteImport } from './routes/merchant-feed[.]xml'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as InstallationGuideRouteImport } from './routes/installation-guide'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BrandsRouteImport } from './routes/brands'
+import { Route as AuthorizedDealerRouteImport } from './routes/authorized-dealer'
 import { Route as AffordableSecurityCamerasRouteImport } from './routes/affordable-security-cameras'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -117,6 +119,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InstallationGuideRoute = InstallationGuideRouteImport.update({
+  id: '/installation-guide',
+  path: '/installation-guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InstallationRoute = InstallationRouteImport.update({
   id: '/installation',
   path: '/installation',
@@ -140,6 +147,11 @@ const CartRoute = CartRouteImport.update({
 const BrandsRoute = BrandsRouteImport.update({
   id: '/brands',
   path: '/brands',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthorizedDealerRoute = AuthorizedDealerRouteImport.update({
+  id: '/authorized-dealer',
+  path: '/authorized-dealer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AffordableSecurityCamerasRoute =
@@ -329,11 +341,13 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/affordable-security-cameras': typeof AffordableSecurityCamerasRoute
+  '/authorized-dealer': typeof AuthorizedDealerRoute
   '/brands': typeof BrandsRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/installation-guide': typeof InstallationGuideRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/merchant-feed.xml': typeof MerchantFeedDotxmlRoute
   '/order-confirmed': typeof OrderConfirmedRoute
@@ -383,11 +397,13 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/affordable-security-cameras': typeof AffordableSecurityCamerasRoute
+  '/authorized-dealer': typeof AuthorizedDealerRoute
   '/brands': typeof BrandsRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/installation-guide': typeof InstallationGuideRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/merchant-feed.xml': typeof MerchantFeedDotxmlRoute
   '/order-confirmed': typeof OrderConfirmedRoute
@@ -438,11 +454,13 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/affordable-security-cameras': typeof AffordableSecurityCamerasRoute
+  '/authorized-dealer': typeof AuthorizedDealerRoute
   '/brands': typeof BrandsRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/installation': typeof InstallationRoute
+  '/installation-guide': typeof InstallationGuideRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/merchant-feed.xml': typeof MerchantFeedDotxmlRoute
   '/order-confirmed': typeof OrderConfirmedRoute
@@ -494,11 +512,13 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/affordable-security-cameras'
+    | '/authorized-dealer'
     | '/brands'
     | '/cart'
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/installation-guide'
     | '/llms.txt'
     | '/merchant-feed.xml'
     | '/order-confirmed'
@@ -548,11 +568,13 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/affordable-security-cameras'
+    | '/authorized-dealer'
     | '/brands'
     | '/cart'
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/installation-guide'
     | '/llms.txt'
     | '/merchant-feed.xml'
     | '/order-confirmed'
@@ -602,11 +624,13 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/affordable-security-cameras'
+    | '/authorized-dealer'
     | '/brands'
     | '/cart'
     | '/checkout'
     | '/contact'
     | '/installation'
+    | '/installation-guide'
     | '/llms.txt'
     | '/merchant-feed.xml'
     | '/order-confirmed'
@@ -657,11 +681,13 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   AffordableSecurityCamerasRoute: typeof AffordableSecurityCamerasRoute
+  AuthorizedDealerRoute: typeof AuthorizedDealerRoute
   BrandsRoute: typeof BrandsRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   InstallationRoute: typeof InstallationRoute
+  InstallationGuideRoute: typeof InstallationGuideRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   MerchantFeedDotxmlRoute: typeof MerchantFeedDotxmlRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
@@ -786,6 +812,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/installation-guide': {
+      id: '/installation-guide'
+      path: '/installation-guide'
+      fullPath: '/installation-guide'
+      preLoaderRoute: typeof InstallationGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/installation': {
       id: '/installation'
       path: '/installation'
@@ -819,6 +852,13 @@ declare module '@tanstack/react-router' {
       path: '/brands'
       fullPath: '/brands'
       preLoaderRoute: typeof BrandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/authorized-dealer': {
+      id: '/authorized-dealer'
+      path: '/authorized-dealer'
+      fullPath: '/authorized-dealer'
+      preLoaderRoute: typeof AuthorizedDealerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/affordable-security-cameras': {
@@ -1081,11 +1121,13 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   AffordableSecurityCamerasRoute: AffordableSecurityCamerasRoute,
+  AuthorizedDealerRoute: AuthorizedDealerRoute,
   BrandsRoute: BrandsRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   InstallationRoute: InstallationRoute,
+  InstallationGuideRoute: InstallationGuideRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   MerchantFeedDotxmlRoute: MerchantFeedDotxmlRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,

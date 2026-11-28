@@ -53,7 +53,7 @@ const STORE = {
   logo: `${ORIGIN}/app-icon.png`,
   image: `${ORIGIN}/assets/hero-storefront.jpg`,
   description:
-    "Security cameras, NVR and DVR recorders, access control, smart locks and home electronics, sold online since 2003, with installation arranged across New York City.",
+    "Security cameras, NVR and DVR recorders, access control, smart locks and home electronics from an authorized dealer selling since 1998, shipped anywhere in the United States, with installation arranged across New York City.",
   telephone: "+1-718-275-9343",
   faxNumber: "+1-866-365-7643",
   email: SITE.email,
@@ -88,7 +88,8 @@ const STORE = {
       availableLanguage: "English",
     },
   ],
-  areaServed: SITE.areas.map((a) => ({ "@type": "Place", name: a })),
+  // Products ship nationwide; the named places are where installation is arranged.
+  areaServed: [{ "@type": "Country", name: "United States" }, ...SITE.areas.map((a) => ({ "@type": "Place", name: a }))],
   // Store-wide return policy, matching /returns. Google reads this at the
   // business level as well as on each product's offer.
   hasMerchantReturnPolicy: {

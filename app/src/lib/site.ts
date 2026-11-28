@@ -18,7 +18,7 @@ export const ORIGIN = (
 export const SITE = {
   name: "Affordable Home Electronics",
   short: "AHE",
-  since: 2003,
+  since: 1998,
   phone: "718.275.9343",
   phoneHref: "tel:+17182759343",
   whatsapp: "(917) 407-8921",

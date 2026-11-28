@@ -23,7 +23,7 @@ export const Route = createFileRoute("/llms.txt")({
         const out: string[] = [
           `# ${SITE.name}`,
           ``,
-          `> Security cameras, NVR/DVR recorders, access control, smart locks, doorbells and home electronics. An authorized dealer selling genuine USA product online, shipping across the US, since ${SITE.since}, with installation arranged across New York City.`,
+          `> Security cameras, NVR/DVR recorders, access control, smart locks, doorbells and home electronics. An authorized security camera dealer since ${SITE.since}, based in Rego Park, Queens, shipping genuine USA-stock product with the full manufacturer warranty to homes and businesses anywhere in the United States, with installation arranged across New York City. Authorized dealer for Alibi, LTS, Anviz and ENS.`,
           ``,
           `## The shop`,
           ``,
@@ -43,6 +43,8 @@ export const Route = createFileRoute("/llms.txt")({
           `## Services`,
           ``,
           `- [Installation](${ORIGIN}/installation): security camera and access control installation in Queens, Brooklyn, Manhattan, the Bronx and Staten Island, plus Nassau and Westchester on request. Written itemised quote, no monthly subscription.`,
+          `- [Authorized dealer and warranty](${ORIGIN}/authorized-dealer): how to buy security cameras that carry the full US manufacturer warranty, which brands we are authorized for, and how to spot grey-market stock.`,
+          `- [Camera installation guide](${ORIGIN}/installation-guide): what a professional CCTV installation includes, what drives the cost, how long it takes, and when installing it yourself makes sense.`,
           `- [Contact](${ORIGIN}/contact): quotes, questions and orders by phone, WhatsApp, email or the contact form.`,
           ``,
         ];

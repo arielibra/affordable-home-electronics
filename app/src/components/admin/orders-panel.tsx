@@ -207,6 +207,19 @@ function Card({ order, onChanged }: { order: AdminOrder; onChanged: () => void }
                 )}
               </p>
             ) : null}
+
+            {(order.channel ?? "site") === "site" ? (
+              <p className="mt-2 text-sm">
+                <span className="font-semibold text-ink">Payment taken by:</span>{" "}
+                {order.provider === "stripe" ? (
+                  <span className="text-ink">Stripe (card)</span>
+                ) : order.provider === "paypal" ? (
+                  <span className="text-ink">PayPal</span>
+                ) : (
+                  <span className="text-muted">Not through Stripe or PayPal (callback / phone order)</span>
+                )}
+              </p>
+            ) : null}
           </div>
 
           <div className={card}>

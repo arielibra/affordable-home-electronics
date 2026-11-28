@@ -16,14 +16,15 @@ export function Hero() {
         <div className="ahe-rise grid items-end gap-6 lg:grid-cols-[1fr_auto] lg:gap-10">
           <div>
             <p className="ahe-kicker inline-flex items-center gap-2 text-[14px] font-semibold text-ink-soft before:h-2 before:w-2 before:rounded-full before:bg-[#19a974] before:shadow-[0_0_0_4px_rgba(25,169,116,0.18)] before:content-['']">
-              Rego Park, Queens · since {SITE.since}
+              Shipping across the USA · since {SITE.since}
             </p>
             <h1 className="mt-3 max-w-[22ch] text-[40px] text-ink md:text-[58px]">
               Eyes on every <span className="text-signal ahe-hero-accent">door</span>, day and night.
             </h1>
             <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-muted">
-              Cameras, recorders and access control from the brands installers trust. Genuine USA stock, full
-              manufacturer warranty, shipped nationwide, with installation available across New York City.
+              Cameras, recorders and access control from the brands installers trust, shipped to homes and businesses
+              anywhere in the USA. Genuine USA stock, full manufacturer warranty, and installation arranged across New
+              York City.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 lg:pb-1">
@@ -50,7 +51,7 @@ export function Hero() {
       <div className="border-t border-line bg-surface">
       <div className="mx-auto grid max-w-[1240px] grid-cols-2 md:grid-cols-4">
         {[
-          ["Since " + SITE.since, "Over 20 years in Queens"],
+          ["Since " + SITE.since, "Over 25 years in business"],
           ["Full warranty", "Authorized dealer stock"],
           ["Free shipping", "$199+ orders, packages up to 5 lb"],
           ["NYC installs", "Arranged through us"],

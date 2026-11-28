@@ -14,7 +14,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "An independent electronics dealer in Rego Park, Queens, selling security cameras, recorders and access control since 2003.",
+          "An independent security camera dealer from Rego Park, Queens, selling cameras, recorders and access control since 1998 and shipping them anywhere in the USA.",
       },
     ],
     links: [{ rel: "canonical", href: `${ORIGIN}/about` }],
@@ -26,7 +26,7 @@ function About() {
   const years = new Date().getFullYear() - SITE.since;
   return (
     <SiteShell>
-      <JsonLd json={pageJsonLd({ type: "AboutPage", path: "/about", name: "About Affordable Home Electronics", description: "A family-run security camera and electronics shop in Rego Park, Queens, selling since 2003, with installation arranged across New York City.", about: { "@id": STORE_ID } })} />
+      <JsonLd json={pageJsonLd({ type: "AboutPage", path: "/about", name: "About Affordable Home Electronics", description: "A family-run security camera and electronics shop in Rego Park, Queens, selling since 1998, with installation arranged across New York City.", about: { "@id": STORE_ID } })} />
       <Shell className="py-10 md:py-12">
         <Eyebrow>About</Eyebrow>
         <h1 className="mt-2 max-w-[18ch] text-[40px] text-ink md:text-[56px]">

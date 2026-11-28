@@ -213,7 +213,7 @@ function Footer() {
             <Lockup reversed />
           </Link>
           <p className="mt-4 max-w-[34ch] text-[15px] leading-relaxed text-[#dcebfa]">
-            Security cameras, recorders and access control, sold out of Rego Park since {SITE.since}, with installation arranged across New York City.
+            Security cameras, recorders and access control, shipped anywhere in the USA from Rego Park, Queens since {SITE.since}, with installation arranged across New York City.
           </p>
         </div>
 
@@ -239,6 +239,11 @@ function Footer() {
             </Link>
           </li>
           <li>
+            <Link to="/authorized-dealer" className="ahe-onblue">
+              Authorized dealer
+            </Link>
+          </li>
+          <li>
             <Link to="/search" className="ahe-onblue">
               Search by part number
             </Link>
@@ -259,6 +264,11 @@ function Footer() {
           <li>
             <Link to="/installation" className="ahe-onblue">
               Installation in NYC
+            </Link>
+          </li>
+          <li>
+            <Link to="/installation-guide" className="ahe-onblue">
+              Installation guide
             </Link>
           </li>
           <li>

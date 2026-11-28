@@ -14,7 +14,7 @@ declare const __HF_DESIGN_INSPECTOR__: boolean;
 
 const DEFAULT_TITLE = "Affordable Home Electronics";
 const DEFAULT_DESCRIPTION =
-  "Security cameras, recorders and access control from an authorized dealer in Rego Park, Queens. Shipping nationwide since 2003, with installation arranged across New York City.";
+  "Security cameras, recorders and access control shipped anywhere in the USA from an authorized dealer selling since 1998. Full manufacturer warranty, with installation arranged across New York City.";
 
 type AppMeta = {
   og_title?: string | null;

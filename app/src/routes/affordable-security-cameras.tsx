@@ -26,7 +26,7 @@ import { pageJsonLd } from "../lib/structured-data";
 const PATH = "/affordable-security-cameras";
 const TITLE = "Affordable Security Cameras: What a Good System Costs";
 const DESCRIPTION =
-  "What a good security camera system really costs, from a single add-on camera to a full 8-camera setup. Real prices, no monthly fees, from an authorized dealer selling since 2003.";
+  "What a good security camera system really costs, from a single add-on camera to a full 8-camera setup. Real prices, no monthly fees, from an authorized dealer selling since 1998.";
 
 /** Cameras that add to a recorder someone already has. */
 const ADD_ON = ["ali-ab22-ua-d", "ens-hcc3120r-irl-z-2mp-hdcvi-ir-bullet-camera-200-ft-range", "ali-fb41-a-d", "ali-ab81-ua-d"];
@@ -156,7 +156,7 @@ function Guide() {
           </h1>
           <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-muted">
             What each budget buys, what you can skip, and where cheap cameras end up costing more. Every price on
-            this page is our live price, and none of it comes with a monthly fee. We have sold and installed CCTV in New York
+            this page is our live price, and none of it comes with a monthly fee. We have sold CCTV out of New York, and shipped it across the USA,
             since {SITE.since}.
           </p>
           <nav aria-label="On this page" className="mt-6 flex flex-wrap gap-2 text-[14px]">

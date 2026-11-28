@@ -121,7 +121,7 @@ function Brands() {
             Looking for a brand or model that is not listed?
           </h2>
           <p className="mt-2 text-[16px] leading-relaxed text-muted">
-            We have been supplying security and electronics since 2003, and the lines above are only what is listed on the
+            We have been supplying security and electronics since 1998, and the lines above are only what is listed on the
             website today. Search by part number first, since most of our listings include it. If nothing comes up, send us
             the make and model through the{" "}
             <Link to="/contact" className="font-semibold text-signal underline underline-offset-4 hover:text-ink">contact page</Link> and
