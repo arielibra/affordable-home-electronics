@@ -156,7 +156,7 @@ function Guide() {
           </h1>
           <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-muted">
             What each budget buys, what you can skip, and where cheap cameras end up costing more. Every price on
-            this page is our live price, and none of it comes with a monthly fee. We have sold CCTV out of New York, and shipped it across the USA,
+            this page is our live price, and none of it comes with a monthly fee. We have sold and installed CCTV in New York, and shipped it across the USA,
             since {SITE.since}.
           </p>
           <nav aria-label="On this page" className="mt-6 flex flex-wrap gap-2 text-[14px]">

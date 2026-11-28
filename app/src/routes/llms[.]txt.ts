@@ -23,7 +23,7 @@ export const Route = createFileRoute("/llms.txt")({
         const out: string[] = [
           `# ${SITE.name}`,
           ``,
-          `> Security cameras, NVR/DVR recorders, access control, smart locks, doorbells and home electronics. An authorized security camera dealer since ${SITE.since}, based in Rego Park, Queens, shipping genuine USA-stock product with the full manufacturer warranty to homes and businesses anywhere in the United States, with installation arranged across New York City. Authorized dealer for Alibi, LTS, Anviz and ENS.`,
+          `> Security cameras, NVR/DVR recorders, access control, smart locks, doorbells and home electronics. An authorized security camera dealer since ${SITE.since}, based in Rego Park, Queens, shipping genuine USA-stock product with the full manufacturer warranty to homes and businesses anywhere in the United States, with installation arranged across New York City. Authorized dealer for every brand it sells, including Alibi, LTS, Anviz and ENS.`,
           ``,
           `## The shop`,
           ``,

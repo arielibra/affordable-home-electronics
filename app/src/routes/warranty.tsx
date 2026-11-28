@@ -24,7 +24,7 @@ function Warranty() {
       path="/warranty"
       eyebrow="Store policy"
       title="Warranty."
-      lead="We are an authorized dealer for Alibi, LTS, Anviz and ENS, and everything we sell is genuine USA stock. That matters more than it sounds: it is the difference between the price we quote and the suspiciously cheap one somewhere else."
+      lead="We are an authorized dealer for every line we sell. That matters more than it sounds, and it is the difference between the price we quote and the suspiciously cheap one somewhere else."
     >
       <Clause title="What you are actually buying">
         <p>

@@ -10,9 +10,9 @@ import { STORE_ID, pageJsonLd } from "../lib/structured-data";
 
 const PATH = "/authorized-dealer";
 const TITLE = "Authorized Security Camera Dealer, Full US Warranty | AHE";
-const DESCRIPTION = `Where to buy security cameras that carry the full US manufacturer warranty. Authorized dealer for Alibi, LTS, Anviz and ENS since ${SITE.since}, shipping anywhere in the USA.`;
+const DESCRIPTION = `Where to buy security cameras that carry the full US manufacturer warranty. Authorized dealer for every brand we sell since ${SITE.since}, including Alibi, LTS, Anviz and ENS, shipping anywhere in the USA.`;
 
-/** Only brands the owner has confirmed he is authorized for. Do not add a brand here without that. */
+/** Featured lines. The shop is an authorized dealer for every brand it sells (owner, 2026-11-28). */
 const BRANDS = [
   { slug: "alibi", name: "Alibi", what: "IP and HD-TVI cameras, PTZ cameras, NVR and DVR recorders" },
   { slug: "lts", name: "LTS", what: "Platinum series cameras and recorders" },
@@ -31,7 +31,7 @@ const SIGNS = [
 const FAQ: Faq[] = [
   {
     q: "Where can I buy security cameras with a full manufacturer warranty?",
-    a: `From the manufacturer or from one of its authorized dealers. Affordable Home Electronics has been an authorized dealer since ${SITE.since} for Alibi, LTS, Anviz and ENS, and sells genuine USA stock that carries the full manufacturer warranty. We ship anywhere in the United States.`,
+    a: `From the manufacturer or from one of its authorized dealers. Affordable Home Electronics has been an authorized dealer since ${SITE.since} for every brand it sells, including Alibi, LTS, Anviz and ENS, and sells genuine USA stock that carries the full manufacturer warranty. We ship anywhere in the United States.`,
   },
   {
     q: "What does \"authorized dealer\" mean?",
@@ -107,7 +107,14 @@ function AuthorizedDealer() {
 
       <section className="bg-surface py-12 md:py-16">
         <Shell>
-          <h2 className="text-[30px] text-ink md:text-[38px]">Brands we are authorized for</h2>
+          <h2 className="text-[30px] text-ink md:text-[38px]">Authorized for every brand we sell</h2>
+          <p className="mt-3 max-w-[64ch] text-[16px] leading-relaxed text-muted">
+            Every product on this site comes from an authorized dealer: us. Our main lines are below, and{" "}
+            <Link to="/brands" className="font-semibold text-ink underline underline-offset-4">
+              the full list of brands
+            </Link>{" "}
+            is on the brands page.
+          </p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {BRANDS.map((b) => (
               <Link
